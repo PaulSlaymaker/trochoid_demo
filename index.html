@@ -7,6 +7,7 @@
   <title>Trochoid demo by Paul Slaymaker</title>
   <style type="text/css">
     * { box-sizing:border-box; }
+    button.abtn { margin:4px 6px; width:60px; }
     tr.phead { background:#FAFAFF; border-bottom:1px solid silver; }
     div.pmain { background:#EFEFF8; border-bottom:1px solid silver; padding:4px 8px; text-align:left; white-space:nowrap; cursor:pointer; font-size:0.9em; }
     div.pmenu { background:#EFEFF8; border-bottom:1px solid silver; padding:4px 8px; text-align:left; white-space:nowrap; cursor:pointer; font-size:0.9em; }
@@ -35,13 +36,11 @@
 	  <path id="rpath" style="stroke:navy; stroke-width:.3; fill-opacity:1; fill-rule:evenodd;" d=""/>
 	</g>
       </svg>
-      <div id="abtn" style="text-align:center; padding:4px;">
-	<button onclick="start();">start</button>
-	<button onclick="step();">step</button>
-	<button onclick="stop();">stop</button>
-      </div>
     </div>
-    <div style="display:table-cell; vertical-align:top; padding-left:16px;">
+    <div style="display:table-cell; vertical-align:top; padding:0 8px; text-align:center;">
+        <button class="abtn" onclick="start();">start</button>
+        <button class="abtn" onclick="stop();">stop</button>
+        <button class="abtn" onclick="step();">step</button>
     </div>
     <div style="display:table-cell; vertical-align:top; text-align:center;">
 
@@ -311,8 +310,7 @@
   <script type="text/javascript">
 <!--
 onresize = new function() {
-  var a = document.getElementById("abtn").offsetHeight;
-  document.getElementById("asvg").style.maxHeight = window.innerHeight - a - 20 + "px";
+  document.getElementById("asvg").style.maxHeight = window.innerHeight - 20 + "px";
 };
 function getRandomInt(a, b) {
   a = Math.ceil(a);
@@ -339,7 +337,6 @@ function getZeroCurve() {
 }
 var path = document.getElementById("rpath"), a2 = document.createElementNS("http://www.w3.org/2000/svg", "animate");
 a2.setAttribute("attributeName", "d");
-a2.setAttribute("to", "");
 a2.setAttribute("to", getZeroCurve() + " " + getZeroCurve());
 a2.setAttribute("fill", "freeze");
 a2.setAttribute("begin", "indefinate");
@@ -354,7 +351,7 @@ acol.setAttribute("to", "white");
 acol.setAttribute("from", "white");
 acol.setAttribute("fill", "freeze");
 path.appendChild(acol);
-var ET = "epitrochoid", HT = "hypotrochoid", EET = "epiepitrochoid", HET = "hypoepitrochoid", EHT = "epihypotrochoid", HHT = "hypohypotrochoid", curves = [{type:ET, c1:3, c2:3, reset:!0}, {type:HT, c1:3, c2:3, reset:!0}], durationFactor = 1, rotationFactor = 1, pause = 0, transition, color = "random", symmetry = 3, curveChangeRate = .15, ONE = 0, TWO = 1, curveCount = TWO;
+var ET = "epitrochoid", HT = "hypotrochoid", EET = "epiepitrochoid", HET = "hypoepitrochoid", EHT = "epihypotrochoid", HHT = "hypohypotrochoid", curves = [{type:ET, c1:3, c2:3, r3:0, reset:!0}, {type:HT, c1:3, c2:3, r3:0, reset:!0}], durationFactor = 1, rotationFactor = 1, pause = 0, transition, color = "random", symmetry = 3, curveChangeRate = .15, ONE = 0, TWO = 1, curveCount = TWO;
 function getMatchingCycle(a) {
   switch(a) {
     case 2:
@@ -577,6 +574,7 @@ function step() {
   transition = "step";
 }
 function stop() {
+  clearTimeout(pauseId);
   a2.setAttribute("onend", "");
   transition = "step";
 }
@@ -616,7 +614,7 @@ function doTransition() {
   a2.beginElement();
 }
 function redraw() {
-  0 == pause ? doTransition() : setTimeout(doTransition, 1000 * pause);
+   0 == pause ? doTransition() : pauseId = setTimeout(doTransition, 1000 * pause);
 }
 function getDuration(a) {
   return a * durationFactor + "s";
