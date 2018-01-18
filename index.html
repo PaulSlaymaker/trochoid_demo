@@ -613,6 +613,7 @@ function doTransition() {
   setFill();
   a2.beginElement();
 }
+var pauseId;
 function redraw() {
    0 == pause ? doTransition() : pauseId = setTimeout(doTransition, 1000 * pause);
 }
