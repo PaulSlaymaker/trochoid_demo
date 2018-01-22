@@ -30,8 +30,8 @@
     <div id="ascell" style="display:table-cell; width:100%; text-align:center;">
       <svg id="asvg" viewbox="0,0,400,400" style="margin-left:1px; height:auto;">
 	<rect id="asbox" width="400px" height="400px" fill="#FFF" stroke="silver"/>
-	<line x1="0" y1="200" x2="400" y2="200" stroke="silver" stroke-width=".5"/>
-	<line x1="200" y1="0" x2="200" y2="400" stroke="silver" stroke-width=".5"/>
+	<line x1="0" y1="200" x2="400" y2="200" stroke="silver" stroke-width=".3"/>
+	<line x1="200" y1="0" x2="200" y2="400" stroke="silver" stroke-width=".3"/>
 	<g transform="translate(200,200) rotate(-90)">
 	  <path id="rpath" style="stroke:navy; stroke-width:.3; fill-opacity:1; fill-rule:evenodd;" d=""/>
 	</g>
@@ -579,10 +579,9 @@ function stop() {
   transition = "step";
 }
 function setFill() {
-  if ("none" != color) {
-    if ("stop" == color) {
-      acol.setAttribute("from", acol.getAttribute("to")), acol.setAttribute("to", "white"), path.style.setProperty("fill-opacity", "0", ""), acol.beginElement(), color = "none", document.getElementById("colorSel").value = "#FFFFFF";
-    } else {
+  if ("stop" == color) {
+    acol.setAttribute("from", acol.getAttribute("to")), acol.setAttribute("to", "white"), path.style.setProperty("fill-opacity", "0", ""), acol.beginElement(), color = "none", document.getElementById("colorSel").value = "#FFFFFF";
+  } else {
       if ("random" == color) {
         path.style.setProperty("fill-opacity", "1", "");
         acol.setAttribute("from", acol.getAttribute("to"));
@@ -591,10 +590,9 @@ function setFill() {
         acol.beginElement();
         document.getElementById("colorSel").value = a;
       } else {
-        "start" == color && (path.style.setProperty("fill-opacity", "1", ""), color = document.getElementById("colorSel").value, acol.setAttribute("from", color), acol.setAttribute("to", color), acol.beginElement());
+	"start" == color && (path.style.setProperty("fill-opacity", "1", ""), color = document.getElementById("colorSel").value, acol.setAttribute("from", color), acol.setAttribute("to", color), acol.beginElement(), color = "fixed");
       }
     }
-  }
 }
 function get1Curve(a) {
   a && (0 == symmetry ? randomizeCurves() : void 0 == curves[0].c1Keep && void 0 == curves[0].c2Keep ? randomizeSym1Curve() : randomizeCurves(), scaleToFit());
@@ -749,9 +747,11 @@ function changeFill(a) {
     switch(a.id) {
       case "nofill":
         color = "stop";
+        "step" == transition && setFill();
         break;
       case "colfill":
         color = "start";
+	"step" == transition && setFill();
         break;
       default:
         color = "random";
@@ -761,6 +761,7 @@ function changeFill(a) {
 function changeFillColor(a) {
   document.getElementById("colfill").checked = !0;
   color = "start";
+  "step" == transition && setFill();
 }
 function changeLineWidth(a) {
   path.style.setProperty("stroke-width", a.value, "");
