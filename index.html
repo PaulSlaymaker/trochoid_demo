@@ -481,7 +481,7 @@ function randomizeCurves() {
 }
 function scaleToFit() {
   if (curveCount == ONE) {
-    if (void 0 == curves[0].drawKeep && void 0 == curves[0].r1Keep && void 0 == curves[0].r3keep) {
+    if (void 0 == curves[0].drawKeep && void 0 == curves[0].r1Keep && void 0 == curves[0].r3Keep) {
       var a = 1;
       a = ET == curves[0].type || HT == curves[0].type ? 200 / (curves[0].r1 + curves[0].r2) : 200 / (curves[0].r1 + curves[0].r2 + curves[0].r3);
       curves[0].r1 *= a;
@@ -489,7 +489,7 @@ function scaleToFit() {
       curves[0].r3 *= a;
     }
   } else {
-    if (void 0 == curves[0].drawKeep && void 0 == curves[0].r1Keep && void 0 == curves[0].r3keep && void 0 == curves[1].drawKeep && void 0 == curves[1].r1Keep && void 0 == curves[1].r3Keep) {
+    if (void 0 == curves[0].drawKeep && void 0 == curves[0].r1Keep && void 0 == curves[0].r3Keep && void 0 == curves[1].drawKeep && void 0 == curves[1].r1Keep && void 0 == curves[1].r3Keep) {
       var b = Array(2);
       [0, 1].forEach(function(a) {
         b[a] = ET == curves[a].type || HT == curves[a].type ? 200 / (curves[a].r1 + curves[a].r2) : 200 / (curves[a].r1 + curves[a].r2 + curves[a].r3);
