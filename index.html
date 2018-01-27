@@ -23,12 +23,22 @@
     div.tacont { overflow:hidden; width:180px; height:0; }
     tr.c2show { display:table-row; }
     tr.c2hide { display:none; }
+    tr.c3show { display:table-row; }
+    tr.c3hide { display:none; }
   </style>
 </head>
 <body style="font-family:sans-serif; font-size:0.8em; background:#F4F4F4;">
   <div style="display:table;">
     <div id="ascell" style="display:table-cell; width:100%; text-align:center;">
       <svg id="asvg" viewbox="0,0,400,400" style="margin-left:1px; height:auto;">
+<!--
+ <defs>
+    <clipPath id="rframe">
+      <rect x="-200" y="-200" width="400" height="400"/>
+    </clipPath>
+ </defs>
+ clip-path="url(#rframe)" 
+-->
 	<rect id="asbox" width="400px" height="400px" fill="#FFF" stroke="silver"/>
 	<line x1="0" y1="200" x2="400" y2="200" stroke="silver" stroke-width=".3"/>
 	<line x1="200" y1="0" x2="200" y2="400" stroke="silver" stroke-width=".3"/>
@@ -38,9 +48,12 @@
       </svg>
     </div>
     <div style="display:table-cell; vertical-align:top; padding:0 8px; text-align:center;">
-        <button class="abtn" onclick="start();">start</button>
-        <button class="abtn" onclick="stop();">stop</button>
-        <button class="abtn" onclick="step();">step</button>
+	<button class="abtn" onclick="start();">start</button>
+	<button class="abtn" onclick="stop();">stop</button>
+	<button class="abtn" onclick="step();">step</button>
+<!--
+	<button class="abtn" onclick="previous();">previous</button>
+-->
     </div>
     <div style="display:table-cell; vertical-align:top; text-align:center;">
 
@@ -54,10 +67,10 @@
           <span class="indic">&#10148;</span>
           Curve properties
         </div>
-        <div id="cdivcurv" class="tacont">
+        <div id="cdivcurv" class="tacont" style="height:0;">
 	  <table id="propscurv" class="ctable" cellspacing="0">
 	    <tr class="phead">
-	      <td colspan="2">Curve one </td><td style="white-space:nowrap;">Keep value</td>
+	      <td colspan="2">Curve one </td><td style="white-space:nowrap;">Lock value</td>
 	    </tr>
 	    <tr>
 	     <td style="padding:4px; width:40%;"></td>
@@ -67,7 +80,7 @@
 	    <tr>
 	      <td class="tlabel">Type:</td>
 	      <td class="control">
-		<select id="curveSel0" style="border:1px solid silver;" onchange="changeCurve(this,0)">
+		<select id="curveSel0" style="border:1px solid silver;" onchange="changeType(this,0)">
 		 <option>epitrochoid</option>
 		 <option>epiepitrochoid</option>
 		 <option>hypoepitrochoid</option>
@@ -76,7 +89,7 @@
 		 <option>hypohypotrochoid</option>
 		</select>
 	      </td>
-	      <td><input id="kCurve0" type="checkbox" onclick="keepCurve(this,0);"/></td>
+	      <td><input id="kCurve0" type="checkbox" onclick="keepType(this,0);"/></td>
 	    </tr>
 	    <tr>
 	      <td class="tlabel">First radius:</td>
@@ -90,48 +103,49 @@
 	      <td class="tlabel">Second radius:</td>
 	      <td class="control">
 		<div id="rad2-0" class="treport">&#160;</div>
-		<input id="rad2Sel0" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR2(this,0);"></input>
+		<input id="rad2Sel0" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR2(this,ONE);"></input>
 	      </td>
-	      <td><input id="kR1-0" type="checkbox" onclick="keepR2(this,0);"/></td>
+	      <td><input id="kR1-0" type="checkbox" onclick="keepR2(this,ONE);"/></td>
 	    </tr>
 	    <tr>
 	      <td class="tlabel">Third radius:</td>
 	      <td class="control">
 		<div id="rad3-0" class="treport">&#160;</div>
-		<input id="rad3Sel0" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR3(this,0);"></input>
+		<input id="rad3Sel0" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR3(this,ONE);"></input>
 	      </td>
-	      <td><input id="kR3-0" type="checkbox" onclick="keepR3(this,0);"/></td>
+	      <td><input id="kR3-0" type="checkbox" onclick="keepR3(this,ONE);"/></td>
 	    </tr>
 	    <tr>
 	      <td class="tlabel">Primary cycles:</div>
 	      <td class="control">
 		<div id="c0-0" class="treport">&#160;</div>
-		<input id="c0Sel0" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC0(this,0)"></input>
+		<input id="c0Sel0" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC0(this,ONE)"></input>
 	      </td>
-	      <td><input id="kC0-0" type="checkbox" onclick="keepC0(this,0);"/></td>
+	      <td><input id="kC0-0" type="checkbox" onclick="keepC0(this,ONE);"/></td>
 	    </tr>
 	    <tr>
 	      <td class="tlabel">Secondary cycles:</div>
 	      <td class="control">
 		<div id="c1-0" class="treport">&#160;</div>
-		<input id="c1Sel0" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC1(this,0)"></input>
+		<input id="c1Sel0" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC1(this,ONE)"></input>
 	      </td>
-	      <td><input id="kC1-0" type="checkbox" onclick="keepC1(this,0);"/></td>
+	      <td><input id="kC1-0" type="checkbox" onclick="keepC1(this,ONE);"/></td>
 	    </tr>
 	    <tr>
 	      <td class="tlabel">Tertiary cycles:</td>
 	      <td class="control">
 		<div id="c2-0" class="treport">&#160;</div>
-		<input id="c2Sel0" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC2(this,0)"></input>
+		<input id="c2Sel0" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC2(this,ONE)"></input>
 	      </td>
-	      <td><input id="kC2-0" type="checkbox" onclick="keepC2(this,0);"/></td>
+	      <td><input id="kC2-0" type="checkbox" onclick="keepC2(this,ONE);"/></td>
 	    </tr>
 	    <tr><td colspan="3" style="padding:4px;"></td></tr>
 	    <tr class="phead" style="border-top:1px solid silver;">
-	      <td colspan="3" style="text-align:left;">
-                <button id="c2btn" style="float:left; font-size:.7em; padding:0; margin:1px 56px 0px 10px; opacity:.6; width:44px; border:1px outset #D8D8D8;" onclick="switchCurveTwo()">remove</button>
+	      <td colspan="2" style="text-align:left;">
+                <button id="c2btn" style="float:left; font-size:.7em; padding:0; margin:1px 56px 0px 10px; opacity:.6; width:44px; border:1px outset #D8D8D8;" onclick="addRemoveCurve(TWO)">remove</button>
                 Curve two
               </td>
+	      <td><input id="keepCurve1" type="checkbox" onclick="keepCurve(this,TWO)"/></td>
   <!--
 	      <td>Keep value</td>
   -->
@@ -140,7 +154,7 @@
 	    <tr class="c2show" style="height:0px;">
 	      <td class="tlabel">Type:</td>
 	      <td class="control">
-		<select id="curveSel1" style="border:1px solid silver;" onchange="changeCurve(this,1)">
+		<select id="curveSel1" style="border:1px solid silver;" onchange="changeType(this,TWO)">
 		 <option>epitrochoid</option>
 		 <option>epiepitrochoid</option>
 		 <option>hypoepitrochoid</option>
@@ -149,21 +163,21 @@
 		 <option>hypohypotrochoid</option>
 		</select>
 	      </td>
-	      <td><input id="kCurve1" type="checkbox" onclick="keepCurve(this,1);"/></td>
+	      <td><input id="kCurve1" type="checkbox" onclick="keepType(this,TWO);"/></td>
 	    </tr>
 	    <tr class="c2show">
 	      <td class="tlabel">First radius:</td>
 	      <td class="control">
 		<div id="rad1-1" class="treport">&#160;</div>
-		<input id="rad1Sel1" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR1(this,1);"></input>
+		<input id="rad1Sel1" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR1(this,TWO);"></input>
 	      </td>
-	      <td><input id="kR0-1" type="checkbox" onclick="keepR1(this,1);"/></td>
+	      <td><input id="kR0-1" type="checkbox" onclick="keepR1(this,TWO);"/></td>
 	    </tr>
 	    <tr class="c2show">
 	      <td class="tlabel">Second radius:</td>
 	      <td class="control">
 		<div id="rad2-1" class="treport">&#160;</div>
-		<input id="rad2Sel1" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR2(this,1);"></input>
+		<input id="rad2Sel1" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR2(this,TWO);"></input>
 	      </td>
 	      <td><input id="kR1-1" type="checkbox" onclick="keepR2(this,1);"/></td>
 	    </tr>
@@ -171,35 +185,106 @@
 	      <td class="tlabel">Third radius:</td>
 	      <td class="control">
 		<div id="rad3-1" class="treport">&#160;</div>
-		<input id="rad3Sel1" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR3(this,1);"></input>
+		<input id="rad3Sel1" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR3(this,TWO);"></input>
 	      </td>
-	      <td><input id="kR3-1" type="checkbox" onclick="keepR3(this,1);"/></td>
+	      <td><input id="kR3-1" type="checkbox" onclick="keepR3(this,TWO);"/></td>
 	    </tr>
 	    <tr class="c2show">
 	      <td class="tlabel">Primary cycles:</div>
 	      <td class="control">
 		<div id="c0-1" class="treport">&#160;</div>
-		<input id="c0Sel1" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC0(this,1)"></input>
+		<input id="c0Sel1" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC0(this,TWO)"></input>
 	      </td>
-	      <td><input id="kC0-1" type="checkbox" onclick="keepC0(this,1);"/></td>
+	      <td><input id="kC0-1" type="checkbox" onclick="keepC0(this,TWO);"/></td>
 	    </tr>
 	    <tr class="c2show">
 	      <td class="tlabel">Secondary cycles:</div>
 	      <td class="control">
 		<div id="c1-1" class="treport">&#160;</div>
-		<input id="c1Sel1" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC1(this,1)"></input>
+		<input id="c1Sel1" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC1(this,TWO)"></input>
 	      </td>
-	      <td><input id="kC1-1" type="checkbox" onclick="keepC1(this,1);"/></td>
+	      <td><input id="kC1-1" type="checkbox" onclick="keepC1(this,TWO);"/></td>
 	    </tr>
 	    <tr class="c2show">
 	      <td class="tlabel">Tertiary cycles:</td>
 	      <td class="control">
 		<div id="c2-1" class="treport">&#160;</div>
-		<input id="c2Sel1" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC2(this,1)"></input>
+		<input id="c2Sel1" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC2(this,TWO)"></input>
 	      </td>
-	      <td><input id="kC2-1" type="checkbox" onclick="keepC2(this,1);"/></td>
+	      <td><input id="kC2-1" type="checkbox" onclick="keepC2(this,TWO);"/></td>
 	    </tr>
 	    <tr class="c2show"><td colspan="3" style="padding:4px;"></td></tr>
+	    <tr id="c3tr" class="phead" style="border-top:1px solid silver;">
+	      <td colspan="2" style="text-align:left;">
+                <button id="c3btn" style="float:left; font-size:.7em; padding:0; margin:1px 56px 0px 10px; opacity:.6; width:44px; border:1px outset #D8D8D8;" onclick="addRemoveCurve(THREE)">add</button>
+                Curve three
+              </td>
+	      <td><input id="keepCurve2" type="checkbox" onclick="keepCurve(this,THREE)"/></td>
+	    </tr>
+	    <tr class="c3hide"><td colspan="3" style="padding:4px;"></td></tr>
+	    <tr class="c3hide" style="height:0px;">
+	      <td class="tlabel">Type:</td>
+	      <td class="control">
+		<select id="curveSel2" style="border:1px solid silver;" onchange="changeType(this,THREE)">
+		 <option>epitrochoid</option>
+		 <option>epiepitrochoid</option>
+		 <option>hypoepitrochoid</option>
+		 <option>hypotrochoid</option>
+		 <option>epihypotrochoid</option>
+		 <option>hypohypotrochoid</option>
+		</select>
+	      </td>
+	      <td><input id="kCurve2" type="checkbox" onclick="keepType(this,THREE);"/></td>
+	    </tr>
+	    <tr class="c3hide">
+	      <td class="tlabel">First radius:</td>
+	      <td class="control">
+		<div id="rad1-2" class="treport">&#160;</div>
+		<input id="rad1Sel2" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR1(this,THREE);"></input>
+	      </td>
+	      <td><input id="kR0-2" type="checkbox" onclick="keepR1(this,THREE);"/></td>
+	    </tr>
+	    <tr class="c3hide">
+	      <td class="tlabel">Second radius:</td>
+	      <td class="control">
+		<div id="rad2-2" class="treport">&#160;</div>
+		<input id="rad2Sel2" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR2(this,THREE);"></input>
+	      </td>
+	      <td><input id="kR1-2" type="checkbox" onclick="keepR2(this,THREE);"/></td>
+	    </tr>
+	    <tr class="c3hide">
+	      <td class="tlabel">Third radius:</td>
+	      <td class="control">
+		<div id="rad3-2" class="treport">&#160;</div>
+		<input id="rad3Sel2" type="range" class="sliderR" min="0" max="120" step="0.1" oninput="changeR3(this,THREE);"></input>
+	      </td>
+	      <td><input id="kR3-2" type="checkbox" onclick="keepR3(this,THREE);"/></td>
+	    </tr>
+	    <tr class="c3hide">
+	      <td class="tlabel">Primary cycles:</div>
+	      <td class="control">
+		<div id="c0-2" class="treport">&#160;</div>
+		<input id="c0Sel2" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC0(this,THREE)"></input>
+	      </td>
+	      <td><input id="kC0-2" type="checkbox" onclick="keepC0(this,THREE);"/></td>
+	    </tr>
+	    <tr class="c3hide">
+	      <td class="tlabel">Secondary cycles:</div>
+	      <td class="control">
+		<div id="c1-2" class="treport">&#160;</div>
+		<input id="c1Sel2" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC1(this,THREE)"></input>
+	      </td>
+	      <td><input id="kC1-2" type="checkbox" onclick="keepC1(this,THREE);"/></td>
+	    </tr>
+	    <tr class="c3hide">
+	      <td class="tlabel">Tertiary cycles:</td>
+	      <td class="control">
+		<div id="c2-2" class="treport">&#160;</div>
+		<input id="c2Sel2" type="range" class="sliderR" min="1" max="15" step="1" oninput="changeC2(this,THREE)"></input>
+	      </td>
+	      <td><input id="kC2-2" type="checkbox" onclick="keepC2(this,THREE);"/></td>
+	    </tr>
+	    <tr class="c3hide"><td colspan="3" style="padding:4px;"></td></tr>
 	  </table>
         </div>
         <div class="pmenu" data-state="0" title="show" data-con="anim" onclick="togMenu(this)">
@@ -212,7 +297,6 @@
 	     <td style="padding:4px;"></td>
 	     <td style="padding:4px;"></td>
 	    </tr>
-   
 	    <tr>
 	      <td class="tlabel">Transition speed:</td>
 	      <td class="control">
@@ -309,21 +393,17 @@
 
   <script type="text/javascript">
 <!--
+var LOW = !0;
 onresize = new function() {
   document.getElementById("asvg").style.maxHeight = window.innerHeight - 20 + "px";
 };
-function getRandomInt(a, b) {
+function getRandomInt(a, b, c) {
   a = Math.ceil(a);
   b = Math.floor(b);
-  return Math.floor(Math.random() * (b - a)) + a;
-}
-function getLowRandomInt(a, b) {
-  a = Math.ceil(a);
-  b = Math.floor(b);
-  return Math.floor(Math.random() * Math.random() * (b - a)) + a;
+  return c ? Math.floor(Math.random() * Math.random() * (b - a)) + a : Math.floor(Math.random() * (b - a)) + a;
 }
 function randomColor(a) {
-  for (var b = "#", d = 0; 3 > d; d++) {
+  for (var b = "#", c = 0; 3 > c; c++) {
     var e = a ? getRandomInt(60, 240).toString(16) : getRandomInt(120, 240).toString(16);
     b += e;
   }
@@ -351,7 +431,7 @@ acol.setAttribute("to", "white");
 acol.setAttribute("from", "white");
 acol.setAttribute("fill", "freeze");
 path.appendChild(acol);
-var ET = "epitrochoid", HT = "hypotrochoid", EET = "epiepitrochoid", HET = "hypoepitrochoid", EHT = "epihypotrochoid", HHT = "hypohypotrochoid", curves = [{type:ET, c1:3, c2:3, r3:0, reset:!0}, {type:HT, c1:3, c2:3, r3:0, reset:!0}], durationFactor = 1, rotationFactor = 1, pause = 0, transition, color = "random", symmetry = 3, curveChangeRate = .15, ONE = 0, TWO = 1, curveCount = TWO;
+var ET = "epitrochoid", HT = "hypotrochoid", EET = "epiepitrochoid", HET = "hypoepitrochoid", EHT = "epihypotrochoid", HHT = "hypohypotrochoid", curves = [{type:ET, c1:3, c2:3, r3:0, reset:!0}, {type:HT, c1:3, c2:3, r3:0, reset:!0}, {type:HT, c1:3, c2:3, r1:50, r2:50, r3:0, reset:!0}], durationFactor = 1, rotationFactor = 1, pause = 0, transition, color = "random", symmetry = 3, curveChangeRate = .15, ONE = 0, TWO = 1, THREE = 2, curveCount = TWO;
 function getMatchingCycle(a) {
   switch(a) {
     case 2:
@@ -374,10 +454,32 @@ function getMatchingCycle(a) {
       return a;
   }
 }
+function getLowMatchingCycle(a) {
+  switch(a) {
+    case 2:
+      return 2 * getRandomInt(1, 7, LOW);
+    case 3:
+      return 3 * getRandomInt(1, 5, LOW);
+    case 4:
+    case 8:
+    case 12:
+      return 2 > symmetry ? 2 * getRandomInt(1, 7, LOW) : 4 * getRandomInt(1, 4, LOW);
+    case 5:
+    case 10:
+    case 15:
+      return 5 * getRandomInt(1, 4, LOW);
+    case 7:
+      return 7 * getRandomInt(1, 3, LOW);
+    case 9:
+      return 3 > symmetry ? 3 * getRandomInt(1, 4, LOW) : 9;
+    default:
+      return a;
+  }
+}
 function setCycles(a) {
-  var b = curves[a], d = ET == b.type || HT == b.type;
+  var b = curves[a], c = ET == b.type || HT == b.type;
   [2, 3, 5].forEach(function(a) {
-    if (d) {
+    if (c) {
       for (; 0 == b.c0 % a && 0 == b.c1 % a;) {
         b.c0 /= a, b.c1 /= a;
       }
@@ -389,7 +491,7 @@ function setCycles(a) {
   });
 }
 function randomizeRadii() {
-  [[0], [0, 1]][curveCount].forEach(function(a) {
+  [[0], [0, 1], [0, 1, 2]][curveCount].forEach(function(a) {
     curves[a].type == ET || curves[a].type == HT ? (void 0 == curves[a].r1Keep && (curves[a].r1 = 45 + 90 * Math.random()), void 0 == curves[a].drawKeep && (curves[a].r2 = 45 + 90 * Math.random())) : (void 0 == curves[a].r1Keep && (curves[a].r1 = 30 + 60 * Math.random()), void 0 == curves[a].drawKeep && (curves[a].r2 = 30 + 60 * Math.random()), void 0 == curves[a].r3Keep && (curves[a].r3 = 30 + 60 * Math.random()));
   });
 }
@@ -416,8 +518,8 @@ function getLowC1() {
 }
 function randomizeSym1Curve() {
   if (Math.random() < curveChangeRate) {
-    void 0 == curves[0].curveKeep && getRandomCurve(0);
-    void 0 == curves[0].c0Keep && (curves[0].c0 = getLowRandomInt(1, 16));
+    void 0 == curves[0].typeKeep && getRandomCurve(0);
+    void 0 == curves[0].c0Keep && (curves[0].c0 = getRandomInt(1, 16, LOW));
     var a = getLowC1();
     if (curves[0].type == ET || curves[0].type == HT) {
       do {
@@ -431,6 +533,44 @@ function randomizeSym1Curve() {
   }
   randomizeRadii();
 }
+function get222Set() {
+  var a = getLowC1();
+  do {
+    do {
+      curves[0].c1 = getRandomInt(a, 16), curves[1].c1 = curves[0].c1, curves[2].c1 = curves[0].c1;
+    } while (curves[0].c1 == curves[0].c0 || curves[0].c1 == curves[1].c0 || curves[2].c1 == curves[0].c0 || curves[2].c1 == curves[1].c0);
+  } while (reduceable2(0) || reduceable2(1) || reduceable2(2));
+}
+function get223Set(a) {
+  if (0 == a) {
+    var b = 1;
+    var c = 2;
+  } else {
+    1 == a ? (b = 0, c = 2) : (b = 0, c = 1);
+  }
+  var e = getLowC1();
+  do {
+    curves[0].c1 = getRandomInt(e, 16, LOW), curves[1].c1 = getLowMatchingCycle(curves[0].c1), curves[2].c1 = getLowMatchingCycle(curves[0].c1), curves[a].c2 = getLowMatchingCycle(curves[0].c1);
+  } while (reduceable2(b) || reduceable2(c) || reduceable3(a));
+}
+function get233Set(a) {
+  if (0 == a) {
+    var b = 1;
+    var c = 2;
+  } else {
+    1 == a ? (b = 0, c = 2) : (b = 0, c = 1);
+  }
+  var e = getLowC1();
+  do {
+    curves[0].c1 = getRandomInt(e, 16), curves[1].c1 = getLowMatchingCycle(curves[0].c1), curves[2].c1 = getLowMatchingCycle(curves[0].c1), curves[b].c2 = getLowMatchingCycle(curves[0].c1), curves[c].c2 = getLowMatchingCycle(curves[0].c1);
+  } while (reduceable2(a) || reduceable3(b) || reduceable3(c));
+}
+function get333Set() {
+  var a = getLowC1();
+  do {
+    curves[0].c1 = getRandomInt(a, 16, LOW), curves[1].c1 = getLowMatchingCycle(curves[0].c1), curves[2].c1 = getLowMatchingCycle(curves[0].c1), curves[0].c2 = getLowMatchingCycle(curves[0].c1), curves[1].c2 = getLowMatchingCycle(curves[0].c1), curves[2].c2 = getLowMatchingCycle(curves[0].c1);
+  } while (reduceable3(0) || reduceable3(1) || reduceable3(2));
+}
 function get22Set() {
   var a = getLowC1();
   do {
@@ -440,9 +580,9 @@ function get22Set() {
   } while (reduceable2(0) || reduceable2(1));
 }
 function get23Set(a) {
-  var b = 1 == a ? 0 : 1, d = getLowC1();
+  var b = 1 == a ? 0 : 1, c = getLowC1();
   do {
-    curves[1].c0 = getRandomInt(1, 16), curves[0].c1 = getRandomInt(d, 16), curves[1].c1 = getMatchingCycle(curves[0].c1), curves[a].c2 = getMatchingCycle(curves[0].c1);
+    curves[0].c1 = getRandomInt(c, 16), curves[1].c1 = getMatchingCycle(curves[0].c1), curves[a].c2 = getMatchingCycle(curves[0].c1);
   } while (reduceable2(b) || reduceable3(a));
 }
 function get33Set() {
@@ -458,13 +598,26 @@ function getPreferredRandomCurve(a) {
 function getRandomCurve(a) {
   curves[a].type = [ET, EET, HET, HT, EHT, HHT][getRandomInt(0, 6)];
 }
+function randomizeSym3Curves() {
+  var a = !1, b = Math.random() < curveChangeRate;
+  curves.forEach(function(c) {
+    if (b || c.reset) {
+      void 0 == c.typeKeep && getPreferredRandomCurve(c), void 0 == c.c0Keep && (c.c0 = getRandomInt(1, 16, LOW)), a = !0;
+    }
+    c.reset = !1;
+  });
+  a && [0, 1, 2].forEach(function(a) {
+    curves[0].type == ET || curves[0].type == HT ? curves[1].type == ET || curves[1].type == HT ? curves[2].type == ET || curves[2].type == HT ? get222Set() : get223Set(2) : curves[2].type == ET || curves[2].type == HT ? get223Set(1) : get233Set(0) : curves[1].type == ET || curves[1].type == HT ? curves[2].type == ET || curves[2].type == HT ? get223Set(0) : get233Set(1) : curves[2].type == ET || curves[2].type == HT ? get233Set(2) : get333Set();
+  });
+  randomizeRadii();
+}
 function randomizeSym2Curves() {
   var a = !1, b = Math.random() < curveChangeRate;
-  curves.forEach(function(d) {
-    if (b || d.reset) {
-      void 0 == d.curveKeep && getPreferredRandomCurve(d), void 0 == d.c0Keep && (d.c0 = getLowRandomInt(1, 16)), a = !0;
+  curves.forEach(function(c) {
+    if (b || c.reset) {
+      void 0 == c.typeKeep && getPreferredRandomCurve(c), void 0 == c.c0Keep && (c.c0 = getRandomInt(1, 16, LOW)), a = !0;
     }
-    d.reset = !1;
+    c.reset = !1;
   });
   a && [0, 1].forEach(function(a) {
     curves[0].type == ET || curves[0].type == HT ? curves[1].type == ET || curves[1].type == HT ? get22Set() : get23Set(1) : curves[1].type == ET || curves[1].type == HT ? get23Set(0) : get33Set();
@@ -472,95 +625,84 @@ function randomizeSym2Curves() {
   randomizeRadii();
 }
 function randomizeCurves() {
-  [[0], [0, 1]][curveCount].forEach(function(a) {
+  [[0], [0, 1], [0, 1, 2]][curveCount].forEach(function(a) {
     if (curves[a].reset || Math.random() < curveChangeRate) {
-      void 0 == curves[a].curveKeep && getRandomCurve(a), void 0 == curves[a].c0Keep && (curves[a].c0 = getRandomInt(1, 16)), void 0 == curves[a].c1Keep && (curves[a].c1 = getRandomInt(1, 16)), void 0 == curves[a].c2Keep && (curves[a].c2 = getRandomInt(1, 16)), void 0 == curves[a].c0Keep && void 0 == curves[a].c1Keep && void 0 == curves[a].c2Keep && setCycles(a), curves[a].reset = !1;
+      void 0 == curves[a].typeKeep && getRandomCurve(a), void 0 == curves[a].c0Keep && (curves[a].c0 = getRandomInt(1, 16)), void 0 == curves[a].c1Keep && (curves[a].c1 = getRandomInt(1, 16)), void 0 == curves[a].c2Keep && (curves[a].c2 = getRandomInt(1, 16)), void 0 == curves[a].c0Keep && void 0 == curves[a].c1Keep && void 0 == curves[a].c2Keep && setCycles(a), curves[a].reset = !1;
     }
   });
   randomizeRadii();
 }
 function scaleToFit() {
-  if (curveCount == ONE) {
-    if (void 0 == curves[0].drawKeep && void 0 == curves[0].r1Keep && void 0 == curves[0].r3Keep) {
-      var a = 1;
-      a = ET == curves[0].type || HT == curves[0].type ? 200 / (curves[0].r1 + curves[0].r2) : 200 / (curves[0].r1 + curves[0].r2 + curves[0].r3);
-      curves[0].r1 *= a;
-      curves[0].r2 *= a;
-      curves[0].r3 *= a;
-    }
-  } else {
-    if (void 0 == curves[0].drawKeep && void 0 == curves[0].r1Keep && void 0 == curves[0].r3Keep && void 0 == curves[1].drawKeep && void 0 == curves[1].r1Keep && void 0 == curves[1].r3Keep) {
-      var b = Array(2);
-      [0, 1].forEach(function(a) {
-        b[a] = ET == curves[a].type || HT == curves[a].type ? 200 / (curves[a].r1 + curves[a].r2) : 200 / (curves[a].r1 + curves[a].r2 + curves[a].r3);
-      });
-      b[0] > b[1] ? [0, 1].forEach(function(a) {
-        curves[a].r1 *= b[1];
-        curves[a].r2 *= b[1];
-        curves[a].r3 *= b[1];
-      }) : [0, 1].forEach(function(a) {
-        curves[a].r1 *= b[0];
-        curves[a].r2 *= b[0];
-        curves[a].r3 *= b[0];
-      });
-    }
+  if ([[0], [0, 1], [0, 1, 2]][curveCount].every(function(a) {
+    return void 0 == curves[a].drawKeep && void 0 == curves[a].r1Keep && void 0 == curves[a].r3Keep;
+  })) {
+    var a = 1;
+    [[0], [0, 1], [0, 1, 2]][curveCount].forEach(function(b) {
+      a = ET == curves[b].type || HT == curves[b].type ? Math.max(curves[b].r1 + curves[b].r2, a) : Math.max(curves[b].r1 + curves[b].r2 + curves[b].r3, a);
+    });
+    var b = 200 / a;
+    [[0], [0, 1], [0, 1, 2]][curveCount].forEach(function(a) {
+      curves[a].r1 *= b;
+      curves[a].r2 *= b;
+      curves[a].r3 *= b;
+    });
   }
 }
 function getCurve(a) {
-  var b = rotationFactor * Math.random() * Math.PI, d = curves[a].r1, e = curves[a].r2, l = curves[a].r3, g = curves[a].c0, f = curves[a].c1, h = curves[a].c2;
+  var b = rotationFactor * Math.random() * Math.PI, c = curves[a].r1, e = curves[a].r2, l = curves[a].r3, g = curves[a].c0, f = curves[a].c1, h = curves[a].c2;
   switch(curves[a].type) {
     case HT:
       a = f / g - 1;
-      f = d * Math.cos(b) + e * Math.cos(a * b);
-      h = d * Math.sin(b) - e * Math.sin(a * b);
+      f = c * Math.cos(b) + e * Math.cos(a * b);
+      h = c * Math.sin(b) - e * Math.sin(a * b);
       var k = "M" + f + " " + h;
-      for (var c = .01 * g + b; c < 2 * Math.PI * g + b; c += .01 * g) {
-        k += "L", f = d * Math.cos(c) + e * Math.cos(a * c), k += f + " ", h = d * Math.sin(c) - e * Math.sin(a * c), k += h;
+      for (var d = .01 * g + b; d < 2 * Math.PI * g + b; d += .01 * g) {
+        k += "L", f = c * Math.cos(d) + e * Math.cos(a * d), k += f + " ", h = c * Math.sin(d) - e * Math.sin(a * d), k += h;
       }
       break;
     case EHT:
       a = f / g - 1;
       var m = (h - f) / g + 1;
-      f = d * Math.cos(b) + e * Math.cos(a * b) + l * Math.cos(m * b);
-      h = d * Math.sin(b) - e * Math.sin(a * b) + l * Math.sin(m * b);
+      f = c * Math.cos(b) + e * Math.cos(a * b) + l * Math.cos(m * b);
+      h = c * Math.sin(b) - e * Math.sin(a * b) + l * Math.sin(m * b);
       k = "M" + f + " " + h;
-      for (c = .01 * g + b; c < 2 * Math.PI * g + b; c += .01 * g) {
-        k += "L", f = d * Math.cos(c) + e * Math.cos(a * c) + l * Math.cos(m * c), k += f + " ", h = d * Math.sin(c) - e * Math.sin(a * c) + l * Math.sin(m * c), k += h;
+      for (d = .01 * g + b; d < 2 * Math.PI * g + b; d += .01 * g) {
+        k += "L", f = c * Math.cos(d) + e * Math.cos(a * d) + l * Math.cos(m * d), k += f + " ", h = c * Math.sin(d) - e * Math.sin(a * d) + l * Math.sin(m * d), k += h;
       }
       break;
     case HHT:
       a = f / g - 1;
       m = (h + f) / g - 1;
-      f = d * Math.cos(b) + e * Math.cos(a * b) + l * Math.cos(m * b);
-      h = d * Math.sin(b) - e * Math.sin(a * b) - l * Math.sin(m * b);
+      f = c * Math.cos(b) + e * Math.cos(a * b) + l * Math.cos(m * b);
+      h = c * Math.sin(b) - e * Math.sin(a * b) - l * Math.sin(m * b);
       k = "M" + f + " " + h;
-      for (c = .01 * g + b; c < 2 * Math.PI * g + b; c += .01 * g) {
-        k += "L", f = d * Math.cos(c) + e * Math.cos(a * c) + l * Math.cos(m * c), k += f + " ", h = d * Math.sin(c) - e * Math.sin(a * c) - l * Math.sin(m * c), k += h;
+      for (d = .01 * g + b; d < 2 * Math.PI * g + b; d += .01 * g) {
+        k += "L", f = c * Math.cos(d) + e * Math.cos(a * d) + l * Math.cos(m * d), k += f + " ", h = c * Math.sin(d) - e * Math.sin(a * d) - l * Math.sin(m * d), k += h;
       }
       break;
     case EET:
       a = f / g + 1;
       m = (f + h) / g + 1;
-      f = d * Math.cos(b) + e * Math.cos(a * b) + l * Math.cos(m * b);
-      h = d * Math.sin(b) + e * Math.sin(a * b) + l * Math.sin(m * b);
+      f = c * Math.cos(b) + e * Math.cos(a * b) + l * Math.cos(m * b);
+      h = c * Math.sin(b) + e * Math.sin(a * b) + l * Math.sin(m * b);
       k = "M" + f + " " + h;
-      for (c = .01 * g + b; c < 2 * Math.PI * g + b; c += .01 * g) {
-        k += "L", f = d * Math.cos(c) + e * Math.cos(a * c) + l * Math.cos(m * c), k += f + " ", h = d * Math.sin(c) + e * Math.sin(a * c) + l * Math.sin(m * c), k += h;
+      for (d = .01 * g + b; d < 2 * Math.PI * g + b; d += .01 * g) {
+        k += "L", f = c * Math.cos(d) + e * Math.cos(a * d) + l * Math.cos(m * d), k += f + " ", h = c * Math.sin(d) + e * Math.sin(a * d) + l * Math.sin(m * d), k += h;
       }
       break;
     case HET:
       a = f / g + 1;
       m = (h - f) / g - 1;
-      f = d * Math.cos(b) + e * Math.cos(a * b) + l * Math.cos(m * b);
-      h = d * Math.sin(b) + e * Math.sin(a * b) - l * Math.sin(m * b);
+      f = c * Math.cos(b) + e * Math.cos(a * b) + l * Math.cos(m * b);
+      h = c * Math.sin(b) + e * Math.sin(a * b) - l * Math.sin(m * b);
       k = "M" + f + " " + h;
-      for (c = .01 * g + b; c < 2 * Math.PI * g + b; c += .01 * g) {
-        k += "L", f = d * Math.cos(c) + e * Math.cos(a * c) + l * Math.cos(m * c), k += f + " ", h = d * Math.sin(c) + e * Math.sin(a * c) - l * Math.sin(m * c), k += h;
+      for (d = .01 * g + b; d < 2 * Math.PI * g + b; d += .01 * g) {
+        k += "L", f = c * Math.cos(d) + e * Math.cos(a * d) + l * Math.cos(m * d), k += f + " ", h = c * Math.sin(d) + e * Math.sin(a * d) - l * Math.sin(m * d), k += h;
       }
       break;
     case ET:
-      for (a = f / g + 1, f = d * Math.cos(b) + e * Math.cos(a * b), h = d * Math.sin(b) + e * Math.sin(a * b), k = "M" + f + " " + h, c = .01 * g + b; c < 2 * Math.PI * g + b; c += .01 * g) {
-        k += "L", f = d * Math.cos(c) + e * Math.cos(a * c), k += f + " ", h = d * Math.sin(c) + e * Math.sin(a * c), k += h;
+      for (a = f / g + 1, f = c * Math.cos(b) + e * Math.cos(a * b), h = c * Math.sin(b) + e * Math.sin(a * b), k = "M" + f + " " + h, d = .01 * g + b; d < 2 * Math.PI * g + b; d += .01 * g) {
+        k += "L", f = c * Math.cos(d) + e * Math.cos(a * d), k += f + " ", h = c * Math.sin(d) + e * Math.sin(a * d), k += h;
       }
   }
   return k + "z";
@@ -582,17 +724,17 @@ function setFill() {
   if ("stop" == color) {
     acol.setAttribute("from", acol.getAttribute("to")), acol.setAttribute("to", "white"), path.style.setProperty("fill-opacity", "0", ""), acol.beginElement(), color = "none", document.getElementById("colorSel").value = "#FFFFFF";
   } else {
-      if ("random" == color) {
-        path.style.setProperty("fill-opacity", "1", "");
-        acol.setAttribute("from", acol.getAttribute("to"));
-        var a = randomColor(!1);
-        acol.setAttribute("to", a);
-        acol.beginElement();
-        document.getElementById("colorSel").value = a;
-      } else {
-	"start" == color && (path.style.setProperty("fill-opacity", "1", ""), color = document.getElementById("colorSel").value, acol.setAttribute("from", color), acol.setAttribute("to", color), acol.beginElement(), color = "fixed");
-      }
+    if ("random" == color) {
+      path.style.setProperty("fill-opacity", "1", "");
+      acol.setAttribute("from", acol.getAttribute("to"));
+      var a = randomColor(!1);
+      acol.setAttribute("to", a);
+      acol.beginElement();
+      document.getElementById("colorSel").value = a;
+    } else {
+      "start" == color && (path.style.setProperty("fill-opacity", "1", ""), color = document.getElementById("colorSel").value, acol.setAttribute("from", color), acol.setAttribute("to", color), acol.beginElement(), color = "fixed");
     }
+  }
 }
 function get1Curve(a) {
   a && (0 == symmetry ? randomizeCurves() : void 0 == curves[0].c1Keep && void 0 == curves[0].c2Keep ? randomizeSym1Curve() : randomizeCurves(), scaleToFit());
@@ -602,18 +744,39 @@ function get2Curves(a) {
   a && (0 == symmetry ? randomizeCurves() : void 0 == curves[0].c1Keep && void 0 == curves[0].c2Keep && void 0 == curves[1].c1Keep && void 0 == curves[1].c2Keep ? randomizeSym2Curves() : randomizeCurves(), scaleToFit());
   return getCurve(0) + " " + getCurve(1);
 }
+function get3Curves(a) {
+  a && (0 == symmetry ? randomizeCurves() : void 0 == curves[0].c1Keep && void 0 == curves[0].c2Keep && void 0 == curves[1].c1Keep && void 0 == curves[1].c2Keep && void 0 == curves[2].c1Keep && void 0 == curves[2].c2Keep ? randomizeSym3Curves() : randomizeCurves(), scaleToFit());
+  return getCurve(0) + " " + getCurve(1) + " " + getCurve(2);
+}
+function changeCurveCount() {
+  if (Math.random() < curveChangeRate / 2) {
+    if (curveCount == TWO) {
+      if (void 0 == curves[TWO].keep && .5 > Math.random()) {
+        return switchCurve(TWO), !0;
+      }
+      if (void 0 == curves[THREE].keep) {
+        return switchCurve(THREE), !0;
+      }
+    } else {
+      if (curveCount == ONE) {
+        if (void 0 == curves[TWO].keep) {
+          return switchCurve(TWO), !0;
+        }
+      } else {
+        if (curveCount == THREE && void 0 == curves[THREE].keep) {
+          return switchCurve(THREE), !0;
+        }
+      }
+    }
+  }
+  return !1;
+}
 function doTransition() {
-  a2.setAttribute("from", a2.getAttribute("to"));
-  a2.setAttribute("dur", getDuration(4));
-  acol.setAttribute("dur", getDuration(4));
-  curveCount == ONE ? a2.setAttribute("to", get1Curve(!0)) : a2.setAttribute("to", get2Curves(!0));
-  report();
-  setFill();
-  a2.beginElement();
+  changeCurveCount() && "step" == transition || (a2.setAttribute("from", a2.getAttribute("to")), a2.setAttribute("dur", getDuration(4)), acol.setAttribute("dur", getDuration(4)), curveCount == ONE ? a2.setAttribute("to", get1Curve(!0)) : curveCount == THREE ? a2.setAttribute("to", get3Curves(!0)) : a2.setAttribute("to", get2Curves(!0)), report(), setFill(), a2.beginElement());
 }
 var pauseId;
 function redraw() {
-   0 == pause ? doTransition() : pauseId = setTimeout(doTransition, 1000 * pause);
+  0 == pause ? doTransition() : pauseId = setTimeout(doTransition, 1000 * pause);
 }
 function getDuration(a) {
   return a * durationFactor + "s";
@@ -627,7 +790,7 @@ function report() {
 function quickChange() {
   a2.setAttribute("dur", "1ms");
   a2.setAttribute("from", a2.getAttribute("to"));
-  curveCount == ONE ? a2.setAttribute("to", get1Curve(!1)) : a2.setAttribute("to", get2Curves(!1));
+  curveCount == ONE ? a2.setAttribute("to", get1Curve(!1)) : curveCount == THREE ? a2.setAttribute("to", get3Curves(!1)) : a2.setAttribute("to", get2Curves(!1));
   a2.beginElement();
 }
 function hideCurve2(a) {
@@ -638,11 +801,48 @@ function showCurve2(a) {
   a = document.querySelector(".c2hide");
   null != a && (a.className = "c2show", requestAnimationFrame(showCurve2));
 }
-function switchToTwo() {
+function hideCurve3(a) {
+  a = document.querySelector(".c3show");
+  null != a && (a.className = "c3hide", requestAnimationFrame(hideCurve3));
+}
+function showCurve3(a) {
+  a = document.querySelector(".c3hide");
+  null != a && (a.className = "c3show", requestAnimationFrame(showCurve3));
+}
+function switchTwoToThree() {
+  curveCount = THREE;
+  var a = document.getElementById("cdivcurv");
+  0 != a.offsetHeight && (a.style.height = "auto");
+  showCurve3();
+  document.getElementById("c2btn").style.visibility = "hidden";
+  document.getElementById("c3btn").textContent = "remove";
+  a2.setAttribute("from", getZeroCurve() + " " + getZeroCurve() + " " + getZeroCurve());
+  curves[1].reset = !0;
+  a2.setAttribute("to", get3Curves(!1));
+  "step" == transition ? a2.setAttribute("onend", "") : a2.setAttribute("onend", "redraw()");
+  report();
+  a2.beginElement();
+}
+function switchThreeToTwo() {
   curveCount = TWO;
-  document.getElementById("cdivcurv").style.height = "auto";
+  var a = document.getElementById("cdivcurv");
+  0 != a.offsetHeight && (a.style.height = "auto");
+  hideCurve3();
+  document.getElementById("c3btn").textContent = "add";
+  document.getElementById("c2btn").style.visibility = "visible";
+  a2.setAttribute("from", getZeroCurve() + " " + getZeroCurve());
+  a2.setAttribute("to", get2Curves(!1));
+  "step" == transition ? a2.setAttribute("onend", "") : a2.setAttribute("onend", "redraw()");
+  report();
+  a2.beginElement();
+}
+function switchOneToTwo() {
+  curveCount = TWO;
+  var a = document.getElementById("cdivcurv");
+  0 != a.offsetHeight && (a.style.height = "auto");
   showCurve2();
   document.getElementById("c2btn").textContent = "remove";
+  document.getElementById("c3tr").style.display = "table-row";
   a2.setAttribute("from", getZeroCurve() + " " + getZeroCurve());
   curves[1].reset = !0;
   a2.setAttribute("to", get2Curves(!1));
@@ -652,31 +852,36 @@ function switchToTwo() {
 }
 function switchToOne() {
   curveCount = ONE;
-  document.getElementById("cdivcurv").style.height = "auto";
+  var a = document.getElementById("cdivcurv");
+  0 != a.offsetHeight && (a.style.height = "auto");
   hideCurve2();
   document.getElementById("c2btn").textContent = "add";
+  document.getElementById("c3tr").style.display = "none";
   a2.setAttribute("from", getZeroCurve());
   a2.setAttribute("to", get1Curve(!1));
   "step" == transition ? a2.setAttribute("onend", "") : a2.setAttribute("onend", "redraw()");
   report();
   a2.beginElement();
 }
-function toZero() {
+function toZero(a) {
   a2.setAttribute("from", a2.getAttribute("to"));
-  curveCount == ONE ? (a2.setAttribute("to", getZeroCurve()), a2.setAttribute("onend", "switchToTwo()")) : (a2.setAttribute("to", getZeroCurve() + " " + getZeroCurve()), a2.setAttribute("onend", "switchToOne()"));
+  curveCount == ONE ? (a2.setAttribute("to", getZeroCurve()), a2.setAttribute("onend", "switchOneToTwo()")) : curveCount == TWO ? (a2.setAttribute("to", getZeroCurve() + " " + getZeroCurve()), a == THREE ? a2.setAttribute("onend", "switchTwoToThree()") : a2.setAttribute("onend", "switchToOne()")) : (a2.setAttribute("to", getZeroCurve() + " " + getZeroCurve() + " " + getZeroCurve()), a2.setAttribute("onend", "switchThreeToTwo()"));
   a2.setAttribute("dur", getDuration(1));
   a2.beginElement();
 }
-function switchCurveTwo() {
-  "step" == transition ? toZero() : a2.setAttribute("onend", "toZero()");
+function switchCurve(a) {
+  "step" == transition ? toZero(a) : a2.setAttribute("onend", "toZero(" + a + ")");
 }
-function keepCurve(a, b) {
-  curves[b].curveKeep = a.checked ? curves[b].type : void 0;
+function addRemoveCurve(a) {
+  "step" == transition ? toZero(a) : a2.setAttribute("onend", "toZero(" + a + ")");
 }
-function changeCurve(a, b) {
+function keepType(a, b) {
+  curves[b].typeKeep = a.checked ? curves[b].type : void 0;
+}
+function changeType(a, b) {
   curves[b].type = a.value;
   ET == curves[b].type || HT == curves[b].type ? (document.getElementById("rad3-" + b).textContent = "N/A", document.getElementById("c2-" + b).textContent = "N/A") : (document.getElementById("rad3-" + b).textContent = curves[b].r3.toFixed(1), document.getElementById("c2-" + b).textContent = curves[b].c2, document.getElementById("c2Sel" + b).value = curves[b].c2);
-  "animate" == transition ? (document.getElementById("kCurve" + b).checked = "checked", curves[b].curveKeep = curves[b].type) : quickChange();
+  "animate" == transition ? (document.getElementById("kCurve" + b).checked = "checked", curves[b].typeKeep = curves[b].type) : quickChange();
 }
 function keepR1(a, b) {
   a.checked ? (document.getElementById("rad1Sel" + b).value = curves[b].r1.toFixed(0), curves[b].r1Keep = curves[b].r1) : curves[b].r1Keep = void 0;
@@ -726,6 +931,9 @@ function changeC2(a, b) {
   ET != curves[b].type && HT != curves[b].type && (document.getElementById("c2-" + b).textContent = curves[b].c2);
   "animate" == transition ? (document.getElementById("kC2-" + b).checked = "checked", curves[b].c2Keep = curves[b].c2) : quickChange();
 }
+function keepCurve(a, b) {
+  curves[b].keep = a.checked ? !0 : void 0;
+}
 function changeSpeed(a) {
   durationFactor = 1 / Math.pow((parseInt(a.value) + 2) / 6, 2);
 }
@@ -751,7 +959,7 @@ function changeFill(a) {
         break;
       case "colfill":
         color = "start";
-	"step" == transition && setFill();
+        "step" == transition && setFill();
         break;
       default:
         color = "random";
@@ -787,9 +995,9 @@ function checkMenus() {
 }
 function menuAnimate(a, b) {
   b.start || (b.start = a);
-  var d = a - b.start, e = d / 400;
+  var c = a - b.start, e = c / 400;
   b.open ? (b.divstyle.height = Math.min(e * b.ht, b.ht) + "px", b.divstyle.width = Math.min(180 + e * (b.wd - 180), b.wd) + "px") : (b.divstyle.height = b.ht - Math.min(e * b.ht, b.ht) + "px", b.divstyle.width = b.wd - Math.min(180 * e, 180) + "px");
-  400 > d && requestAnimationFrame(function(a) {
+  400 > c && requestAnimationFrame(function(a) {
     menuAnimate(a, b);
   });
 }
@@ -802,7 +1010,7 @@ function togAll(a) {
   }), setMenu(a, !1));
 }
 function togMenu(a, b) {
-  var d = document.getElementById("cdiv" + a.dataset.con), e = document.getElementById("props" + a.dataset.con), l = {start:null, divstyle:d.style, ht:e.offsetHeight, wd:e.offsetWidth};
+  var c = document.getElementById("cdiv" + a.dataset.con), e = document.getElementById("props" + a.dataset.con), l = {start:null, divstyle:c.style, ht:e.offsetHeight, wd:e.offsetWidth};
   1 == arguments.length ? ("0" == a.dataset.state ? (l.open = !0, requestAnimationFrame(function(a) {
     menuAnimate(a, l);
   }), setMenu(a, !0)) : (l.open = !1, requestAnimationFrame(function(a) {
@@ -813,6 +1021,6 @@ function togMenu(a, b) {
 }
 start();
 -->
-</script>
+  </script> 
   </body>
 </html>
