@@ -5,6 +5,7 @@
   <meta name="author" content="Paul Slaymaker">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   <title>Trochoid demo by Paul Slaymaker</title>
+  <script type="text/javascript" src="td.js"></script>
   <style type="text/css">
     * { box-sizing:border-box; }
     button.abtn { margin:4px 6px; width:60px; }
@@ -31,17 +32,12 @@
   <div style="display:table;">
     <div id="ascell" style="display:table-cell; width:100%; text-align:center;">
       <svg id="asvg" viewbox="0,0,400,400" style="margin-left:1px; height:auto;">
-<!--
- <defs>
-    <clipPath id="rframe">
-      <rect x="-200" y="-200" width="400" height="400"/>
-    </clipPath>
- </defs>
- clip-path="url(#rframe)" 
--->
+	 <defs>
+	    <clipPath id="rframe">
+	      <rect id="clipper" x="-200" y="-200" width="400" height="400"/>
+	    </clipPath>
+	 </defs>
 	<rect id="asbox" width="400px" height="400px" fill="#FFF" stroke="silver"/>
-	<line x1="0" y1="200" x2="400" y2="200" stroke="silver" stroke-width=".3"/>
-	<line x1="200" y1="0" x2="200" y2="400" stroke="silver" stroke-width=".3"/>
 	<g transform="translate(200,200) rotate(-90)">
 	  <path id="rpath" style="stroke:navy; stroke-width:.3; fill-opacity:1; fill-rule:evenodd;" d=""/>
 	</g>
@@ -990,32 +986,7 @@ function checkMenus() {
   });
   0 == a ? setMenu(document.getElementById("mainmenu"), !1) : 3 == a && setMenu(document.getElementById("mainmenu"), !0);
 }
-function menuAnimate(a, b) {
-  b.start || (b.start = a);
-  var c = a - b.start, e = c / 400;
-  b.open ? (b.divstyle.height = Math.min(e * b.ht, b.ht) + "px", b.divstyle.width = Math.min(180 + e * (b.wd - 180), b.wd) + "px") : (b.divstyle.height = b.ht - Math.min(e * b.ht, b.ht) + "px", b.divstyle.width = b.wd - Math.min(180 * e, 180) + "px");
-  400 > c && requestAnimationFrame(function(a) {
-    menuAnimate(a, b);
-  });
-}
-function togAll(a) {
-  var b = document.querySelectorAll(".pmenu");
-  "0" == a.dataset.state ? (b.forEach(function(a) {
-    "0" == a.dataset.state && togMenu(a, !0);
-  }), setMenu(a, !0)) : (b.forEach(function(a) {
-    "1" == a.dataset.state && togMenu(a, !1);
-  }), setMenu(a, !1));
-}
-function togMenu(a, b) {
-  var c = document.getElementById("cdiv" + a.dataset.con), e = document.getElementById("props" + a.dataset.con), l = {start:null, divstyle:c.style, ht:e.offsetHeight, wd:e.offsetWidth};
-  1 == arguments.length ? ("0" == a.dataset.state ? (l.open = !0, requestAnimationFrame(function(a) {
-    menuAnimate(a, l);
-  }), setMenu(a, !0)) : (l.open = !1, requestAnimationFrame(function(a) {
-    menuAnimate(a, l);
-  }), setMenu(a, !1)), checkMenus()) : (l.open = b, requestAnimationFrame(function(a) {
-    menuAnimate(a, l);
-  }), setMenu(a, b));
-}
+
 start();
 -->
   </script> 
