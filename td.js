@@ -17,10 +17,21 @@ var curves=[
   {'type':HT,'c1':3,'c2':3,'r3':0,'reset':true},
   {'type':HT,'c1':3,'c2':3,'r1':50,'r2':50,'r3':0,'reset':true}
 ];
+
+var stopped;
+var stops={
+  stop:false,
+  cycleChange:false,
+  durationChange:false,
+  pause:false,
+}
+
+var animateDuration=8;
 var rotationFactor=1;
 var pause=0;
 var transition;
 var color='random';
+var fillHueChangeRate=.3;
 var symmetry=3; // 1:permit 2-cycle, 2:3-cycle, 3:4 and up
 var curveChangeRate=.15;
 var ONE=0;
@@ -49,20 +60,34 @@ a2.setAttribute("keyTimes", "0;1");
 a2.setAttribute("keySplines", ".4 0 .6 1");
 path.appendChild(a2);
 
-var qcol=document.createElementNS("http://www.w3.org/2000/svg", "animate");
-qcol.setAttribute('attributeName','fill');
-qcol.setAttribute('to','white');
-qcol.setAttribute('from','white');
-qcol.setAttribute('dur','1ms');
-qcol.setAttribute('fill','freeze');
-path.appendChild(qcol);
-
 var acol=document.createElementNS("http://www.w3.org/2000/svg", "animate");
 acol.setAttribute('attributeName','fill');
 acol.setAttribute('to','white');
 acol.setAttribute('from','white');
 acol.setAttribute('fill','freeze');
-path.appendChild(acol);
+//path.appendChild(acol);
+
+var fillColor={
+  fromFillHSL:[40,60,60],
+  toFillHSL:[40,60,60],
+  hueDiff:0,
+  duration:animateDuration,
+  lock:false,
+  start:null,
+  active:false,
+  randomize:function() {
+    fillColor.fromFillHSL=fillColor.toFillHSL.slice();
+    fillColor.hueDiff=fillHueChangeRate*(180-Math.round(360*Math.random()));
+    if (fillColor.fromFillHSL[0]+fillColor.hueDiff>360 || fillColor.fromFillHSL[0]+fillColor.hueDiff<0) { 
+      fillColor.hueDiff*=-1;
+    }
+    fillColor.toFillHSL[0]=fillColor.fromFillHSL[0]+Math.round(fillColor.hueDiff);
+  },
+  getHSLString:function() {
+    return 'hsl('+fillColor.toFillHSL[0]+','+fillColor.toFillHSL[1]+'%,'+fillColor.toFillHSL[2]+'%)'; 
+  }
+};
+path.style.fill=fillColor.getHSLString();
 
 var duration={
   factor:1,
@@ -626,20 +651,36 @@ function randomizeCurves() {
   randomizeRadii();
 }
 
-function quickFill() {
-  if ("fixed"==color) {
-    var selcolor=document.getElementById('colorSel').value;
-    qcol.setAttribute('from',acol.getAttribute('to'));
-    qcol.setAttribute('to',selcolor);
-    acol.setAttribute('to',selcolor);
-    acol.setAttribute('from',selcolor);
-  } else if ("random"==color) {
-    var col=randomColor(false);
-    qcol.setAttribute('from',acol.getAttribute('to'));
-    qcol.setAttribute('to',col);
-    acol.setAttribute('to',col);
+function animate(ts) {
+
+if (!fillColor.active) {
+  if (Math.random()<.2) {
+    fillColor.randomize();
+    fillColor.active=true;
+    fillColor.start=false;
   }
-  qcol.beginElement();
+}
+
+  if (fillColor.active) {
+    if (!fillColor.start) {
+      fillColor.start=ts;
+    }
+    var progress=ts-fillColor.start;
+    if (progress<animateDuration*1000) {
+      var frac=progress/(animateDuration*1000);
+      var fhue=(fillColor.fromFillHSL[0]+Math.round(fillColor.hueDiff*frac)+360)%360;
+      var fill='hsl('+fhue+','+fillColor.toFillHSL[1]+'%,'+fillColor.toFillHSL[2]+'%)'; 
+      path.style.fill=fill;
+    } else {
+      fillColor.active=false;
+    }
+  }
+
+  if (stops.stop) {
+    stopped=true;
+  } else {
+    requestAnimationFrame(animate);
+  }
 }
 
 var pauseId;
@@ -775,7 +816,7 @@ function doTransition() {
     a2.setAttribute('to',get2Curves(true));
   }
   report();
-  setFill();
+  //setFill();
   a2.beginElement();
 }
 
@@ -786,6 +827,9 @@ function start() {
   a2.setAttribute("onend", "redraw()");
   transition='animate';
   doTransition();
+
+  stops.stop=false;
+  requestAnimationFrame(animate);
 }
 
 function step() {
@@ -802,6 +846,7 @@ function stop() {
   clearTimeout(pauseId);
   a2.setAttribute("onend", "");
   transition='step';
+  stops.stop=true;
 }
 
 function quickChange() {
@@ -1131,60 +1176,6 @@ function changePause(si) {
 
 function changeDamp(si) {
   curveChangeRate=si.value;
-}
-
-function setFill() {
-  if ('none'==color || 'fixed'==color) {
-    return;
-  } else if ('random'==color) {
-    acol.setAttribute('from',acol.getAttribute('to'));
-    var col=randomColor(false);
-    acol.setAttribute('to',col);
-    document.getElementById('colorSel').value=col;
-  } else if ('startFixed'==color) {
-    var selcolor=document.getElementById('colorSel').value;
-    acol.setAttribute('from',acol.getAttribute('to'));
-    acol.setAttribute('to',selcolor);
-    color='fixed';
-  }
-  acol.beginElement();
-}
-
-function changeFill(cb) {
-  if (cb.checked) {
-    switch (cb.id) {
-      case 'nofill':
-	color='none';
-        path.style.setProperty('fill-opacity','0',''); // set opacity 100%
-	break;
-      case 'colfill':
-        path.style.setProperty('fill-opacity','1','');
-        if (transition=='step') {
-          color='fixed';
-          quickFill();
-        } else {
-	  color='startFixed';
-        }
-	break;
-      default:
-	color='random';
-        path.style.setProperty('fill-opacity','1','');
-        if (transition=='step') {
-          quickFill();
-        }
-    }
-  }
-}
-
-function changeFillColor(inp) {
-  document.getElementById('colfill').checked=true;
-  path.style.setProperty('fill-opacity','1','');
-  if (transition=='step') {
-    color='fixed';
-    quickFill();
-  } else {
-    color='startFixed';
-  }
 }
 
 function changeLineWidth(inp) {
