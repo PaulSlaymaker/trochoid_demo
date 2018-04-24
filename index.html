@@ -27,18 +27,17 @@
     tr.c3hide { display:none; }
   </style>
 </head>
-<body style="font-family:sans-serif; font-size:0.8em; background:#F4F4F4;">
+<body style="font-family:sans-serif; font-size:0.8em; background:#555;">
   <div style="display:table;">
     <div id="ascell" style="display:table-cell; width:100%; text-align:center;">
       <svg id="asvg" viewbox="0,0,400,400" style="margin-left:1px; height:auto;">
         <defs>
 	  <clipPath id="rframe">
-	    <circle id="ccirc" cx="0" cy="0" r="200" transform="scale(1)"/>
+	    <circle id="ccirc" cx="0" cy="0" r="200"/>
 	  </clipPath>
         </defs>
-	<rect id="asbox" width="400px" height="400px" fill="#FFF" stroke="silver"/>
-	<g id="pcontrol" transform="matrix(0, -1, 1, 0, 200, 200)">
-	  <path id="rpath" style="stroke:navy; stroke-width:.3; fill:#CCAA66; fill-opacity:1; fill-rule:evenodd;" clip-path="url(#rframe)" d=""/>
+	<g id="pcontrol" transform="matrix(0, -1, 1, 0, 200, 200)" clip-path="url(#rframe)">
+	  <path id="rpath" style="stroke:#66AAFF; stroke-width:.8px; fill:#CCAA66; fill-opacity:1; fill-rule:evenodd;" d=""/>
 	</g>
       </svg>
     </div>
@@ -341,16 +340,37 @@
 	    <tr><td colspan="3" style="padding:4px;"></td></tr>
 <!--
 	    <tr>
-	      <td class="tlabel">Fill:</td>
-	      <td colspan="2" class="control" style="padding-right:8px;">
-		<label><input id="nofill" type="radio" name="fcolor" onclick="changeFill(this);"></input>none</label>
-		&#160;
-		<label><input id="ranfill" type="radio" name="fcolor" checked="checked" onclick="changeFill(this);"></input>random</label>
-		&#160;
-		<input id="colfill" type="radio" name="fcolor" onclick="changeFill(this);">color</input>
-		<input id="colorSel" type="color" style="width:22px; height:16px; padding:0;" oninput="changeFillColor(this);"></input>
+	      <td class="tlabel">Hue:</td>
+	      <td class="control">
+                <div class="treport">
+                  <div class="fillCol" style="width:10px; float:left;">&#160;</div>
+                  <div id="hueRep" style="width:48px; float:right;">&#160;</div>
+                </div>
+		<input id="hueSel" type="range" class="sliderP" min="0" max="359" step="1" oninput="changeFillHue(this);"></input>
+	      </td>
+	      <td><input id="kHue" type="checkbox" onclick="lockHue(this);"/></td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel"><span style="margin-right:36px;">Curve fill</span>Sat:</td>
+	      <td colspan="2" class="control">
+                <div class="treport">
+                  <div class="fillCol" style="width:10px; float:left;">&#160;</div>
+                  <div id="satRep" style="width:48px; float:right;">60%</div>
+                </div>
+		<input id="satSel" type="range" class="sliderP" min="0" max="100" step="1" value="60" oninput="changeFillSaturation(this);"></input>
 	      </td>
 	    </tr>
+	    <tr>
+	      <td class="tlabel clabel">Lum:</td>
+	      <td colspan="2" class="control">
+                <div class="treport">
+                  <div class="fillCol" style="width:10px; float:left;">&#160;</div>
+                  <div id="lumRep" style="width:48px; float:right;">50%</div>
+                </div>
+		<input id="lumSel" type="range" class="sliderP" min="0" max="100" step="1" value="50" oninput="changeFillLuminosity(this);"></input>
+	      </td>
+	    </tr>
+	
 -->
 	    <tr>
 	      <td class="tlabel">Line width:</td>
@@ -364,12 +384,6 @@
 	      <td class="tlabel">Line color:</td>
 	      <td colspan="2" class="control">
 		<input id="colorSel" type="color" style="width:22px; height:16px; padding:0;" value="#000080" oninput="changeLineColor(this);"></input>
-	      </td>
-	    </tr>
-	    <tr>
-	      <td class="tlabel">Background color:</td>
-	      <td colspan="2" class="control">
-		<input id="colorSel" type="color" style="width:22px; height:16px; padding:0;" value="#FFFFFF" oninput="changeBackground(this);"></input>
 	      </td>
 	    </tr>
 	    <tr><td colspan="3" style="padding:4px;"></td></tr>

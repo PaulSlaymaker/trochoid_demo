@@ -1190,10 +1190,6 @@ function changeLineColor(inp) {
   path.style.setProperty('stroke',inp.value,'');
 }
 
-function changeBackground(inp) {
-  document.getElementById('asbox').style.setProperty('fill',inp.value,'');
-}
-
 function setMenu(menu,on) {
   if(on) {
     menu.dataset.state='1';
