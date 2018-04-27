@@ -1,21 +1,15 @@
-var LOW=true;
+var MAX_COUNT=4;
 
 function resize() {
   document.getElementById('asvg').style.maxHeight=window.innerHeight-20+'px';
 }
 onresize=resize;
 
-var ET='epitrochoid';
-var HT='hypotrochoid';
-var EET='epiepitrochoid';
-var HET='hypoepitrochoid';
-var EHT='epihypotrochoid';
-var HHT='hypohypotrochoid';
-var HHHT='h3trochoid';
 var curves=[
-  {'type':ET,'c1':3,'c2':3,'c3':3,'r3':0,'r4':20,'reset':true},
-  {'type':HT,'c1':3,'c2':3,'r3':0,'reset':true},
-  {'type':HT,'c1':3,'c2':3,'r1':50,'r2':50,'r3':0,'reset':true}
+  {'rc':2,'ct':[-1,-1,-1],'c0':1,'c1':3,'c2':3,'c3':3,'r':[0,0,0,0],'fdata':getZeroData().slice(),'tdata':getZeroData().slice(),dur:7,start:null,active:false,zs:false,'reset':true},
+  {'rc':1,'ct':[-1,-1,-1],'c0':2,'c1':3,'c2':3,'c3':3,'r':[0,0,0,0],'fdata':getZeroData().slice(),'tdata':getZeroData().slice(),dur:7,start:null,active:false,zs:false,'reset':true},
+  {'rc':3,'ct':[-1,-1,-1],'c0':4,'c1':3,'c2':3,'c3':3,'r':[0,0,0,0],'fdata':getZeroData().slice(),'tdata':getZeroData().slice(),dur:7,start:null,active:false,zs:false,'reset':true},
+  {'rc':1,'ct':[-1,-1,-1],'c0':5,'c1':3,'c2':3,'c3':3,'r':[0,0,0,0],'fdata':getZeroData().slice(),'tdata':getZeroData().slice(),dur:7,start:null,active:false,zs:false,'reset':true}
 ];
 
 var stopped;
@@ -27,17 +21,25 @@ var stops={
 }
 
 var animateDuration=8;
-var rotationFactor=1;
+var rotationFactor=.15;
 var pause=0;
-var transition;
-var color='random';
+var curveCount=3;
+var curveCountChangeRate=.3;
+var curveCountLock=false;
+var cycleSet=7;
+var cycleChangeRate=.15;
+var cycleLock=false;
+var curveTypeChangeRate=.7;
 var fillHueChangeRate=.3;
-var symmetry=3; // 1:permit 2-cycle, 2:3-cycle, 3:4 and up
 var curveChangeRate=.15;
-var ONE=0;
-var TWO=1;
-var THREE=2;
-var curveCount=TWO;
+
+function getZeroData() {
+  var zd=[[0,0]];
+  for (var z=.01, counter=1; z<2*Math.PI; z+=.01) {
+    zd[counter++]=[0,0];
+  }
+  return zd;
+}
 
 function getZeroCurve() {
   var d='M0 0';
@@ -48,7 +50,23 @@ function getZeroCurve() {
   return d;
 }
 
+function powerRandom(p) {
+  function rec(p,r) {
+    --p;
+    if (p<=0) {
+      return r;
+    } else {
+      r*=Math.random();
+      return rec(p,r);
+    }
+  }
+  p=Math.round(p);
+  return rec(p,Math.random());
+}
+
 var path=document.getElementById('rpath');
+var sgroup=document.getElementById('roid');
+
 var a2=document.createElementNS("http://www.w3.org/2000/svg", "animate");
 a2.setAttribute('attributeName','d');
 a2.setAttribute('to',getZeroCurve()+' '+getZeroCurve());
@@ -58,14 +76,7 @@ a2.setAttribute('restart','whenNotActive');
 a2.setAttribute("calcMode", "spline");
 a2.setAttribute("keyTimes", "0;1");
 a2.setAttribute("keySplines", ".4 0 .6 1");
-path.appendChild(a2);
-
-var acol=document.createElementNS("http://www.w3.org/2000/svg", "animate");
-acol.setAttribute('attributeName','fill');
-acol.setAttribute('to','white');
-acol.setAttribute('from','white');
-acol.setAttribute('fill','freeze');
-//path.appendChild(acol);
+//path.appendChild(a2);
 
 var fillColor={
   fromFillHSL:[40,60,60],
@@ -82,12 +93,55 @@ var fillColor={
       fillColor.hueDiff*=-1;
     }
     fillColor.toFillHSL[0]=fillColor.fromFillHSL[0]+Math.round(fillColor.hueDiff);
+    var col=fillColor.getHSLString();
+    document.querySelectorAll('.fillCol').forEach(function(hdiv) {
+      hdiv.style.backgroundColor=col;
+    });
+    document.getElementById('hueRep').textContent=fillColor.toFillHSL[0];
+    document.getElementById('hueSel').value=fillColor.toFillHSL[0];
   },
   getHSLString:function() {
     return 'hsl('+fillColor.toFillHSL[0]+','+fillColor.toFillHSL[1]+'%,'+fillColor.toFillHSL[2]+'%)'; 
   }
 };
 path.style.fill=fillColor.getHSLString();
+
+var lineColor={
+  fromLineHSL:[220,100,80],
+  toLineHSL:[220,100,80],
+  hueDiff:0,
+  duration:animateDuration,
+  lock:false,
+  start:null,
+  active:false,
+  fillOffset:90,
+  randomize:function() {
+    lineColor.fromLineHSL=lineColor.toLineHSL.slice();
+    if (Math.random()<.3) {
+      lineColor.fillOffset=[90,180,240][getRandomInt(0,3)]; 
+    }
+    var lineHue=(fillColor.toFillHSL[0]+lineColor.fillOffset)%360;
+    lineColor.hueDiff=lineHue-lineColor.toLineHSL[0];
+    if (lineColor.fromLineHSL[0]+lineColor.hueDiff>360 || lineColor.fromLineHSL[0]+lineColor.hueDiff<0) { 
+      lineColor.hueDiff*=-1;
+    }
+    lineColor.toLineHSL[0]=lineHue;
+    var col=lineColor.getHSLString();
+      document.querySelectorAll('.lineCol').forEach(function(hdiv) {
+      hdiv.style.backgroundColor=col;
+    });
+    document.getElementById('lineHueRep').textContent=lineColor.toLineHSL[0];
+    document.getElementById('lineHueSel').value=lineColor.toLineHSL[0];
+  },
+  getHSLString:function() {
+    return 'hsl('+lineColor.toLineHSL[0]+','+lineColor.toLineHSL[1]+'%,'+lineColor.toLineHSL[2]+'%)'; 
+  },
+  getHSLAString:function() {
+    //return 'hsla('+lineColor.toLineHSL[0]+','+lineColor.toLineHSL[1]+'%,'+lineColor.toLineHSL[2]+'%,'+lineWO.toOpacity+')'; 
+    return 'hsl('+lineColor.toLineHSL[0]+','+lineColor.toLineHSL[1]+'%,'+lineColor.toLineHSL[2]+'%)'; 
+  }
+};
+path.style.stroke=lineColor.getHSLString();
 
 var duration={
   factor:1,
@@ -98,8 +152,6 @@ var duration={
   },
   change:function() {
     if (duration.reset) {
-      a2.setAttribute('dur',4*duration.factor+'s');
-      acol.setAttribute('dur',4*duration.factor+'s');
       duration.reset=false;
     }
   },
@@ -110,6 +162,20 @@ var duration={
   set:function(anime,d) {
     anime.setAttribute('dur',d);
     duration.reset=true;
+  }
+};
+
+var zoom={
+  fromScale:1,
+  toScale:1,
+  duration:animateDuration,
+  lock:false,
+  start:null,
+  active:false,
+  randomize:function() {
+    zoom.fromScale=zoom.toScale;
+    var zf=(curveCount+cycleSet-7)/10;
+    zoom.toScale=1+zf*Math.random();
   }
 };
 
@@ -149,96 +215,222 @@ function randomColor() {
   return col;
 }
 
-function getCurve(cn) {
-  var offset=rotationFactor*Math.random()*Math.PI;
+function changeCurveCount(cc) {
+  switch(cc) {
+    case 1:
+      switch (curveCount) {
+	case 2:
+	  curves[1].tdata=getZeroData().slice();
+          break;
+	case 3:
+	  curves[1].tdata=getZeroData().slice();
+	  curves[2].tdata=getZeroData().slice();
+          break;
+	case 4:
+	  curves[1].tdata=getZeroData().slice();
+	  curves[2].tdata=getZeroData().slice();
+	  curves[3].tdata=getZeroData().slice();
+          break;
+      }
+      curveCount=1;
+      break;
+    case 2:
+      switch (curveCount) {
+	case 1:
+          randomizeCurve(1);
+	  break;
+	case 3:
+	  curves[2].tdata=getZeroData().slice();
+	  break;
+	case 4:
+	  curves[2].tdata=getZeroData().slice();
+	  curves[3].tdata=getZeroData().slice();
+	  break;
+      }
+      curveCount=2;
+      break;
+    case 3:
+      switch (curveCount) {
+	case 1:
+          randomizeCurve(1);
+          randomizeCurve(2);
+	  break;
+	case 2:
+          randomizeCurve(2);
+	  break;
+	case 4:
+	  curves[3].tdata=getZeroData().slice();
+	  break;
+      }
+      curveCount=3;
+      break;
+    case 4:
+      switch (curveCount) {
+	case 1:
+          randomizeCurve(1);
+          randomizeCurve(2);
+          randomizeCurve(3);
+	  break;
+	case 2:
+          randomizeCurve(2);
+          randomizeCurve(3);
+	  break;
+        case 3:
+          randomizeCurve(3);
+          break;
+      }
+      curveCount=4;
+      break;
+  }
+  document.getElementById('ccRep').textContent=curveCount;
+  document.getElementById('ccRange').value=curveCount;
+  drawCurves();
+}
+
+function switchCurveCount(cc) {
+  switch(cc) {
+    case 1:
+      switch (curveCount) {
+	case 2:
+	  curves[1].zs=true;
+	  reduce=true;
+	  break;
+	case 3:
+	  curves[1].zs=true;
+	  curves[2].zs=true;
+	  reduce=true;
+	  break;
+	case 4:
+	  curves[1].zs=true;
+	  curves[2].zs=true;
+	  curves[3].zs=true;
+	  reduce=true;
+	  break;
+      }
+      curveCount=1;
+      break;
+    case 2:
+      switch (curveCount) {
+	case 1:
+	  curves[1].active=true;
+	  break;
+	case 3:
+	  curves[2].zs=true;
+	  reduce=true;
+	  break;
+	case 4:
+	  curves[2].zs=true;
+	  curves[3].zs=true;
+	  reduce=true;
+          break;
+      }
+      curveCount=2;
+      break;
+    case 3:
+      switch (curveCount) {
+	case 1:
+	  curves[1].active=true;
+	  curves[2].active=true;
+	  break;
+	case 2:
+	  curves[2].active=true;
+	  break;
+	case 4:
+	  curves[3].zs=true;
+	  reduce=true;
+	  break;
+      }
+      curveCount=3;
+      break;
+    case 4:
+      switch (curveCount) {
+	case 1:
+	  curves[1].active=true;
+	case 2:
+	  curves[2].active=true;
+	case 3:
+	  curves[3].active=true;
+      }
+      curveCount=4;
+      break;
+  }
+}
+
+function randomCurveCountChange(inloop) {
+  var rate=inloop?curveCountChangeRate/curveCount:curveCountChangeRate;
+  if (Math.random()>rate) {
+    return false;
+  }
+  var sel=powerRandom(cycleSet/13);
+  var reduce=false;
+  if (sel<.05) { 
+    switchCurveCount(1);
+  } else if (sel<.2) { 
+    switchCurveCount(2);
+  } else if (sel<.8) { 
+    switchCurveCount(3);
+  } else {
+    switchCurveCount(4);
+  }
+  document.getElementById('ccRep').textContent=curveCount;
+  document.getElementById('ccRange').value=curveCount;
+}
+
+function setCurve(cn) {
+  var offset=function() {
+    if (Math.random()<rotationFactor) {
+      return offset=Math.random()*Math.PI;
+    } else {
+      return 0;
+    } 
+  }();
   var d;
-  var r1=curves[cn].r1;
-  var r2=curves[cn].r2;
-  var r3=curves[cn].r3;
+  var r1=curves[cn].r[0];
+  var r2=curves[cn].r[1];
+  var r3=curves[cn].r[2];
+  var r4=curves[cn].r[3];
   var c0=curves[cn].c0;
   var c1=curves[cn].c1;
   var c2=curves[cn].c2;
-  switch (curves[cn].type) {
-    case HT:
-      var f1=c1/c0-1;
-      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset);
-      var y=r1*Math.sin(offset)-r2*Math.sin(f1*offset);
-      d='M'+x+' '+y;
-      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
-	d+='L';
-	x=r1*Math.cos(z)+r2*Math.cos(f1*z);
-	d+=x+' ';
-	y=r1*Math.sin(z)-r2*Math.sin(f1*z);
-	d+=y;
-      }
-      break;
-    case EHT:
-      var f1=c1/c0-1;
-      var f2=(c2-c1)/c0+1;
-      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset);
-      var y=r1*Math.sin(offset)-r2*Math.sin(f1*offset)+r3*Math.sin(f2*offset);
-      d='M'+x+' '+y;
-      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
-	d+='L';
-	x=r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z);
-	d+=x+' ';
-	y=r1*Math.sin(z)-r2*Math.sin(f1*z)+r3*Math.sin(f2*z);
-	d+=y;
-      }
-      break;
-    case HHT:
-      var f1=c1/c0-1;
-      var f2=(c2+c1)/c0-1;
-      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset);
-      var y=r1*Math.sin(offset)-r2*Math.sin(f1*offset)-r3*Math.sin(f2*offset);
-      d='M'+x+' '+y;
-      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
-	d+='L';
-	x=r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z);
-	d+=x+' ';
-	y=r1*Math.sin(z)-r2*Math.sin(f1*z)-r3*Math.sin(f2*z);
-	d+=y;
-      }
-      break;
-    case EET:
-      var f1=c1/c0+1;
-      var f2=(c1+c2)/c0+1;
-      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset);
-      var y=r1*Math.sin(offset)+r2*Math.sin(f1*offset)+r3*Math.sin(f2*offset);
-      d='M'+x+' '+y;
-      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
-	d+='L';
-	x=r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z);
-	d+=x+' ';
-	y=r1*Math.sin(z)+r2*Math.sin(f1*z)+r3*Math.sin(f2*z);
-	d+=y;
-      }
-      break
-    case HET:
-      var f1=c1/c0+1;
-      var f2=(c2-c1)/c0-1;
-      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset);
-      var y=r1*Math.sin(offset)+r2*Math.sin(f1*offset)-r3*Math.sin(f2*offset);
-      d='M'+x+' '+y;
-      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
-	d+='L';
-	x=r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z);
-	d+=x+' ';
-	y=r1*Math.sin(z)+r2*Math.sin(f1*z)-r3*Math.sin(f2*z);
-	d+=y;
-      }
-      break;
-    case ET:
-      var f1=c1/c0+1;
+  var c3=curves[cn].c3;
+  switch (curves[cn].rc) {
+    case 1:
+      var f1=1+(curves[cn].ct[0]*c1)/c0;
       var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset);
       var y=r1*Math.sin(offset)+r2*Math.sin(f1*offset);
-      d='M'+x+' '+y;
+      curves[cn].tdata[0]=[x,y];
+      var counter=1;
       for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
-	d+='L';
 	x=r1*Math.cos(z)+r2*Math.cos(f1*z);
-	d+=x+' ';
 	y=r1*Math.sin(z)+r2*Math.sin(f1*z);
-	d+=y;
+	curves[cn].tdata[counter++]=[x,y];
+      }
+      break;
+    case 2:
+      var f1=1+(curves[cn].ct[0]*c1)/c0;
+      var f2=1+(curves[cn].ct[0]*c1+curves[cn].ct[1]*c2)/c0;
+      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset);
+      var y=r1*Math.sin(offset)+r2*Math.sin(f1*offset)+r3*Math.sin(f2*offset);
+      curves[cn].tdata[0]=[x,y];
+      var counter=1;
+      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
+	x=r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z);
+	y=r1*Math.sin(z)+r2*Math.sin(f1*z)+r3*Math.sin(f2*z);
+        curves[cn].tdata[counter++]=[x,y];
+      }
+      break;
+    case 3:
+      var f1=1+(curves[cn].ct[0]*c1)/c0;
+      var f2=1+(curves[cn].ct[0]*c1+curves[cn].ct[1]*c2)/c0;
+      var f3=1+(curves[cn].ct[0]*c1+curves[cn].ct[1]*c2+curves[cn].ct[2]*c3)/c0;
+      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset)+r4*Math.cos(f3*offset);
+      var y=r1*Math.sin(offset)+r2*Math.sin(f1*offset)+r3*Math.sin(f2*offset)+r4*Math.sin(f3*offset);
+      curves[cn].tdata[0]=[x,y];
+      var counter=1;
+      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
+	x=r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z)+r4*Math.cos(f3*z);
+	y=r1*Math.sin(z)+r2*Math.sin(f1*z)+r3*Math.sin(f2*z)+r4*Math.sin(f3*z);
+        curves[cn].tdata[counter++]=[x,y];
       }
       break;
   }
@@ -246,420 +438,318 @@ function getCurve(cn) {
   return d;
 }      
 
-function randomizeRadii() {
-  [[0],[0,1],[0,1,2]][curveCount].forEach(function(cn) {
-    if (curves[cn].type==ET || curves[cn].type==HT) { 
-      if (curves[cn].r1Keep==undefined) {
-	curves[cn].r1=45+90*Math.random();
-      }
-      if (curves[cn].drawKeep==undefined) {
-	curves[cn].r2=45+90*Math.random();
-      }
-    } else {
-      if (curves[cn].r1Keep==undefined) {
-	curves[cn].r1=30+60*Math.random();
-      }
-      if (curves[cn].drawKeep==undefined) {
-	curves[cn].r2=30+60*Math.random();
-      }
-      if (curves[cn].r3Keep==undefined) {
-	curves[cn].r3=30+60*Math.random();
-      }
-    }
-  });
-}
-
-function getMatchingCycle(cycle) {
-  switch (cycle) {
+function getCycle0Match() {
+  switch (cycleSet) {
     case 2:
-     return 2*getRandomInt(1,7);
+      return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9,6)];
     case 3:
-     return 3*getRandomInt(1,5);
+      return [1,2,4,5,7,8,10,11,13,14,16,16][getRandomInt(0,12,5)];
     case 4:
-    case 8:
-    case 12:
-     if (symmetry<2) {
-       return 2*getRandomInt(1,7);
-     } else {
-       return 4*getRandomInt(1,4);
-     }
+      return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9,4)];
     case 5:
-    case 10:
-    case 15:
-     return 5*getRandomInt(1,4);
+      return [1,2,3,4,6,7,8,9,11,12,13,14,16,17][getRandomInt(0,14,3)];
     case 7:
-     return 7*getRandomInt(1,3);
-    case 9:
-     if (symmetry<3) {
-       return 3*getRandomInt(1,4);
-     } else {
-       return 9;
-     }
-    default:
-     return cycle;
-  }
-}
-
-function getLowMatchingCycle(cycle) {
-  switch (cycle) {
-    case 2:
-     return 2*getRandomInt(1,7,LOW);
-    case 3:
-     return 3*getRandomInt(1,5,LOW);
-    case 4:
+      return [1,2,3,4,5,6,8,9,10,11,12,13,15,16,17][getRandomInt(0,15,2)];
     case 8:
-    case 12:
-     if (symmetry<2) {
-       return 2*getRandomInt(1,7,LOW);
-     } else {
-       return 4*getRandomInt(1,4,LOW);
-     }
-    case 5:
-    case 10:
-    case 15:
-     return 5*getRandomInt(1,4,LOW);
-    case 7:
-     return 7*getRandomInt(1,3,LOW);
+      return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9)];
     case 9:
-     if (symmetry<3) {
-       return 3*getRandomInt(1,4,LOW);
-     } else {
-       return 9;
-     }
-    default:
-     return cycle;
+      return [1,2,4,5,7,8,10,11,13,14,16,17][getRandomInt(0,12)];
+    case 10:
+      return [1,3,7,9,11,13,17][getRandomInt(0,7)];
+    case 11:
+      return [1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,17][getRandomInt(0,16)];
+    case 6:
+    case 12:
+      return [1,5,7,11,13,17][getRandomInt(0,6)];
+    case 13:
+      return [1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,17][getRandomInt(0,16)];
+    case 14:
+      return [1,3,5,9,11,13,15,17][getRandomInt(0,8)];
+    case 15:
+      return [1,2,4,7,8,11,13,14,16,17][getRandomInt(0,10)];
+    case 16:
+      return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9)];
+    case 17:
+      return [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16][getRandomInt(0,16)];
   }
+  return false;
 }
 
-function setCycles(cn) {
-  var crv=curves[cn];
-  var s=(ET==crv.type || HT==crv.type);
-  [2,3,5].forEach(function(f) {	// 10 cycles max
-    if (s) {
-      //while (crv.c0%f==0 && crv.c1%f==0 && crv.c1>2) {
-      while (crv.c0%f==0 && crv.c1%f==0) {
-	crv.c0/=f;
-	crv.c1/=f;
-      }
+function resetCycleSet() {
+  curves[0].c1=cycleSet;
+  curves[0].c2=cycleSet;
+  curves[0].c3=cycleSet;
+  curves[0].c4=cycleSet;
+  curves[0].c0=getCycle0Match();
+  for (var cn=1; cn<MAX_COUNT; cn++) {
+    if (cycleSet==10) {
+      curves[cn].c1=Math.random()<.05?5:10;
+      curves[cn].c2=Math.random()<.05?5:10;
+      curves[cn].c3=Math.random()<.05?5:10;
+      curves[cn].c4=Math.random()<.05?5:10;
+    } else if (cycleSet==12) {
+      curves[cn].c1=Math.random()<.1?6:12;
+      curves[cn].c2=Math.random()<.1?6:12;
+      curves[cn].c3=Math.random()<.1?6:12;
+      curves[cn].c4=Math.random()<.1?6:12;
+    } else if (cycleSet==14) {
+      curves[cn].c1=Math.random()<.2?7:14;
+      curves[cn].c2=Math.random()<.2?7:14;
+      curves[cn].c3=Math.random()<.2?7:14;
+      curves[cn].c4=Math.random()<.2?7:14;
+    } else if (cycleSet==16) {
+      curves[cn].c1=Math.random()<.3?Math.random()<.1?4:8:16;
+      curves[cn].c2=Math.random()<.3?Math.random()<.1?4:8:16;
+      curves[cn].c3=Math.random()<.3?Math.random()<.1?4:8:16;
+      curves[cn].c4=Math.random()<.3?Math.random()<.1?4:8:16;
     } else {
-      //while (crv.c0%f==0 && crv.c1%f==0 && crv.c2%f==0 && crv.c1>2 && crv.c2>2) {
-      while (crv.c0%f==0 && crv.c1%f==0 && crv.c2%f==0) {
-	crv.c0/=f;
-	crv.c1/=f;
-	crv.c2/=f;
-      }
+      curves[cn].c1=cycleSet;
+      curves[cn].c2=cycleSet;
+      curves[cn].c3=cycleSet;
+      curves[cn].c4=cycleSet;
     }
-  });
-}
-
-function reduceable2(cn) {
-  var crv=curves[cn];
-  return ([2,3,5,7,11,13].some(function(f) {	
-    return (crv.c0%f==0 && crv.c1%f==0);
-  }));
-}
-
-function reduceable3(cn3) {
-  var crv=curves[cn3];
-  return ([2,3,5,7,11,13].some(function(f) {
-    return (crv.c0%f==0 && crv.c1%f==0 && crv.c2%f==0);
-  }));
-}
-
-function getLowC1() {
-  switch(symmetry) {
-    case 1:
-      return 2;
-    case 2:
-      return 3;
-    case 3:
-      return 4;
-  }
-  return 3;
-}
-
-function get222Set() {
-  var lowC1=getLowC1();
-  do {
-    do { 
-      curves[0].c1=getRandomInt(lowC1,16);
-      curves[1].c1=curves[0].c1;
-      curves[2].c1=curves[0].c1;
-    } while (curves[0].c1==curves[0].c0 || curves[0].c1==curves[1].c0 || curves[2].c1==curves[0].c0 || curves[2].c1==curves[1].c0);
-  } while (reduceable2(0) || reduceable2(1) || reduceable2(2));
-}
-
-function get223Set(cn3) {
-  var cn2a;
-  var cn2b;
-  if (cn3==0) {
-    cn2a=1;
-    cn2b=2;
-  } else if (cn3==1) {
-    cn2a=0;
-    cn2b=2;
-  } else {
-    cn2a=0;
-    cn2b=1;
-  }
-  var lowC1=getLowC1();
-  do {
-    curves[0].c1=getRandomInt(lowC1,16,LOW);
-    curves[1].c1=getLowMatchingCycle(curves[0].c1);
-    curves[2].c1=getLowMatchingCycle(curves[0].c1);
-    curves[cn3].c2=getLowMatchingCycle(curves[0].c1);
-  } while (reduceable2(cn2a) || reduceable2(cn2b) || reduceable3(cn3));
-}
-
-function get233Set(cn2) {
-  var cn3a;
-  var cn3b;
-  if (cn2==0) {
-    cn3a=1;
-    cn3b=2;
-  } else if (cn2==1) {
-    cn3a=0;
-    cn3b=2;
-  } else {
-    cn3a=0;
-    cn3b=1;
-  }
-  var lowC1=getLowC1();
-  do {
-    curves[0].c1=getRandomInt(lowC1,16);
-    curves[1].c1=getLowMatchingCycle(curves[0].c1);
-    curves[2].c1=getLowMatchingCycle(curves[0].c1);
-    curves[cn3a].c2=getLowMatchingCycle(curves[0].c1);
-    curves[cn3b].c2=getLowMatchingCycle(curves[0].c1);
-  } while (reduceable2(cn2) || reduceable3(cn3a) || reduceable3(cn3b));
-}
-
-function get333Set() {
-  var lowC1=getLowC1();
-  do {
-    curves[0].c1=getRandomInt(lowC1,16,LOW);
-    curves[1].c1=getLowMatchingCycle(curves[0].c1);
-    curves[2].c1=getLowMatchingCycle(curves[0].c1);
-    curves[0].c2=getLowMatchingCycle(curves[0].c1);
-    curves[1].c2=getLowMatchingCycle(curves[0].c1);
-    curves[2].c2=getLowMatchingCycle(curves[0].c1);
-  } while (reduceable3(0) || reduceable3(1) || reduceable3(2));
-}
-
-function get22Set() {
-  var lowC1=getLowC1();
-  do {
-    do { 
-      curves[0].c1=getRandomInt(lowC1,16);
-      curves[1].c1=curves[0].c1;
-    } while (curves[0].c1==curves[0].c0 || curves[0].c1==curves[1].c0);
-  } while (reduceable2(0) || reduceable2(1));
-}
-
-function get23Set(cn3) {
-  var cn2=cn3==1?0:1;
-  var lowC1=getLowC1();
-  do {
-    curves[0].c1=getRandomInt(lowC1,16);
-    curves[1].c1=getMatchingCycle(curves[0].c1);
-    curves[cn3].c2=getMatchingCycle(curves[0].c1);
-  } while (reduceable2(cn2) || reduceable3(cn3));
-}
-
-function get33Set() {
-  var lowC1=getLowC1();
-  do {
-    curves[1].c0=getRandomInt(1,16);
-    curves[0].c1=getRandomInt(lowC1,16);
-    curves[1].c1=getMatchingCycle(curves[0].c1);
-    curves[0].c2=getMatchingCycle(curves[0].c1);
-    curves[1].c2=getMatchingCycle(curves[0].c1);
-  } while (reduceable3(0) || reduceable3(1));
-}
-
-function getPreferredRandomCurve(curve) {
-  var sel=Math.random();
-  if (sel<.09) {
-    curve.type=EET;
-  } else if (sel<.21) {
-    curve.type=ET;
-  } else if (sel<.36) {
-    curve.type=HET;
-  } else if (sel<.55) {
-    curve.type=EHT;
-  } else if (sel<.76) {
-    curve.type=HHT;
-  } else {
-    curve.type=HT;
+    curves[cn].c0=getCycle0Match();
   }
 }
-function getRandomCurve(cn) {
-  curves[cn].type=[ET,EET,HET,HT,EHT,HHT][getRandomInt(0,6)];
+
+function randomizeCycles() {
+  var goodArray=function() {
+    switch (curveCount) {
+      case 1: return [17,16,15,14,13,12,11,10,9,8,7,6];
+      case 2: return [14,15,13,16,12,17,11,10,9,8,7,6];
+      case 3: return [10,11,9,12,8,13,7,14,6,15,16,17];
+    }
+    return [6,7,8,9,10,11,12,13,14,15,16,17];
+  }
+  cycleSet=goodArray()[getRandomInt(0,12,3)];
+  resetCycleSet();
+  document.getElementById('cvRep').textContent=cycleSet;
+  document.getElementById('cvRange').value=cycleSet;
 }
 
-function randomizeSym1Curve() {
-  if (Math.random()<curveChangeRate) {
-    if (curves[0].typeKeep==undefined) {
-      getRandomCurve(0);
-    }
-    if (curves[0].c0Keep==undefined) {
-      curves[0].c0=getRandomInt(1,16,LOW);
-    }
-    var lowC1=getLowC1();
-    if (curves[0].type==ET || curves[0].type==HT) { 
-      do {
-	curves[0].c1=getRandomInt(lowC1,16);
-      } while (curves[0].c1==curves[0].c0 || reduceable2(0));
-    } else {
-      do {
-	curves[0].c1=getRandomInt(lowC1,16);
-	curves[0].c2=getMatchingCycle(curves[0].c1);
-      } while (curves[0].c1==curves[0].c0 || reduceable3(0));
+function centralFactor(cn) {
+  var cf=curves[cn].r[0]; 
+  for (var j=1; j<curves[cn].rc+1; j++) {
+    cf-=curves[cn].r[j];
+    cf=Math.abs(cf);
+  }
+  return cf;
+}
+
+function curveComplexity() {
+  var comp=0;
+  for (var cn=0; cn<curveCount; cn++) {
+    comp+=curves[cn].rc;
+  }
+  return comp/curveCount;
+}
+
+function randomTen() {
+  return 10-20*Math.random();
+}
+
+function randomizeRadii(cn) {
+  var f1=80/(curves[cn].rc+1);
+  var f2=2*curves[cn].rc*f1;
+  for (var i=0; i<curves[cn].rc+1; i++) {
+    curves[cn].r[i]=f1+f2*Math.random();
+  }
+  if (curves[cn].rc==1) {
+    var cFactor=centralFactor(cn);
+    if (cFactor>20) {
+      curves[cn].r[1]=curves[cn].r[0]+randomTen();
     }
   }
-  randomizeRadii();
+  var maxC=function() {
+    var maxr=0;
+    for (var i=0; i<curves[cn].rc+1; i++) {
+      maxr+=curves[cn].r[i];
+    }
+    return maxr;
+  }();
+  var fac=200/maxC;
+  if (cn==0) {
+    for (var i=0; i<curves[cn].rc+1; i++) {
+      curves[cn].r[i]*=fac;
+    }
+  } else if (maxC>200) {
+    for (var i=0; i<curves[cn].rc+1; i++) {
+      curves[cn].r[i]*=fac;
+    }
+  }
 }
 
-function randomizeSym3Curves() {
-  var reset=false;
-  var change=Math.random()<curveChangeRate;
-  curves.forEach(function(curve) {
-    if (change || curve.reset) {
-      if (curve.typeKeep==undefined) {
-	getPreferredRandomCurve(curve);
-      }
-      if (curve.c0Keep==undefined) {
-	curve.c0=getRandomInt(1,16,LOW);
-      }
-      reset=true;
-    }
-    curve.reset=false;
-  });
-  if (reset) {
-    [0,1,2].forEach(function(cn) {
-      if (curves[0].type==ET || curves[0].type==HT) { 
-	if (curves[1].type==ET || curves[1].type==HT) { 
-	  if (curves[2].type==ET || curves[2].type==HT) { 
-            get222Set();
-          } else {
-	    get223Set(2);
-          }
-	} else {
-	  if (curves[2].type==ET || curves[2].type==HT) { 
-	    get223Set(1);
-          } else {
-	    get233Set(0);
-          }
-	}
+function randomizeCurve(cn) {
+  curves[cn].fdata=curves[cn].tdata.slice();
+  if (Math.random()<.7) {
+    curves[cn].rc=[1,2,3,4][getRandomInt(0,4,curveCount/1.2 /*TODO include cycleSet*/)];
+    for (var j=0; j<curves[cn].rc; j++) {
+      if (Math.random()<.05) {
+	curves[cn].ct[j]=1;
       } else {
-	if (curves[1].type==ET || curves[1].type==HT) { 
-	  if (curves[2].type==ET || curves[2].type==HT) { 
-	    get223Set(0);
-          } else {
-	    get233Set(1);
-          }
-	} else {
-	  if (curves[2].type==ET || curves[2].type==HT) { 
-	    get233Set(2);
-          } else {
-	    get333Set();
-          }
-	}
+	curves[cn].ct[j]=-1;
       }
-    });
-  }
-  randomizeRadii();
-}
-
-function randomizeSym2Curves() {
-  var reset=false;
-  var change=Math.random()<curveChangeRate;
-  curves.forEach(function(curve) {
-    if (change || curve.reset) {
-      if (curve.typeKeep==undefined) {
-	getPreferredRandomCurve(curve);
-      }
-      if (curve.c0Keep==undefined) {
-	curve.c0=getRandomInt(1,16,LOW);
-      }
-      reset=true;
     }
-    curve.reset=false;
-  });
-  if (reset) {
-    [0,1].forEach(function(cn) {
-      if (curves[0].type==ET || curves[0].type==HT) { 
-	if (curves[1].type==ET || curves[1].type==HT) { 
-	  get22Set();
-	} else {
-	  get23Set(1);
-	}
-      } else {
-	if (curves[1].type==ET || curves[1].type==HT) { 
-	  get23Set(0);
-	} else {
-	  get33Set();
-	}
-      }
-    });
   }
-  randomizeRadii();
+  randomizeRadii(cn);
+  setCurve(cn);
+  curves[cn].dur=animateDuration*(.3+.7*Math.random());
 }
 
-function scaleToFit() {
-  if ([[0],[0,1],[0,1,2]][curveCount].every(function(cn) {
-     return curves[cn].drawKeep==undefined && curves[cn].r1Keep==undefined && curves[cn].r3Keep==undefined;
-  })) {
-    var maxC=1;
-    [[0],[0,1],[0,1,2]][curveCount].forEach(function(cn) {
-      if (ET==curves[cn].type || HT==curves[cn].type) {
-	maxC=Math.max(curves[cn].r1+curves[cn].r2,maxC);
-      } else {
-	maxC=Math.max(curves[cn].r1+curves[cn].r2+curves[cn].r3,maxC);
-      }
-    });
-    var scale=200/maxC;
-    [[0],[0,1],[0,1,2]][curveCount].forEach(function(cn) {
-      curves[cn].r1*=scale;
-      curves[cn].r2*=scale;
-      curves[cn].r3*=scale;
-    });
-  } 
-}
-
-function randomizeCurves() {
-  [[0],[0,1],[0,1,2]][curveCount].forEach(function(cn) {
-    if (curves[cn].reset || Math.random()<curveChangeRate) {
-      if (curves[cn].typeKeep==undefined) {
-	getRandomCurve(cn);
-      }
-      if (curves[cn].c0Keep==undefined) {
-	curves[cn].c0=getRandomInt(1,16);
-      }
-      if (curves[cn].c1Keep==undefined) {
-	curves[cn].c1=getRandomInt(1,16);
-      }
-      if (curves[cn].c2Keep==undefined) {
-	curves[cn].c2=getRandomInt(1,16);
-      }
-      if (curves[cn].c0Keep==undefined && curves[cn].c1Keep==undefined && curves[cn].c2Keep==undefined) {
-	setCycles(cn);
-      }
-      curves[cn].reset=false;
+function isAnimationActive() {
+  for (var i=0; i<curveCount; i++) {
+    if (curves[i].active) {
+      return true;
     }
-  });
-  randomizeRadii();
+  }
+  if (fillColor.active) { 
+    return true; 
+  }
+  if (zoom.active) {
+    return true;
+  }
+/*
+  if (rotation.active) { 
+    return true; 
+  }
+  if (lineColor.active) { 
+    return true; 
+  }
+  if (lineWO.active) { 
+    return true; 
+  }
+  if (pauseTS) {
+    return true;
+  }
+*/
+  return false;
+}
+
+function drawCurves() {
+  var d='';
+  for (var cn=0; cn<curveCount; cn++) {
+    d+='M'+curves[cn].tdata[0][0]+' '+curves[cn].tdata[0][1];
+    for (var i=1; i<629; i++) {
+      d+='L'+curves[cn].tdata[i][0]+' '+curves[cn].tdata[i][1];
+    }
+    d+='z';
+  }
+  path.setAttribute('d',d);
+}
+
+function drawCurve(cn) {
+  var d='';
+  d+='M'+curves[cn].tdata[0][0]+' '+curves[cn].tdata[0][1];
+  for (var i=1; i<629; i++) {
+    d+='L'+curves[cn].tdata[i][0]+' '+curves[cn].tdata[i][1];
+  }
+  d+='z';
+  path.setAttribute('d',d);
+}
+
+function lineCurve(cn) {
+  if (curves[cn].tdata[0][0]==0 && curves[cn].tdata[0][1]==0) {
+    return '';
+  }
+  var d='';
+  d+='M'+curves[cn].tdata[0][0]+' '+curves[cn].tdata[0][1];
+  for (var i=1; i<629; i++) {
+    d+='L'+curves[cn].tdata[i][0]+' '+curves[cn].tdata[i][1];
+  }
+  d+='z';
+  return d;
+}
+
+function isLineActive() {
+  for (var i=0; i<curveCount; i++) {
+    if (curves[i].active) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function cbLoc(p1,p2,frac) {
+  var f1=.1;
+  var f2=.9;
+  var e1=Math.pow(1-frac,3)*p1;
+  var e2=3*frac*Math.pow(1-frac,2)*(p1+(p2-p1)*f1);
+  var e3=3*(1-frac)*Math.pow(frac,2)*(p1+(p2-p1)*f2);
+  var e4=Math.pow(frac,3)*p2;
+  return e1+e2+e3+e4;
 }
 
 function animate(ts) {
 
-if (!fillColor.active) {
-  if (Math.random()<.2) {
-    fillColor.randomize();
-    fillColor.active=true;
-    fillColor.start=false;
+  var endMove=false;
+  var d='';
+  for (var cn=0; cn<MAX_COUNT; cn++) {
+    if (curves[cn].active) {
+      if (!curves[cn].start) {
+	curves[cn].start=ts;
+      }
+      var progress=ts-curves[cn].start;
+      if (progress<curves[cn].dur*1000) {
+	var frac=progress/(curves[cn].dur*1000);
+
+	d+='M';
+        d+=cbLoc(curves[cn].fdata[0][0],curves[cn].tdata[0][0],frac);
+        d+=' ';
+        d+=cbLoc(curves[cn].fdata[0][1],curves[cn].tdata[0][1],frac);
+	for (var i=1; i<629; i++) {
+	  d+='L';
+	  d+=cbLoc(curves[cn].fdata[i][0],curves[cn].tdata[i][0],frac);
+	  d+=' ';
+	  d+=cbLoc(curves[cn].fdata[i][1],curves[cn].tdata[i][1],frac);
+	}
+        d+='z';
+      } else {
+	if (curves[cn].zs) {
+	    curves[cn].fdata=curves[cn].tdata.slice();
+	    curves[cn].tdata=getZeroData().slice();
+	    curves[cn].zs=false;
+	    curves[cn].active=true;
+	    curves[cn].start=false;
+        } else if (stops.stop || stops.cycleChange || stops.pause || stops.durationChange) {
+          curves[cn].active=false;
+        } else {
+          if (cn<curveCount) {
+            if (!curveCountLock) {
+	      randomCurveCountChange(true);
+            }
+	    if (Math.random()<cycleChangeRate/curveCount && !cycleLock) {
+	      stops.cycleChange=true;
+	    }
+	    randomizeCurve(cn);
+	    curves[cn].start=ts;
+	    if (Math.random()<.2/curveCount) {
+	      if (!fillColor.active && !fillColor.lock) {
+		fillColor.randomize();
+                if (!lineColor.lock) {
+		  lineColor.randomize();
+                }
+		fillColor.active=true;
+		fillColor.start=false;
+	      }
+	    }
+	    if (Math.random()<.05) {
+	      if (!zoom.active) {
+		zoom.randomize();
+		zoom.active=true;
+		zoom.start=false;
+	      }
+	    }
+          } else {
+            // clean up zeroed curves
+	    curves[cn].active=false; 
+          }
+        }
+	endMove=true;
+      }
+    } else {
+      d+=lineCurve(cn);
+    }
   }
-}
 
   if (fillColor.active) {
     if (!fillColor.start) {
@@ -671,195 +761,73 @@ if (!fillColor.active) {
       var fhue=(fillColor.fromFillHSL[0]+Math.round(fillColor.hueDiff*frac)+360)%360;
       var fill='hsl('+fhue+','+fillColor.toFillHSL[1]+'%,'+fillColor.toFillHSL[2]+'%)'; 
       path.style.fill=fill;
+      var lhue=(lineColor.fromLineHSL[0]+Math.round(lineColor.hueDiff*frac)+360)%360;
+      var stroke='hsl('+lhue+','+lineColor.toLineHSL[1]+'%,'+lineColor.toLineHSL[2]+'%)'; 
+      path.style.stroke=stroke;
     } else {
       fillColor.active=false;
     }
   }
 
-  if (stops.stop) {
-    stopped=true;
-  } else {
+  if (zoom.active) {
+    if (!zoom.start) {
+      zoom.start=ts;
+    }
+    var progress=ts-zoom.start;
+    if (progress<animateDuration*1000) {
+      var frac=progress/(animateDuration*1000);
+      var scale=zoom.fromScale+(zoom.toScale-zoom.fromScale)*frac;
+      sgroup.style.transform='scale('+scale+')';
+    } else {
+      zoom.active=false;
+    }
+  }
+
+  if (!endMove) {
+    path.setAttribute('d',d);
+  }
+
+  if (isLineActive()) {
     requestAnimationFrame(animate);
-  }
-}
-
-var pauseId;
-function redraw() {
-  if (pause==0) {
-    doTransition();
   } else {
-    pauseId=setTimeout(doTransition, pause*1000);
-  }
-}
-
-function report() {
-  for (var cn=0; cn<=curveCount; cn++) {
-    document.getElementById('curveSel'+cn).value=curves[cn].type;
-    document.getElementById('rad1-'+cn).textContent=curves[cn].r1.toFixed(1);
-    document.getElementById('rad1Sel'+cn).value=curves[cn].r1.toFixed(1);
-    document.getElementById('rad2-'+cn).textContent=curves[cn].r2.toFixed(1);
-    document.getElementById('rad2Sel'+cn).value=curves[cn].r2.toFixed(1);
-    document.getElementById('rad3Sel'+cn).value=curves[cn].r3.toFixed(1);
-    document.getElementById('c0-'+cn).textContent=curves[cn].c0;
-    document.getElementById('c0Sel'+cn).value=curves[cn].c0;
-    document.getElementById('c1-'+cn).textContent=curves[cn].c1;
-    document.getElementById('c1Sel'+cn).value=curves[cn].c1;
-    if (ET==curves[cn].type || HT==curves[cn].type) {
-      document.getElementById('rad3-'+cn).textContent='N/A';
-      document.getElementById('c2-'+cn).textContent='N/A';
+    // TODO nonlineactive
+    if (isAnimationActive()) {
+      requestAnimationFrame(animate);
     } else {
-      document.getElementById('rad3-'+cn).textContent=curves[cn].r3.toFixed(1);
-      document.getElementById('c2-'+cn).textContent=curves[cn].c2;
-      document.getElementById('c2Sel'+cn).value=curves[cn].c2;
-    }
-  }
-}
-
-function get1Curve(rand) {
-  if (rand) {
-    if (symmetry==0) {
-      randomizeCurves();
-    } else {
-      // temporary condition
-      if (curves[0].c1Keep==undefined && curves[0].c2Keep==undefined) {
-	randomizeSym1Curve();
+    
+      if (stops.stop) {
+	stopped=true;
       } else {
-	randomizeCurves();
-      }
-    }
-    scaleToFit();
-  }
-  return getCurve(0);
-}
-
-function get2Curves(rand) {
-  if (rand) {
-    //saveCurves();
-    if (symmetry==0) {
-      randomizeCurves();
-    } else {
-      // temporary condition
-      if (curves[0].c1Keep==undefined && curves[0].c2Keep==undefined && curves[1].c1Keep==undefined && curves[1].c2Keep==undefined) {
-	randomizeSym2Curves();
-      } else {
-	randomizeCurves();
-      }
-    }
-    scaleToFit();
-  }
-  return getCurve(0)+' '+getCurve(1);
-}
-
-function get3Curves(rand) {
-  if (rand) {
-    //saveCurves();
-    if (symmetry==0) {
-      randomizeCurves();
-    } else {
-      // temporary condition
-      if (curves[0].c1Keep==undefined && curves[0].c2Keep==undefined && curves[1].c1Keep==undefined && curves[1].c2Keep==undefined && curves[2].c1Keep==undefined && curves[2].c2Keep==undefined) {
-	randomizeSym3Curves();
-      } else {
-	randomizeCurves();
-      }
-    }
-    scaleToFit();
-  }
-  return getCurve(0)+' '+getCurve(1)+' '+getCurve(2);
-}
-
-function changeCurveCount() {
-  if (Math.random()<curveChangeRate/2) {
-    if (curveCount==TWO) {
-      if (curves[TWO].keep==undefined) {
-	if (Math.random()<.5) {
-	  switchCurve(TWO);
-          return true;
-	} else {
-	  if (curves[THREE].keep==undefined) {
-	    switchCurve(THREE);
-            return true;
-	  }
+	if (stops.cycleChange) {
+	  randomizeCycles();
+	  stops.cycleChange=false;
+	} else if (Math.random()<cycleChangeRate && !cycleLock) {
+	  randomizeCycles();
 	}
-      } else {
-	if (curves[THREE].keep==undefined) {
-	  switchCurve(THREE);
-          return true;
+	for (var cn=0; cn<curveCount; cn++) {
+	  randomizeCurve(cn, stops.pause);
+	  curves[cn].active=true;
+	  curves[cn].start=false;
 	}
-      }
-    } else if (curveCount==ONE) {
-      if (curves[TWO].keep==undefined) {
-	switchCurve(TWO);
-        return true;
-      }
-    } else if (curveCount==THREE) {
-      if (curves[THREE].keep==undefined) {
-	switchCurve(THREE);
-        return true;
+	requestAnimationFrame(animate);
       }
     }
   }
-  return false;
-}
-
-function doTransition() {
-  if (changeCurveCount() && transition=='step') {
-    return;
-  }
-  a2.setAttribute('from',a2.getAttribute('to'));
-  duration.change();
-  if (curveCount==ONE) {
-    a2.setAttribute('to',get1Curve(true));
-  } else if (curveCount==THREE) {
-    a2.setAttribute('to',get3Curves(true));
-  } else {
-    a2.setAttribute('to',get2Curves(true));
-  }
-  report();
-  //setFill();
-  a2.beginElement();
 }
 
 function start() {
-  if (transition=='animate') {
-    return;
-  }
-  a2.setAttribute("onend", "redraw()");
-  transition='animate';
-  doTransition();
-
+  stopped=false;
   stops.stop=false;
+  for (var cn=0; cn<curveCount; cn++) {
+    randomizeCurve(cn);
+    curves[cn].active=true;
+    curves[cn].start=false;
+  }
   requestAnimationFrame(animate);
 }
 
-function step() {
-  a2.setAttribute("onend", "");
-  if (transition=='animate') {
-  } else {
-    a2.endElement();
-    doTransition();
-  }
-  transition='step';
-}
-
 function stop() {
-  clearTimeout(pauseId);
-  a2.setAttribute("onend", "");
-  transition='step';
   stops.stop=true;
-}
-
-function quickChange() {
-  duration.set(a2,'1ms');
-  a2.setAttribute('from',a2.getAttribute('to'));
-  if (curveCount==ONE) {
-    a2.setAttribute('to',get1Curve(false));
-  } else if (curveCount==THREE) {
-    a2.setAttribute('to',get3Curves(false));
-  } else {
-    a2.setAttribute('to',get2Curves(false));
-  }
-  a2.beginElement();
 }
 
 function hideCurve2(ts) {
@@ -879,295 +847,21 @@ function showCurve2(ts) {
   }
 }
 
-function hideCurve3(ts) {
-  var z=document.querySelector('.c3show');
-  if (z==null) {
+function changeDuration(si) {
+/*
+  if (isAnimationActive()) {
+    stops.durationChange=true;
   } else {
-    z.className="c3hide";
-    requestAnimationFrame(hideCurve3);
+    animateDuration=si.value;
   }
-}
-function showCurve3(ts) {
-  var z=document.querySelector('.c3hide');
-  if (z==null) {
-  } else {
-    z.className="c3show";
-    requestAnimationFrame(showCurve3);
-  }
-}
-
-function switchTwoToThree() {
-  curveCount=THREE;
-  var cd =document.getElementById('cdivcurv');
-  if (cd.offsetHeight!=0) {
-    cd.style.height='auto';
-  }
-  showCurve3();
-  document.getElementById('c2btn').style.visibility='hidden';
-  document.getElementById('c3btn').textContent='remove';
-  a2.setAttribute('from',getZeroCurve()+' '+getZeroCurve()+' '+getZeroCurve());
-  curves[1].reset=true;
-  a2.setAttribute('to',get3Curves(false));
-  if (transition=='step') {
-    a2.setAttribute("onend", "");
-  } else {
-    a2.setAttribute("onend", "redraw()");
-  }
-  report();
-  a2.beginElement();
-}
-
-function switchThreeToTwo() {
-  curveCount=TWO;
-  var cd=document.getElementById('cdivcurv');
-  if (cd.offsetHeight!=0) {
-    cd.style.height='auto';
-  }
-  hideCurve3();
-  document.getElementById('c3btn').textContent='add';
-  document.getElementById('c2btn').style.visibility='visible';
-  a2.setAttribute('from',getZeroCurve()+' '+getZeroCurve());
-  a2.setAttribute('to',get2Curves(false));
-  if (transition=='step') {
-    a2.setAttribute("onend", "");
-  } else {
-    a2.setAttribute("onend", "redraw()");
-  }
-  report();
-  a2.beginElement();
-}
-
-function switchOneToTwo() {
-  curveCount=TWO;
-  var cd=document.getElementById('cdivcurv');
-  if (cd.offsetHeight!=0) {
-    cd.style.height='auto';
-  }
-  showCurve2();
-  document.getElementById('c2btn').textContent='remove';
-  document.getElementById('c3tr').style.display='table-row';
-  a2.setAttribute('from',getZeroCurve()+' '+getZeroCurve());
-  curves[1].reset=true;
-  a2.setAttribute('to',get2Curves(false));
-  if (transition=='step') {
-    a2.setAttribute("onend", "");
-  } else {
-    a2.setAttribute("onend", "redraw()");
-  }
-  report();
-  a2.beginElement();
-}
-
-function switchToOne() {
-  curveCount=ONE;
-  var cd=document.getElementById('cdivcurv');
-  if (cd.offsetHeight!=0) {
-    cd.style.height='auto';
-  }
-  hideCurve2();
-  document.getElementById('c2btn').textContent='add';
-  document.getElementById('c3tr').style.display='none';
-  a2.setAttribute('from',getZeroCurve());
-  a2.setAttribute('to',get1Curve(false));
-  if (transition=='step') {
-    a2.setAttribute("onend", "");
-  } else {
-    a2.setAttribute("onend", "redraw()");
-  }
-  report();
-  a2.beginElement();
-}
-
-function toZero(cc) {
-  a2.setAttribute('from',a2.getAttribute('to'));
-  if (curveCount==ONE) {
-    a2.setAttribute('to',getZeroCurve());
-    a2.setAttribute("onend", "switchOneToTwo()");
-  } else if (curveCount==TWO) {
-    a2.setAttribute('to',getZeroCurve()+' '+getZeroCurve());
-    if (cc==THREE) {
-      a2.setAttribute("onend", "switchTwoToThree()");
-    } else {
-      a2.setAttribute("onend", "switchToOne()");
-    }
-  } else {
-    a2.setAttribute('to',getZeroCurve()+' '+getZeroCurve()+' '+getZeroCurve());
-    a2.setAttribute("onend", "switchThreeToTwo()");
-  } 
-  duration.setDuration(a2,1);
-  duration.reset=true;
-  a2.beginElement();
-}
-
-function switchCurve(cc) {
-  if (transition=='step') {
-    toZero(cc);
-  } else {
-    a2.setAttribute('onend', 'toZero('+cc+')');
-  }
-}
-
-function addRemoveCurve(cc) {
-  if (transition=='step') {
-    toZero(cc);
-  } else {
-    a2.setAttribute('onend', 'toZero('+cc+')');
-  }
-}
-
-function keepCurve(cb,cn) {
- if (cb.checked) {
-    curves[cn].keep=true;
-  } else {
-    curves[cn].keep=undefined;
-  }
-}
-
-function keepType(cb,cn) {
-  if (cb.checked) {
-    curves[cn].typeKeep=curves[cn].type;
-  } else {
-    curves[cn].typeKeep=undefined;
-  }
-}
-
-function changeType(sel,cn) {
-  curves[cn].type=sel.value;
-  if (ET==curves[cn].type || HT==curves[cn].type) {
-    document.getElementById('rad3-'+cn).textContent='N/A';
-    document.getElementById('c2-'+cn).textContent='N/A';
-  } else {
-    document.getElementById('rad3-'+cn).textContent=curves[cn].r3.toFixed(1);
-    document.getElementById('c2-'+cn).textContent=curves[cn].c2;
-    document.getElementById('c2Sel'+cn).value=curves[cn].c2;
-  }
-  if ('animate'==transition) {
-    document.getElementById('kCurve'+cn).checked='checked';
-    curves[cn].typeKeep=curves[cn].type;
-  } else {
-    quickChange();
-  }
-}
-
-function keepR1(cb,cn) {
-  if (cb.checked) {
-    document.getElementById('rad1Sel'+cn).value=curves[cn].r1.toFixed(0);
-    curves[cn].r1Keep=curves[cn].r1;
-  } else {
-    curves[cn].r1Keep=undefined;
-  }
-}
-function changeR1(inp,cn) {
-  curves[cn].r1=parseFloat(inp.value);
-  document.getElementById('rad1-'+cn).textContent=curves[cn].r1.toFixed(1);
-  if ('animate'==transition) {
-    document.getElementById('kR0-'+cn).checked='checked';
-    curves[cn].r1Keep=curves[cn].r1;
-  } else {
-    quickChange();
-  }
-}
-
-function keepR2(cb,cn) {
-  if (cb.checked) {
-    curves[cn].drawKeep=curves[cn].r2;
-  } else {
-    curves[cn].drawKeep=undefined;
-  }
-}
-function changeR2(inp,cn) {
-  curves[cn].r2=parseFloat(inp.value);
-  document.getElementById('rad2-'+cn).textContent=curves[cn].r2.toFixed(1);
-  if ('animate'==transition) {
-    document.getElementById('kR1-'+cn).checked='checked';
-    curves[cn].drawKeep=curves[cn].r2;
-  } else {
-    quickChange();
-  }
-}
-function keepR3(cb,cn) {
-  if (cb.checked) {
-    curves[cn].r3Keep=curves[cn].r3;
-  } else {
-    curves[cn].r3Keep=undefined;
-  }
-}
-function changeR3(inp,cn) {
-  curves[cn].r3=parseFloat(inp.value);
-  if (!(ET==curves[cn].type || HT==curves[cn].type)) {
-    document.getElementById('rad3-'+cn).textContent=curves[cn].r3.toFixed(1);
-  }
-  if ('animate'==transition) {
-    document.getElementById('kR3-'+cn).checked='checked';
-    curves[cn].r3Keep=curves[cn].r3;
-  } else {
-    quickChange();
-  }
-}
-
-function keepC0(cb,cn) {
-  if (cb.checked) {
-    curves[cn].c0Keep=curves[cn].c0;
-  } else {
-    curves[cn].c0Keep=undefined;
-  }
-}
-function changeC0(inp,cn) {
-  curves[cn].c0=parseInt(inp.value);
-  document.getElementById('c0-'+cn).textContent=curves[cn].c0;
-  if ('animate'==transition) {
-    document.getElementById('kC0-'+cn).checked='checked';
-    curves[cn].c0Keep=curves[cn].c0;
-  } else {
-    quickChange();
-  }
-}
-
-function keepC1(cb,cn) {
-  if (cb.checked) {
-    curves[cn].c1Keep=curves[cn].c1;
-  } else {
-    curves[cn].c1Keep=undefined;
-  }
-}
-function changeC1(inp,cn) {
-  curves[cn].c1=parseInt(inp.value);
-  document.getElementById('c1-'+cn).textContent=curves[cn].c1;
-  if ('animate'==transition) {
-    document.getElementById('kC1-'+cn).checked='checked';
-    curves[cn].c1Keep=curves[cn].c1;
-  } else {
-    quickChange();
-  }
-}
-
-function keepC2(cb,cn) {
-  if (cb.checked) {
-    curves[cn].c2Keep=curves[cn].c2;
-  } else {
-    curves[cn].c2Keep=undefined;
-  }
-}
-function changeC2(inp,cn) {
-  curves[cn].c2=parseInt(inp.value);
-  if (!(ET==curves[cn].type || HT==curves[cn].type)) {
-    document.getElementById('c2-'+cn).textContent=curves[cn].c2
-  }
-  if ('animate'==transition) {
-    document.getElementById('kC2-'+cn).checked='checked';
-    curves[cn].c2Keep=curves[cn].c2;
-  } else {
-    quickChange();
-  }
-}
-
-function changeSymmetry(si) {
-  symmetry=parseInt(si.value);
-  curves[0].reset=true;
+*/
+    animateDuration=si.value;
+  document.getElementById('durRep').textContent=si.value+'s';
 }
 
 function changeRotation(si) {
   rotationFactor=si.value;
+  document.getElementById('rotRep').textContent=(si.value*100).toFixed(0)+'%';
 }
 
 function changePause(si) {
@@ -1178,16 +872,164 @@ function changeDamp(si) {
   curveChangeRate=si.value;
 }
 
-function changeLineWidth(inp) {
-  path.style.setProperty('stroke-width',inp.value,'');
+function inputCurveCount(si) {
+  document.getElementById('ccRep').textContent=si.value;
+  if (isAnimationActive()) {
+    document.getElementById('kCount').checked=true;
+    curveCountLock=true;
+    switchCurveCount(parseInt(si.value));
+  } else {
+    changeCurveCount(parseInt(si.value));
+  }
+}
+
+function lockCurveCount(cb) {
+  if (cb.checked) {
+    curveCountLock=true;
+  } else {
+    curveCountLock=false;
+  }
+}
+
+function inputCurveCycles(si) {
+  document.getElementById('cvRep').textContent=si.value;
+  cycleSet=parseInt(si.value);
+  resetCycleSet();
+  if (isAnimationActive()) {
+    cycleLock=true;
+    document.getElementById('kCycle').checked='checked';
+  } else {
+    for (var cn=0; cn<curveCount; cn++) {
+      setCurve(cn);
+    }
+    drawCurves();
+  }
+}
+
+function lockCurveCycles(cb) {
+  if (cb.checked) {
+    cycleLock=true;
+  } else {
+    cycleLock=false;
+  }
+}
+
+function changeFillHue(inp) {
+  fillColor.toFillHSL[0]=parseInt(inp.value);
+  document.getElementById('hueRep').textContent=inp.value;
+  var col=fillColor.getHSLString();
+  document.querySelectorAll('.fillCol').forEach(function(hdiv) {
+    hdiv.style.backgroundColor=col;
+  });
+  path.style.fill=fillColor.getHSLString();
+  if (isAnimationActive()) {
+    document.getElementById('kHue').checked=true;
+    fillColor.lock=true;
+    fillColor.active=false;
+  } else {
+///
+    drawCurves();
+  }
+}
+
+function lockHue(cb) {
+  if (cb.checked) {
+    fillColor.lock=true;
+    fillColor.active=false;
+  } else {
+    fillColor.lock=false;
+    fillColor.active=true;
+  }
+}
+
+function changeFillSaturation(inp) {
+  fillColor.toFillHSL[1]=parseInt(inp.value);
+  document.getElementById('satRep').textContent=inp.value+'%';
+  var col=fillColor.getHSLString();
+  document.querySelectorAll('.fillCol').forEach(function(hdiv) {
+    hdiv.style.backgroundColor=col;
+  });
+  ctx.fillStyle=fillColor.getHSLString();
+  if (isAnimationActive()) {
+  } else {
+    drawCurves();
+  }
+}
+
+function changeFillLuminosity(inp) {
+  fillColor.toFillHSL[2]=parseInt(inp.value);
+  document.getElementById('lumRep').textContent=inp.value+'%';
+  var col=fillColor.getHSLString();
+  document.querySelectorAll('.fillCol').forEach(function(hdiv) {
+    hdiv.style.backgroundColor=col;
+  });
+  ctx.fillStyle=fillColor.getHSLString();
+  if (isAnimationActive()) {
+  } else {
+    drawCurves();
+  }
 }
 
 function changeLineWidth(inp) {
   path.style.setProperty('stroke-width',inp.value,'');
 }
 
-function changeLineColor(inp) {
-  path.style.setProperty('stroke',inp.value,'');
+function changeLineWidth(inp) {
+  path.style.setProperty('stroke-width',inp.value,'');
+}
+
+function changeLineHue(inp) {
+  lineColor.toLineHSL[0]=parseInt(inp.value);
+  document.getElementById('lineHueRep').textContent=inp.value;
+  var col=lineColor.getHSLString();
+  document.querySelectorAll('.lineCol').forEach(function(hdiv) {
+    hdiv.style.backgroundColor=col;
+  });
+  path.style.stroke=lineColor.getHSLAString();
+  if (isAnimationActive()) {
+    document.getElementById('kLineHue').checked=true;
+    lineColor.lock=true;
+    lineColor.active=false;
+  } else {
+    drawCurves();
+  }
+}
+
+function lockLineHue(cb) {
+  if (cb.checked) {
+    lineColor.lock=true;
+  } else {
+    lineColor.lock=false;
+    stops.durationChange=true;  // no change, just resync
+  }
+}
+
+function changeLineSaturation(inp) {
+  lineColor.toLineHSL[1]=parseInt(inp.value);
+  document.getElementById('lineSatRep').textContent=inp.value;
+  var col=lineColor.getHSLString();
+  document.querySelectorAll('.lineCol').forEach(function(hdiv) {
+    hdiv.style.backgroundColor=col;
+  });
+  path.style.stroke=lineColor.getHSLAString();
+  if (isAnimationActive()) {
+  } else {
+    drawCurves();
+  }
+}
+
+function changeLineLuminosity(inp) {
+  lineColor.toLineHSL[2]=parseInt(inp.value);
+  document.getElementById('lineLumRep').textContent=inp.value;
+  var col=lineColor.getHSLString();
+  document.querySelectorAll('.lineCol').forEach(function(hdiv) {
+    hdiv.style.backgroundColor=col;
+  });
+  path.style.stroke=lineColor.getHSLAString();
+  if (isAnimationActive()) {
+  } else {
+    drawCurves();
+  }
 }
 
 function setMenu(menu,on) {
