@@ -171,9 +171,8 @@
 	    <tr>
 	      <td class="tlabel">Line width:</td>
 	      <td colspan="2" class="control">
-		<div class="slabelLeft">none</div>
-		<input type="range" class="sliderP" min="0" max="5" step=".1" value=".3" oninput="changeLineWidth(this);"></input>
-		<div class="slabelRight">full</div>
+		<div id="widthRep" class="treport">0.8</div>
+		<input type="range" class="sliderP" min="0" max="5" step=".1" value="0.8" oninput="inputLineWidth(this);"></input>
 	      </td>
 	    </tr>
 	    <tr>
@@ -206,6 +205,14 @@
                 </div>
 		<input id="lineLumSel" type="range" class="sliderP" min="0" max="100" step="1" value="30" oninput="changeLineLuminosity(this);"></input>
 	      </td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel">Zoom:</td>
+	      <td class="control">
+		<div id="zoomRep" class="treport">100%</div>
+		<input id="zoomSel" type="range" class="sliderP" min=".5" max="2" step=".01" value="1" oninput="inputZoom(this);"></input>
+	      </td>
+	      <td><input id="kScale" type="checkbox" onclick="lockScale(this);"/></td>
 	    </tr>
 	    <tr><td colspan="3" style="padding:4px;"></td></tr>
 	  </table>

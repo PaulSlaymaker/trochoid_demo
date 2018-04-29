@@ -65,18 +65,8 @@ function powerRandom(p) {
 }
 
 var path=document.getElementById('rpath');
-var sgroup=document.getElementById('roid');
-
-var a2=document.createElementNS("http://www.w3.org/2000/svg", "animate");
-a2.setAttribute('attributeName','d');
-a2.setAttribute('to',getZeroCurve()+' '+getZeroCurve());
-a2.setAttribute('fill','freeze');
-a2.setAttribute('begin','indefinate');
-a2.setAttribute('restart','whenNotActive');
-a2.setAttribute("calcMode", "spline");
-a2.setAttribute("keyTimes", "0;1");
-a2.setAttribute("keySplines", ".4 0 .6 1");
-//path.appendChild(a2);
+//var sgroup=document.getElementById('roid');
+var sgroup=document.getElementById('pcontrol');
 
 var fillColor={
   fromFillHSL:[40,60,60],
@@ -176,6 +166,8 @@ var zoom={
     zoom.fromScale=zoom.toScale;
     var zf=(curveCount+cycleSet-7)/10;
     zoom.toScale=1+zf*Math.random();
+    document.getElementById('zoomRep').textContent=(zoom.toScale*100).toFixed(0)+'%';
+    document.getElementById('zoomSel').value=zoom.toScale;
   }
 };
 
@@ -567,12 +559,12 @@ function randomizeRadii(cn) {
     }
     return maxr;
   }();
-  var fac=200/maxC;
+  var fac=zoom.toScale*200/maxC;
   if (cn==0) {
     for (var i=0; i<curves[cn].rc+1; i++) {
       curves[cn].r[i]*=fac;
     }
-  } else if (maxC>200) {
+  } else if (maxC>zoom.toScale*200) {
     for (var i=0; i<curves[cn].rc+1; i++) {
       curves[cn].r[i]*=fac;
     }
@@ -605,10 +597,10 @@ function isAnimationActive() {
   if (fillColor.active) { 
     return true; 
   }
+/*
   if (zoom.active) {
     return true;
   }
-/*
   if (rotation.active) { 
     return true; 
   }
@@ -732,11 +724,11 @@ function animate(ts) {
 		fillColor.start=false;
 	      }
 	    }
-	    if (Math.random()<.05) {
+	    if (Math.random()<.05 && !zoom.lock) {
 	      if (!zoom.active) {
 		zoom.randomize();
-		zoom.active=true;
-		zoom.start=false;
+		//zoom.active=true;
+		//zoom.start=false;
 	      }
 	    }
           } else {
@@ -769,6 +761,7 @@ function animate(ts) {
     }
   }
 
+/*
   if (zoom.active) {
     if (!zoom.start) {
       zoom.start=ts;
@@ -777,11 +770,14 @@ function animate(ts) {
     if (progress<animateDuration*1000) {
       var frac=progress/(animateDuration*1000);
       var scale=zoom.fromScale+(zoom.toScale-zoom.fromScale)*frac;
-      sgroup.style.transform='scale('+scale+')';
+      //var matrix='matrix(0,-'+scale+','+scale+',0,200,200)';
+      //sgroup.setAttribute('transform',matrix);
+      //sgroup.style.transform='scale('+scale+')';
     } else {
       zoom.active=false;
     }
   }
+*/
 
   if (!endMove) {
     path.setAttribute('d',d);
@@ -822,6 +818,12 @@ function start() {
     randomizeCurve(cn);
     curves[cn].active=true;
     curves[cn].start=false;
+  }
+  if (!fillColor.lock) {
+    fillColor.randomize();
+    lineColor.randomize();
+    fillColor.active=true;
+    fillColor.start=false;
   }
   requestAnimationFrame(animate);
 }
@@ -970,15 +972,12 @@ function changeFillLuminosity(inp) {
   }
 }
 
-function changeLineWidth(inp) {
+function inputLineWidth(inp) {
   path.style.setProperty('stroke-width',inp.value,'');
+  document.getElementById('widthRep').textContent=parseFloat(inp.value).toFixed(1);
 }
 
-function changeLineWidth(inp) {
-  path.style.setProperty('stroke-width',inp.value,'');
-}
-
-function changeLineHue(inp) {
+function changeLineHue(inp) {	// immediate
   lineColor.toLineHSL[0]=parseInt(inp.value);
   document.getElementById('lineHueRep').textContent=inp.value;
   var col=lineColor.getHSLString();
@@ -1018,7 +1017,7 @@ function changeLineSaturation(inp) {
   }
 }
 
-function changeLineLuminosity(inp) {
+function changeLineLuminosity(inp) {	// immediate
   lineColor.toLineHSL[2]=parseInt(inp.value);
   document.getElementById('lineLumRep').textContent=inp.value;
   var col=lineColor.getHSLString();
@@ -1029,6 +1028,39 @@ function changeLineLuminosity(inp) {
   if (isAnimationActive()) {
   } else {
     drawCurves();
+  }
+}
+
+function resetScale() {
+  var rescale=zoom.toScale/zoom.fromScale;
+  for (var cn=0; cn<curveCount; cn++) {
+    for (var i=0; i<curves[cn].rc+1; i++) {
+      curves[cn].r[i]*=rescale;
+    }
+    setCurve(cn);
+  }
+  drawCurves();
+}
+
+function inputZoom(inp) {
+  zoom.fromScale=zoom.toScale;
+  zoom.toScale=parseFloat(inp.value);
+  document.getElementById('zoomRep').textContent=(inp.value*100).toFixed(0)+'%';
+  //sgroup.style.transform='scale('+inp.value+')';
+  zoom.active=false;
+  if (isAnimationActive()) {
+    document.getElementById('kScale').checked=true;
+    zoom.lock=true;
+  } else {
+    resetScale();
+  }
+}
+
+function lockScale(cb) {
+  if (cb.checked) {
+    zoom.lock=true;
+  } else {
+    zoom.lock=false;
   }
 }
 
