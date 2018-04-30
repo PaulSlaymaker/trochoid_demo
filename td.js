@@ -175,7 +175,7 @@ function getRandomInt(min, max, low) {
   min=Math.ceil(min);
   max=Math.floor(max);
   if (low) {
-    return Math.floor(Math.random()*Math.random()*(max-min))+min; 
+    return Math.floor(powerRandom(low)*(max-min))+min; 
   } else {
     return Math.floor(Math.random()*(max-min))+min; //The maximum is exclusive and the minimum is inclusive
   }
@@ -435,26 +435,26 @@ function getCycle0Match() {
     case 2:
       return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9,6)];
     case 3:
-      return [1,2,4,5,7,8,10,11,13,14,16,16][getRandomInt(0,12,5)];
+      return [1,2,4,5,7,8,10,11,13,14,16,17][getRandomInt(0,12,5)];
     case 4:
-      return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9,4)];
+      return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9,5)];
     case 5:
-      return [1,2,3,4,6,7,8,9,11,12,13,14,16,17][getRandomInt(0,14,3)];
+      return [1,2,3,4,6,7,8,9,11,12,13,14,16,17][getRandomInt(0,14,4)];
     case 7:
-      return [1,2,3,4,5,6,8,9,10,11,12,13,15,16,17][getRandomInt(0,15,2)];
+      return [1,2,3,4,5,6,8,9,10,11,12,13,15,16,17][getRandomInt(0,15,4)];
     case 8:
-      return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9)];
+      return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9,3)];
     case 9:
-      return [1,2,4,5,7,8,10,11,13,14,16,17][getRandomInt(0,12)];
+      return [1,2,4,5,7,8,10,11,13,14,16,17][getRandomInt(0,12,3)];
     case 10:
-      return [1,3,7,9,11,13,17][getRandomInt(0,7)];
+      return [1,3,7,9,11,13,17][getRandomInt(0,7,3)];
     case 11:
-      return [1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,17][getRandomInt(0,16)];
+      return [1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,17][getRandomInt(0,16,2)];
     case 6:
     case 12:
-      return [1,5,7,11,13,17][getRandomInt(0,6)];
+      return [1,5,7,11,13,17][getRandomInt(0,6,2)];
     case 13:
-      return [1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,17][getRandomInt(0,16)];
+      return [1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,17][getRandomInt(0,16,2)];
     case 14:
       return [1,3,5,9,11,13,15,17][getRandomInt(0,8)];
     case 15:
@@ -513,7 +513,7 @@ function randomizeCycles() {
     }
     return [6,7,8,9,10,11,12,13,14,15,16,17];
   }
-  cycleSet=goodArray()[getRandomInt(0,12,3)];
+  cycleSet=goodArray()[getRandomInt(0,12,4)];
   resetCycleSet();
   document.getElementById('cvRep').textContent=cycleSet;
   document.getElementById('cvRange').value=cycleSet;
