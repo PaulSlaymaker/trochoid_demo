@@ -709,6 +709,9 @@ function animate(ts) {
             if (!curveCountLock) {
 	      randomCurveCountChange(true);
             }
+	    if (Math.random()<.15) {
+	      curves[cn].c0=getCycle0Match();
+	    }
 	    if (Math.random()<cycleChangeRate/curveCount && !cycleLock) {
 	      stops.cycleChange=true;
 	    }
