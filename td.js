@@ -77,21 +77,21 @@ var fillColor={
   start:null,
   active:false,
   randomize:function() {
-    fillColor.fromFillHSL=fillColor.toFillHSL.slice();
-    fillColor.hueDiff=fillHueChangeRate*(180-Math.round(360*Math.random()));
-    if (fillColor.fromFillHSL[0]+fillColor.hueDiff>360 || fillColor.fromFillHSL[0]+fillColor.hueDiff<0) { 
-      fillColor.hueDiff*=-1;
+    this.fromFillHSL=this.toFillHSL.slice();
+    this.hueDiff=fillHueChangeRate*(180-Math.round(360*Math.random()));
+    if (this.fromFillHSL[0]+this.hueDiff>360 || this.fromFillHSL[0]+this.hueDiff<0) { 
+      this.hueDiff*=-1;
     }
-    fillColor.toFillHSL[0]=fillColor.fromFillHSL[0]+Math.round(fillColor.hueDiff);
-    var col=fillColor.getHSLString();
+    this.toFillHSL[0]=this.fromFillHSL[0]+Math.round(this.hueDiff);
+    var col=this.getHSLString();
     document.querySelectorAll('.fillCol').forEach(function(hdiv) {
       hdiv.style.backgroundColor=col;
     });
-    document.getElementById('hueRep').textContent=fillColor.toFillHSL[0];
-    document.getElementById('hueSel').value=fillColor.toFillHSL[0];
+    document.getElementById('hueRep').textContent=this.toFillHSL[0];
+    document.getElementById('hueSel').value=this.toFillHSL[0];
   },
   getHSLString:function() {
-    return 'hsl('+fillColor.toFillHSL[0]+','+fillColor.toFillHSL[1]+'%,'+fillColor.toFillHSL[2]+'%)'; 
+    return 'hsl('+this.toFillHSL[0]+','+this.toFillHSL[1]+'%,'+this.toFillHSL[2]+'%)'; 
   }
 };
 path.style.fill=fillColor.getHSLString();
@@ -106,29 +106,29 @@ var lineColor={
   active:false,
   fillOffset:90,
   randomize:function() {
-    lineColor.fromLineHSL=lineColor.toLineHSL.slice();
+    this.fromLineHSL=this.toLineHSL.slice();
     if (Math.random()<.3) {
-      lineColor.fillOffset=[90,180,240][getRandomInt(0,3)]; 
+      this.fillOffset=[90,180,240][getRandomInt(0,3)]; 
     }
-    var lineHue=(fillColor.toFillHSL[0]+lineColor.fillOffset)%360;
-    lineColor.hueDiff=lineHue-lineColor.toLineHSL[0];
-    if (lineColor.fromLineHSL[0]+lineColor.hueDiff>360 || lineColor.fromLineHSL[0]+lineColor.hueDiff<0) { 
-      lineColor.hueDiff*=-1;
+    var lineHue=(fillColor.toFillHSL[0]+this.fillOffset)%360;
+    this.hueDiff=lineHue-this.toLineHSL[0];
+    if (this.fromLineHSL[0]+this.hueDiff>360 || this.fromLineHSL[0]+this.hueDiff<0) { 
+      this.hueDiff*=-1;
     }
-    lineColor.toLineHSL[0]=lineHue;
-    var col=lineColor.getHSLString();
+    this.toLineHSL[0]=lineHue;
+    var col=this.getHSLString();
       document.querySelectorAll('.lineCol').forEach(function(hdiv) {
       hdiv.style.backgroundColor=col;
     });
-    document.getElementById('lineHueRep').textContent=lineColor.toLineHSL[0];
-    document.getElementById('lineHueSel').value=lineColor.toLineHSL[0];
+    document.getElementById('lineHueRep').textContent=this.toLineHSL[0];
+    document.getElementById('lineHueSel').value=this.toLineHSL[0];
   },
   getHSLString:function() {
-    return 'hsl('+lineColor.toLineHSL[0]+','+lineColor.toLineHSL[1]+'%,'+lineColor.toLineHSL[2]+'%)'; 
+    return 'hsl('+this.toLineHSL[0]+','+this.toLineHSL[1]+'%,'+this.toLineHSL[2]+'%)'; 
   },
   getHSLAString:function() {
-    //return 'hsla('+lineColor.toLineHSL[0]+','+lineColor.toLineHSL[1]+'%,'+lineColor.toLineHSL[2]+'%,'+lineWO.toOpacity+')'; 
-    return 'hsl('+lineColor.toLineHSL[0]+','+lineColor.toLineHSL[1]+'%,'+lineColor.toLineHSL[2]+'%)'; 
+    //return 'hsla('+this.toLineHSL[0]+','+this.toLineHSL[1]+'%,'+this.toLineHSL[2]+'%,'+lineWO.toOpacity+')'; 
+    return 'hsl('+this.toLineHSL[0]+','+this.toLineHSL[1]+'%,'+this.toLineHSL[2]+'%)'; 
   }
 };
 path.style.stroke=lineColor.getHSLString();
@@ -137,21 +137,21 @@ var duration={
   factor:1,
   reset:true,
   changeSpeed:function(si) {
-    duration.factor=1/Math.pow((parseInt(si.value)+2)/6,2);
-    duration.reset=true;
+    this.factor=1/Math.pow((parseInt(si.value)+2)/6,2);
+    this.reset=true;
   },
   change:function() {
-    if (duration.reset) {
-      duration.reset=false;
+    if (this.reset) {
+      this.reset=false;
     }
   },
   setDuration:function(anime,s) {
-    anime.setAttribute('dur',s*duration.factor+'s');
-    duration.reset=true;
+    anime.setAttribute('dur',s*this.factor+'s');
+    this.reset=true;
   },
   set:function(anime,d) {
     anime.setAttribute('dur',d);
-    duration.reset=true;
+    this.reset=true;
   }
 };
 
@@ -163,11 +163,11 @@ var zoom={
   start:null,
   active:false,
   randomize:function() {
-    zoom.fromScale=zoom.toScale;
+    this.fromScale=this.toScale;
     var zf=(curveCount+cycleSet-7)/10;
-    zoom.toScale=1+zf*Math.random();
-    document.getElementById('zoomRep').textContent=(zoom.toScale*100).toFixed(0)+'%';
-    document.getElementById('zoomSel').value=zoom.toScale;
+    this.toScale=1+zf*Math.random();
+    document.getElementById('zoomRep').textContent=(this.toScale*100).toFixed(0)+'%';
+    document.getElementById('zoomSel').value=this.toScale;
   }
 };
 
