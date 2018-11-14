@@ -13,21 +13,25 @@ var curves=[
 ];
 
 var stopped;
-var stops={
+var halts={
   stop:false,
   cycleChange:false,
   durationChange:false,
   pause:false,
+  gradient:false,
 }
 
-var animateDuration=8;
+var animateDuration=10;
 var rotationFactor=.15;
 var pause=0;
 var curveCount=3;
 var curveCountChangeRate=.3;
 var curveCountLock=false;
 var cycleSet=3;
-var cycleChangeRate=.15;
+
+//////
+var cycleChangeRate=.35;
+//////
 var cycleLock=false;
 var curveTypeChangeRate=.7;
 var fillHueChangeRate=.3;
@@ -73,7 +77,7 @@ var fillColor={
   toFillHSL:[40,60,60],
   hueDiff:0,
   duration:animateDuration,
-  lock:false,
+  lock:true,
   start:null,
   active:false,
   randomize:function() {
@@ -94,14 +98,15 @@ var fillColor={
     return 'hsl('+this.toFillHSL[0]+','+this.toFillHSL[1]+'%,'+this.toFillHSL[2]+'%)'; 
   }
 };
-path.style.fill=fillColor.getHSLString();
+//path.style.fill=fillColor.getHSLString();
+path.style.fill='url(#phsRG)';
 
 var lineColor={
   fromLineHSL:[220,100,80],
   toLineHSL:[220,100,80],
   hueDiff:0,
   duration:animateDuration,
-  lock:false,
+  lock:true,
   start:null,
   active:false,
   fillOffset:90,
@@ -131,7 +136,7 @@ var lineColor={
     return 'hsl('+this.toLineHSL[0]+','+this.toLineHSL[1]+'%,'+this.toLineHSL[2]+'%)'; 
   }
 };
-path.style.stroke=lineColor.getHSLString();
+//path.style.stroke=lineColor.getHSLString();
 
 var duration={
   factor:1,
@@ -165,11 +170,117 @@ var zoom={
   randomize:function() {
     this.fromScale=this.toScale;
     var zf=(curveCount+cycleSet-7)/10;
-    this.toScale=1+zf*Math.random();
+    //this.toScale=1+zf*Math.random();
+this.toScale=1+zf*Math.random()+.2;
     document.getElementById('zoomRep').textContent=(this.toScale*100).toFixed(0)+'%';
     document.getElementById('zoomSel').value=this.toScale;
   }
-};
+}
+
+var Stop=function(number,oArr) {
+  this.number=number
+  this.el=document.createElementNS("http://www.w3.org/2000/svg", "stop");
+  this.el.setAttribute('offset',oArr[0]);
+  this.el.setAttribute('stop-opacity',oArr[1]);
+  this.fromOffset=oArr[0];
+  this.toOffset=oArr[0];
+  this.oLock=true;
+  this.oTime=0;
+  this.oActive=false;
+  this.fromHSL=[40,90,80];
+  this.toHSL=[getRandomInt(0,360),90,80];
+  this.fromHSL[0]=this.toHSL[0];
+  this.el.setAttribute('stop-color',this.getHSLString());
+  this.cLock=true;
+  this.cTime=0;
+  this.cActive=false;
+  this.hueDiff=0;
+  this.fromOpacity=oArr[1];
+  this.toOpacity=oArr[1];
+  this.state='';
+  if (oArr[0]==0) {
+    this.state='zero';
+  } else if (oArr[0]==1) {
+    this.state='black';
+  } else {
+    this.state='active';
+  }
+  this.animateDuration=animateDuration;
+  this.randomizeColor=function() {
+    this.fromHSL=this.toHSL.slice();
+    this.hueDiff=180-Math.round(360*Math.random());
+    if (this.fromHSL[0]+this.hueDiff>360 || this.fromHSL[0]+this.hueDiff<0) {
+      this.hueDiff*=-1;
+    }
+    this.toHSL[0]=this.fromHSL[0]+Math.round(this.hueDiff);
+  }
+  this.setRandomColor=function() {
+    this.hueDiff=0;
+    this.toHSL[0]=Math.round(360*Math.random());
+    this.fromHSL[0]=this.toHSL[0];
+    this.el.setAttribute('stop-color',this.getHSLString());
+  }
+  this.randomize=function() {
+    this.fromOffset=this.toOffset;
+    this.toOffset=so[this.number][0];
+    this.fromOpacity=this.toOpacity;
+    this.toOpacity=so[this.number][1];
+  }
+
+  this.randomizeDuration=function() {
+    this.animateDuration=duration*(.3+.7*Math.random());
+  }
+}
+
+Stop.prototype.setOffset=function(offset) {
+  this.fromOffset=this.toOffset;
+  this.toOffset=offset;
+//console.log('** %f %f %f',offset,this.fromOffset,this.toOffset);
+}
+
+Stop.prototype.changeHue=function(inp) {
+  this.fromHSL[0]=this.toHSL[0];
+  this.toHSL[0]=parseFloat(inp.value);
+  this.el.setAttribute('stop-color',this.getHSLString());
+}
+
+Stop.prototype.getHSLString=function() {
+  return 'hsl('+this.toHSL[0]+','+this.toHSL[1]+'%,'+this.toHSL[2]+'%)';
+}
+
+Stop.prototype.setMidOffset=function(frac) {
+  //let fos=cbLoc(this.fromOffset,this.toOffset,frac);
+  let fos=this.toOffset*frac+this.fromOffset*(1-frac);
+  this.el.setAttribute('offset',fos);
+}
+
+Stop.prototype.setMidFade=function(frac) {
+  //this.el.setAttribute('stop-opacity',1-frac);
+  let op=this.toOpacity*frac+this.fromOpacity*(1-frac);
+  this.el.setAttribute('stop-opacity',op);
+}
+
+Stop.prototype.setMidColor=function(frac) {
+  if (this.state=='fade') {
+    var fill='hsl('+this.fromHSL[0]+','+this.toHSL[1]+'%,'+this.toHSL[2]*(1-frac)+'%)';
+  } else {
+    let hue=(this.fromHSL[0]+Math.round(this.hueDiff*frac)+360)%360;
+    var fill='hsl('+hue+','+this.toHSL[1]+'%,'+this.toHSL[2]+'%)';
+  }
+  this.el.setAttribute('stop-color',fill);
+}
+
+Stop.prototype.inactivate=function() {
+  if (this.state=='active' || this.state=='fade') {
+    this.state='rest';
+  }
+}
+
+Stop.prototype.activate=function() {
+  if (this.state=='rest') {
+    this.state='active';
+  }
+}
 
 function getRandomInt(min, max, low) {
   min=Math.ceil(min);
@@ -571,9 +682,9 @@ function randomizeRadii(cn) {
   }
 }
 
-function randomizeCurve(cn) {
+function randomizeCurve(cn,initial) {
   curves[cn].fdata=curves[cn].tdata.slice();
-  if (Math.random()<.7) {
+  if (initial || Math.random()<.7) {
     curves[cn].rc=[1,2,3][getRandomInt(0,3,curveCount/1.2 /*TODO include cycleSet*/)];
     for (var j=0; j<curves[cn].rc; j++) {
       if (Math.random()<.05) {
@@ -596,6 +707,11 @@ function isAnimationActive() {
   }
   if (fillColor.active) { 
     return true; 
+  }
+  for (let stop of stops) {
+    if (stop.state=='active' || stop.state=='fade') {
+      return true; 
+    }
   }
 /*
   if (zoom.active) {
@@ -672,6 +788,43 @@ function cbLoc(p1,p2,frac) {
 }
 
 function animate(ts) {
+  for (let stop of stops) {
+    //if (stop.oActive) {
+    if (stop.state=='active' || stop.state=='fade') {
+      if (!stop.oTime) {
+        stop.oTime=ts;
+      }
+      var progress=ts-stop.oTime;
+      if (progress<stop.animateDuration*1000) {
+        let frac=progress/(stop.animateDuration*1000);
+        stop.setMidOffset(frac);
+        stop.setMidFade(frac);
+//        active=true;
+      } else {
+        stop.oTime=0;
+        //if (halts.stop || halts.gradient) {
+        if (halts.stop || halts.cycleChange || halts.pause || halts.durationChange) {
+          stop.inactivate();
+        } else {
+	  if (stop.state=='fade') {
+	    stop.state='black';
+stop.el.setAttribute('offset',1);
+stop.el.setAttribute('stop-opacity',0);
+//report('faded');
+	    insertStop();
+	    deleteStop();
+	    randomizeStops();
+	  } else {
+	    stop.el.setAttribute('offset',stop.toOffset);
+	    stop.el.setAttribute('stop-opacity',stop.toOpacity);
+//	    if (stop.state=='active') {
+	      stop.randomize();
+//	    }
+	  }
+        }
+      }
+    }
+  }
 
   var endMove=false;
   var d='';
@@ -683,7 +836,6 @@ function animate(ts) {
       var progress=ts-curves[cn].start;
       if (progress<curves[cn].dur*1000) {
 	var frac=progress/(curves[cn].dur*1000);
-
 	d+='M';
         d+=cbLoc(curves[cn].fdata[0][0],curves[cn].tdata[0][0],frac);
         d+=' ';
@@ -702,7 +854,7 @@ function animate(ts) {
 	    curves[cn].zs=false;
 	    curves[cn].active=true;
 	    curves[cn].start=false;
-        } else if (stops.stop || stops.cycleChange || stops.pause || stops.durationChange) {
+        } else if (halts.stop || halts.cycleChange || halts.pause || halts.durationChange) {
           curves[cn].active=false;
         } else {
           if (cn<curveCount) {
@@ -713,7 +865,7 @@ function animate(ts) {
 	      curves[cn].c0=getCycle0Match();
 	    }
 	    if (Math.random()<cycleChangeRate/curveCount && !cycleLock) {
-	      stops.cycleChange=true;
+	      halts.cycleChange=true;
 	    }
 	    randomizeCurve(cn);
 	    curves[cn].start=ts;
@@ -746,6 +898,7 @@ function animate(ts) {
     }
   }
 
+/* turn off line and color
   if (fillColor.active) {
     if (!fillColor.start) {
       fillColor.start=ts;
@@ -763,62 +916,56 @@ function animate(ts) {
       fillColor.active=false;
     }
   }
-
-/*
-  if (zoom.active) {
-    if (!zoom.start) {
-      zoom.start=ts;
-    }
-    var progress=ts-zoom.start;
-    if (progress<animateDuration*1000) {
-      var frac=progress/(animateDuration*1000);
-      var scale=zoom.fromScale+(zoom.toScale-zoom.fromScale)*frac;
-      //var matrix='matrix(0,-'+scale+','+scale+',0,200,200)';
-      //sgroup.setAttribute('transform',matrix);
-      //sgroup.style.transform='scale('+scale+')';
-    } else {
-      zoom.active=false;
-    }
-  }
 */
 
   if (!endMove) {
     path.setAttribute('d',d);
   }
 
+/*
   if (isLineActive()) {
     requestAnimationFrame(animate);
   } else {
+*/
+
     // TODO nonlineactive
     if (isAnimationActive()) {
       requestAnimationFrame(animate);
     } else {
-    
-      if (stops.stop) {
+      if (halts.stop) {
 	stopped=true;
       } else {
-	if (stops.cycleChange) {
+        for (let stop of stops) {
+          stop.randomize();
+          stop.activate();
+        }
+        stops[stops.length-2].state='fade';
+	if (halts.cycleChange) {
 	  randomizeCycles();
-	  stops.cycleChange=false;
+//console.log(new Date()+'C1');
+	  halts.cycleChange=false;
 	} else if (Math.random()<cycleChangeRate && !cycleLock) {
 	  randomizeCycles();
 	}
 	for (var cn=0; cn<curveCount; cn++) {
-	  randomizeCurve(cn, stops.pause);
+	  randomizeCurve(cn);
 	  curves[cn].active=true;
 	  curves[cn].start=false;
 	}
 	requestAnimationFrame(animate);
       }
     }
-  }
+//  }
 }
 
 function start() {
   stopped=false;
-  stops.stop=false;
+  halts.stop=false;
+  for (let stop of stops) {
+    stop.activate();
+  }
   for (var cn=0; cn<curveCount; cn++) {
-    randomizeCurve(cn);
+    randomizeCurve(cn,true);
     curves[cn].active=true;
     curves[cn].start=false;
   }
@@ -832,7 +979,7 @@ function start() {
 }
 
 function stop() {
-  stops.stop=true;
+  halts.stop=true;
 }
 
 function hideCurve2(ts) {
@@ -855,7 +1002,7 @@ function showCurve2(ts) {
 function changeDuration(si) {
 /*
   if (isAnimationActive()) {
-    stops.durationChange=true;
+    halts.durationChange=true;
   } else {
     animateDuration=si.value;
   }
@@ -1002,7 +1149,7 @@ function lockLineHue(cb) {
     lineColor.lock=true;
   } else {
     lineColor.lock=false;
-    stops.durationChange=true;  // no change, just resync
+    halts.durationChange=true;  // no change, just resync
   }
 }
 
@@ -1066,6 +1213,72 @@ function lockScale(cb) {
     zoom.lock=false;
   }
 }
+
+//////////
+
+function randomizeStops() {
+  for (let i=1; i<stops.length-1; i++) {
+    stops[i].randomize();
+    //stops[i].randomizeDuration();
+  }
+  //stops[stops.length-2].setOffset(1);
+  stops[stops.length-2].state='fade';
+}
+
+var gradient=document.querySelector('#phsRG');
+
+function getSO(count) {
+  let sa=[[0,1]];
+  let seg=1/(count-1);
+  for (let i=1; i<count-1; i++) {
+    let nos=0.18*Math.pow(seg*i,2)+0.85*seg*i;
+    sa.push([nos,1-Math.pow(seg*i,5)]);
+  }
+  sa.push([1,0]);
+  sa.push([1,0]);
+  return sa;
+}
+
+var so=getSO(3);
+var fadeOffset=so[so.length-2];
+var stops=[];
+
+for (let i in so) {
+  let stopx=new Stop(i,so[i]);
+  if (so[i][0]==1) {
+    //stopx.el.setAttribute('stop-opacity',0);
+    stopx.el.setAttribute('stop-color','#333');
+  }
+  if (so[i]==fadeOffset) {
+    stopx.state='fade';
+  }
+  stops.push(stopx);
+  gradient.appendChild(stopx.el);
+}
+
+function insertStop() {
+  stops.unshift(new Stop(0,[0,1]));
+  stops[0].state='zero';
+  stops[1].state='active';  // maybe 'rest'
+  stops[1].oActive=true;
+  gradient.insertBefore(stops[0].el, gradient.firstChild);
+  for (let i in stops) {
+    stops[i].number=i;
+  }
+  // set position flags here
+}
+
+function deleteStop() {
+  gradient.removeChild(gradient.lastElementChild);
+  stops.pop();
+}
+
+function increaseStops() {
+so=getSO(4); insertStop(); fadeOffset=so[so.length-2];
+}
+
+
+//////////
 
 function setMenu(menu,on) {
   if(on) {
@@ -1161,3 +1374,20 @@ function togMenu(menu,show) {
 resize();
 
 start();
+
+function report(l) {
+  let s='';
+  for (let stop of stops) { 
+    s+=' '+stop.state;
+  }
+  console.log(l+' '+s);
+  let rep=''
+  let ss=gradient.getElementsByTagName('stop');
+  for (let ele of ss) {
+    //rep+=' '+parseFloat(ele.getAttribute('offset')).toFixed(3);
+    rep+=' '+ele.getAttribute('stop-color');
+    rep+=' '+ele.getAttribute('stop-opacity');
+  }
+  console.log(rep);
+
+}

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="author" content="Paul Slaymaker">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Trochoid demo by Paul Slaymaker</title>
+  <style type="text/css">
+    * { box-sizing:border-box; }
+    button.abtn { margin:4px 6px; width:60px; }
+    tr.phead { background:#FAFAFF; border-bottom:1px solid silver; }
+    div.pmain { background:#EFEFF8; border-bottom:1px solid silver; padding:4px 8px; text-align:left; white-space:nowrap; cursor:pointer; font-size:0.9em; }
+    div.pmenu { background:#EFEFF8; border-bottom:1px solid silver; padding:4px 8px; text-align:left; white-space:nowrap; cursor:pointer; font-size:0.9em; }
+    span.indic { float:right; transform:rotate(0deg); color:#888; }
+    div.tacont { overflow:hidden; width:180px; height:0; }
+    table.ctable { width:420px; margin:auto; border-bottom:1px solid silver; border-collapse:collapse; background:#FFF; }
+    td.tlabel { text-align:right; padding:4px 8px; white-space:nowrap; }
+    td.control { text-align:left; white-space:nowrap; }
+    div.treport { float:left; width:64px; margin-top:4px; text-align:right; border:1px solid silver; padding-right:2px; }
+    input.sliderR { width:100px; margin-left:8px; }
+    input.sliderP { float:left; width:100px; margin-left:8px; }
+    div.slabelLeft { float:left; width:40px; margin-top:4px; text-align:right; display:inline-block; }
+    div.slabelRight { float:left; margin-top:4px; margin-left:6px; display:inline-block; }
+    tr.c2show { display:table-row; }
+    tr.c2hide { display:none; }
+  </style>
+</head>
+<body style="font-family:sans-serif; font-size:0.8em; background:#333;">
+  <div style="display:table;">
+    <div id="ascell" style="display:table-cell; width:100%; text-align:center;">
+      <svg id="asvg" viewbox="0,0,400,400" style="margin-left:1px; height:auto;">
+        <defs>
+	  <clipPath id="rframe">
+	    <circle id="ccirc" cx="0" cy="0" r="200"/>
+	  </clipPath>
+
+<!--
+	  <radialGradient id="phsRG" fx=".50" spreadMethod="pad" r="0.5" gradientUnits="userSpaceOnUse">
+-->
+	  <radialGradient id="phsRG" cx="0" cy="0" fx="0" fy="0" spreadMethod="pad" r="200" gradientUnits="userSpaceOnUse">
+<!--
+            <stop offset="0" stop-opacity="1" stop-color="hsl(0,90%,80%)"></stop>
+	    <stop offset=".1" stop-opacity="1" stop-color="hsl(268,90%,70%)"></stop>
+	    <stop offset="0.47" stop-opacity="0.6" stop-color="hsl(205,90%,70%)"></stop>
+	    <stop offset="1" stop-opacity="0" stop-color="hsl(301,90%,70%)"></stop>
+-->
+	    </radialGradient>
+	  </defs>
+        <g id="pcontrol" transform="matrix(0, -1, 1, 0, 200, 200)" clip-path="url(#rframe)">
+        <g id="roid">
+<!--
+	  <path id="rpath" style="stroke:#66AAFF; stroke-width:.8px; fill:#CCAA66; fill-opacity:1; fill-rule:evenodd;" d=""/>
+-->
+	  <path id="rpath" style="stroke:none; fill:#CCAA66; fill-opacity:1; fill-rule:evenodd;" d=""/>
+	</g>
+	</g>
+      </svg>
+    </div>
+    <div style="display:table-cell; vertical-align:top; padding:0 8px; text-align:center;">
+      <button class="abtn" onclick="start();">start</button>
+      <button class="abtn" onclick="stop();">stop</button>
+    </div>
+    <div style="display:table-cell; vertical-align:top; text-align:center;">
+      <div style="border:1px solid silver;">
+        <div id="mainmenu" class="pmain" data-state="0" title="show" onclick="togAll(this)">
+          <span class="indic">&#10148;</span>
+          All properties
+        </div>
+        <div class="pmenu" data-state="0" title="show" data-con="anim" onclick="togMenu(this)">
+          <span class="indic">&#10148;</span>
+          Animation properties
+        </div>
+        <div id="cdivanim" class="tacont">
+	  <table id="propsanim" cellspacing="0" class="ctable">
+	    <tr class="phead">
+	      <td colspan="2">&#160;</td><td style="white-space:nowrap; padding:4px;">Lock value</td>
+	    </tr>
+	    <tr><td colspan="3" style="padding:4px;"></td></tr>
+	    <tr>
+	      <td class="tlabel">Transition speed:</td>
+	      <td class="control">
+		<div id="durRep" class="treport" style="text-align:center;">8s</div>
+		<input type="range" class="sliderP" min="1" max="24" value="8" oninput="changeDuration(this);"></input>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel">Rotation effect:</td>
+	      <td class="control">
+		<div id="rotRep" class="treport" style="text-align:center;">15%</div>
+		<input type="range" class="sliderP" min="0" max="1" step="0.01" value=".15" oninput="changeRotation(this);"></input>
+	      </td>
+	    </tr>
+<!--
+	    <tr>
+	      <td class="tlabel">Pause after transition:</td>
+	      <td class="control">
+		<div class="slabelLeft">none</div>
+		<input type="range" class="sliderP" min="0" max="5" step="0.1" value="0" onchange="changePause(this);"></input>
+		<div class="slabelRight">5 secs</div>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel">Damp curve changes:</td>
+	      <td class="control">
+		<div class="slabelLeft">full</div>
+		<input type="range" class="sliderP" min="0.1" max="1" step=".01" value="0.15" onchange="changeDamp(this);"></input>
+		<div class="slabelRight">none</div>
+	      </td>
+	    </tr>
+-->
+	    <tr><td colspan="3" style="padding:4px;"></td></tr>
+	  </table>
+        </div>
+        <div class="pmenu" data-state="0" title="show" data-con="curv" onclick="togMenu(this)">
+          <span class="indic">&#10148;</span>
+          Curve properties
+        </div>
+        <div id="cdivcurv" class="tacont" style="height:0;">
+	  <table id="propscurv" class="ctable" cellspacing="0">
+	    <tr class="phead">
+	      <td colspan="2">&#160;</td><td style="white-space:nowrap; padding:4px;">Lock value</td>
+	    </tr>
+	    <tr><td colspan="3" style="padding:4px;"></td></tr>
+	    <tr>
+	      <td class="tlabel">Curve count:</td>
+	      <td class="control">
+		<div id="ccRep" class="treport" style="text-align:center;">3</div>
+<!--
+		<input id="ccRange" type="range" class="sliderP" min="1" max="4" value="3" oninput="inputCurveCount(this)" onchange="changeCurveCount(this);"></input>
+-->
+		<input id="ccRange" type="range" class="sliderP" min="1" max="4" value="3" oninput="inputCurveCount(this)"></input>
+	      </td>
+	      <td><input id="kCount" type="checkbox" onclick="lockCurveCount(this);"/></td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel">Curve cycle count:</td>
+	      <td class="control">
+		<div id="cvRep" class="treport" style="text-align:center;">3</div>
+		<input id="cvRange" type="range" class="sliderP" min="2" max="17" value="3" oninput="inputCurveCycles(this)"></input>
+	      </td>
+	      <td><input id="kCycle" type="checkbox" onclick="lockCurveCycles(this);"/></td>
+	    </tr>
+	    <tr><td colspan="3" style="padding:4px;"></td></tr>
+	  </table>
+        </div>
+        <div class="pmenu" style="min-width:180px;" data-state="0" data-con="pres" title="show" onclick="togMenu(this)">
+          <span class="indic">&#10148;</span>
+          <div>Presentation properties</div>
+        </div>
+        <div id="cdivpres" class="tacont">
+	  <table id="propspres" cellspacing="0" class="ctable">
+	    <tr class="phead">
+	      <td colspan="2">&#160;</td><td style="white-space:nowrap; padding:4px;">Lock value</td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel">Hue:</td>
+	      <td class="control">
+                <div class="treport">
+                  <div class="fillCol" style="width:10px; float:left;">&#160;</div>
+                  <div id="hueRep" style="width:48px; float:right;">&#160;</div>
+                </div>
+		<input id="hueSel" type="range" class="sliderP" min="0" max="359" step="1" oninput="changeFillHue(this);"></input>
+	      </td>
+	      <td><input id="kHue" type="checkbox" onclick="lockHue(this);"/></td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel"><span style="margin-right:36px;">Fill</span>Sat:</td>
+	      <td colspan="2" class="control">
+                <div class="treport">
+                  <div class="fillCol" style="width:10px; float:left;">&#160;</div>
+                  <div id="satRep" style="width:48px; float:right;">60%</div>
+                </div>
+		<input id="satSel" type="range" class="sliderP" min="0" max="100" step="1" value="60" oninput="changeFillSaturation(this);"></input>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel clabel">Lum:</td>
+	      <td colspan="2" class="control">
+                <div class="treport">
+                  <div class="fillCol" style="width:10px; float:left;">&#160;</div>
+                  <div id="lumRep" style="width:48px; float:right;">50%</div>
+                </div>
+		<input id="lumSel" type="range" class="sliderP" min="0" max="100" step="1" value="50" oninput="changeFillLuminosity(this);"></input>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel">Line width:</td>
+	      <td colspan="2" class="control">
+		<div id="widthRep" class="treport">0.8</div>
+		<input type="range" class="sliderP" min="0" max="5" step=".1" value="0.8" oninput="inputLineWidth(this);"></input>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel clabel">Hue:</td>
+	      <td class="control">
+                <div class="treport">
+                  <div class="lineCol" style="width:10px; float:left;">&#160;</div>
+                  <div id="lineHueRep" style="width:48px; float:right;">&#160;</div>
+                </div>
+		<input id="lineHueSel" type="range" class="sliderP" min="0" max="359" step="1" oninput="changeLineHue(this);"></input>
+	      </td>
+	      <td><input id="kLineHue" type="checkbox" onclick="lockLineHue(this);"/></td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel clabel"><span style="margin-right:36px;">Line color</span>Sat:</td>
+	      <td colspan="2" class="control">
+                <div class="treport">
+                  <div class="lineCol" style="width:10px; float:left;">&#160;</div>
+                  <div id="lineSatRep" style="width:48px; float:right;">100%</div>
+                </div>
+		<input id="lineSatSel" type="range" class="sliderP" min="0" max="100" step="1" value="100" oninput="changeLineSaturation(this);"></input>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel clabel">Lum:</td>
+	      <td colspan="2" class="control">
+                <div class="treport">
+                  <div class="lineCol" style="width:10px; float:left;">&#160;</div>
+                  <div id="lineLumRep" style="width:48px; float:right;">30%</div>
+                </div>
+		<input id="lineLumSel" type="range" class="sliderP" min="0" max="100" step="1" value="30" oninput="changeLineLuminosity(this);"></input>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="tlabel">Zoom:</td>
+	      <td class="control">
+		<div id="zoomRep" class="treport">100%</div>
+		<input id="zoomSel" type="range" class="sliderP" min=".5" max="2" step=".01" value="1" oninput="inputZoom(this);"></input>
+	      </td>
+	      <td><input id="kScale" type="checkbox" onclick="lockScale(this);"/></td>
+	    </tr>
+	    <tr><td colspan="3" style="padding:4px;"></td></tr>
+	  </table>
+        </div>
+        <div class="pmain">
+          <a href="http://paulslaymaker.no-ip.org/as/qd.html" style="text-decoration:none; color:black; display:block;" target="_blank">Questions?</a>
+        </div>
+
+      </div>
+
+    </div>
+
+    </div>
+  </body>
+  <script type="text/javascript" src="td2.js"></script>
+</html>
