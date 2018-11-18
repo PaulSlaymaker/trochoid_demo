@@ -12,7 +12,7 @@ var curves=[
   {'rc':1,'ct':[-1,-1,-1],'c0':5,'c1':3,'c2':3,'c3':3,'r':[0,0,0,0],'fdata':getZeroData().slice(),'tdata':getZeroData().slice(),dur:7,start:null,active:false,zs:false,'reset':true}
 ];
 
-var stopped;
+var stopped=true;
 var stops={
   stop:false,
   cycleChange:false,
@@ -376,7 +376,6 @@ function setCurve(cn) {
       return 0;
     } 
   }();
-  var d;
   var r1=curves[cn].r[0];
   var r2=curves[cn].r[1];
   var r3=curves[cn].r[2];
@@ -426,8 +425,6 @@ function setCurve(cn) {
       }
       break;
   }
-  d+='z';
-  return d;
 }      
 
 function getCycle0Match() {
@@ -793,9 +790,10 @@ function animate(ts) {
     if (isAnimationActive()) {
       requestAnimationFrame(animate);
     } else {
-    
       if (stops.stop) {
 	stopped=true;
+        document.querySelector('.abtn').textContent='start';
+       // exiting requestAnimationFrame calls
       } else {
 	if (stops.cycleChange) {
 	  randomizeCycles();
@@ -815,20 +813,25 @@ function animate(ts) {
 }
 
 function start() {
-  stopped=false;
-  stops.stop=false;
-  for (var cn=0; cn<curveCount; cn++) {
-    randomizeCurve(cn);
-    curves[cn].active=true;
-    curves[cn].start=false;
+  if (stopped) {
+    stopped=false;
+    stops.stop=false;
+    for (var cn=0; cn<curveCount; cn++) {
+      randomizeCurve(cn);
+      curves[cn].active=true;
+      curves[cn].start=false;
+    }
+    if (!fillColor.lock) {
+      fillColor.randomize();
+      lineColor.randomize();
+      fillColor.active=true;
+      fillColor.start=false;
+    }
+    document.querySelector('.abtn').textContent='stop';
+    requestAnimationFrame(animate);
+  } else {
+    stops.stop=true;
   }
-  if (!fillColor.lock) {
-    fillColor.randomize();
-    lineColor.randomize();
-    fillColor.active=true;
-    fillColor.start=false;
-  }
-  requestAnimationFrame(animate);
 }
 
 function stop() {
