@@ -133,6 +133,7 @@ var lineColor={
 };
 path.style.stroke=lineColor.getHSLString();
 
+/*
 var duration={
   factor:1,
   reset:true,
@@ -154,6 +155,7 @@ var duration={
     this.reset=true;
   }
 };
+*/
 
 var zoom={
   fromScale:1,
@@ -285,18 +287,15 @@ function switchCurveCount(cc) {
       switch (curveCount) {
 	case 2:
 	  curves[1].zs=true;
-	  reduce=true;
 	  break;
 	case 3:
 	  curves[1].zs=true;
 	  curves[2].zs=true;
-	  reduce=true;
 	  break;
 	case 4:
 	  curves[1].zs=true;
 	  curves[2].zs=true;
 	  curves[3].zs=true;
-	  reduce=true;
 	  break;
       }
       curveCount=1;
@@ -308,12 +307,10 @@ function switchCurveCount(cc) {
 	  break;
 	case 3:
 	  curves[2].zs=true;
-	  reduce=true;
 	  break;
 	case 4:
 	  curves[2].zs=true;
 	  curves[3].zs=true;
-	  reduce=true;
           break;
       }
       curveCount=2;
@@ -329,7 +326,6 @@ function switchCurveCount(cc) {
 	  break;
 	case 4:
 	  curves[3].zs=true;
-	  reduce=true;
 	  break;
       }
       curveCount=3;
@@ -354,7 +350,6 @@ function randomCurveCountChange(inloop) {
     return false;
   }
   var sel=powerRandom(cycleSet/13);
-  var reduce=false;
   if (sel<.05) { 
     switchCurveCount(1);
   } else if (sel<.2) { 
