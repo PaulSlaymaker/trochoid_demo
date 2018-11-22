@@ -1,4 +1,4 @@
-var MAX_COUNT=4;
+var MAX_CURVE_COUNT=4;
 
 function resize() {
   document.getElementById('asvg').style.maxHeight=window.innerHeight-20+'px';
@@ -21,7 +21,7 @@ var stops={
 }
 
 var animateDuration=8;
-var rotationFactor=.15;
+var rotationFactor=.25;
 var pause=0;
 var curveCount=3;
 var curveCountChangeRate=.3;
@@ -365,7 +365,7 @@ function randomCurveCountChange(inloop) {
 
 function setCurve(cn) {
   var offset=function() {
-    if (Math.random()<rotationFactor) {
+    if (Math.random()<rotationFactor*(1-curveComplexity())) {
       return offset=Math.random()*Math.PI;
     } else {
       return 0;
@@ -465,7 +465,7 @@ function resetCycleSet() {
   curves[0].c3=cycleSet;
   curves[0].c4=cycleSet;
   curves[0].c0=getCycle0Match();
-  for (var cn=1; cn<MAX_COUNT; cn++) {
+  for (var cn=1; cn<MAX_CURVE_COUNT; cn++) {
     if (cycleSet==10) {
       curves[cn].c1=Math.random()<.05?5:10;
       curves[cn].c2=Math.random()<.05?5:10;
@@ -511,21 +511,15 @@ function randomizeCycles() {
   document.getElementById('cvRange').value=cycleSet;
 }
 
-function centralFactor(cn) {
-  var cf=curves[cn].r[0]; 
-  for (var j=1; j<curves[cn].rc+1; j++) {
-    cf-=curves[cn].r[j];
-    cf=Math.abs(cf);
-  }
-  return cf;
-}
-
 function curveComplexity() {
-  var comp=0;
-  for (var cn=0; cn<curveCount; cn++) {
-    comp+=curves[cn].rc;
+  let comp1=0;	// combine radii count with curve count
+  for (let cn=0; cn<curveCount; cn++) {
+    comp1+=curves[cn].rc;
   }
-  return comp/curveCount;
+  // need to change if max curve goes>4 or max cycle>17
+  comp1=(comp1-1)/22;
+  let comp2=(cycleSet-2)/30;
+  return comp1+comp2;
 }
 
 function randomTen() {
@@ -539,7 +533,15 @@ function randomizeRadii(cn) {
     curves[cn].r[i]=f1+f2*Math.random();
   }
   if (curves[cn].rc==1) {
-    var cFactor=centralFactor(cn);
+    var cFactor=(()=>{
+      let cf=curves[cn].r[0]; 
+      for (var j=1; j<curves[cn].rc+1; j++) {
+	cf-=curves[cn].r[j];
+	cf=Math.abs(cf);
+      }
+      return cf;
+    })();
+    //var cFactor=centralFactor(cn);
     if (cFactor>20) {
       curves[cn].r[1]=curves[cn].r[0]+randomTen();
     }
@@ -664,10 +666,9 @@ function cbLoc(p1,p2,frac) {
 }
 
 function animate(ts) {
-
   var endMove=false;
   var d='';
-  for (var cn=0; cn<MAX_COUNT; cn++) {
+  for (var cn=0; cn<MAX_CURVE_COUNT; cn++) {
     if (curves[cn].active) {
       if (!curves[cn].start) {
 	curves[cn].start=ts;
@@ -675,7 +676,6 @@ function animate(ts) {
       var progress=ts-curves[cn].start;
       if (progress<curves[cn].dur*1000) {
 	var frac=progress/(curves[cn].dur*1000);
-
 	d+='M';
         d+=cbLoc(curves[cn].fdata[0][0],curves[cn].tdata[0][0],frac);
         d+=' ';
