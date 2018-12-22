@@ -1,40 +1,481 @@
 var MAX_CURVE_COUNT=4;
 
-function resize() {
+onresize=function() {
   document.getElementById('asvg').style.maxHeight=window.innerHeight-20+'px';
 }
-onresize=resize;
 
-var curves=[
-  {'rc':2,'ct':[-1,-1,-1],'c0':1,'c1':3,'c2':3,'c3':3,'r':[0,0,0,0],'fdata':getZeroData().slice(),'tdata':getZeroData().slice(),dur:7,start:null,active:false,zs:false,'reset':true},
-  {'rc':1,'ct':[-1,-1,-1],'c0':2,'c1':3,'c2':3,'c3':3,'r':[0,0,0,0],'fdata':getZeroData().slice(),'tdata':getZeroData().slice(),dur:7,start:null,active:false,zs:false,'reset':true},
-  {'rc':3,'ct':[-1,-1,-1],'c0':4,'c1':3,'c2':3,'c3':3,'r':[0,0,0,0],'fdata':getZeroData().slice(),'tdata':getZeroData().slice(),dur:7,start:null,active:false,zs:false,'reset':true},
-  {'rc':1,'ct':[-1,-1,-1],'c0':5,'c1':3,'c2':3,'c3':3,'r':[0,0,0,0],'fdata':getZeroData().slice(),'tdata':getZeroData().slice(),dur:7,start:null,active:false,zs:false,'reset':true}
-];
-
-var stopped=true;
-var stops={
-  stop:false,
-  cycleChange:false,
-  durationChange:false,
-  pause:false,
+var ZERO=0, TOZERO=1, STD=2, TOEQ=3, EQUAL=4;
+var Curve=function(is, rc, cyc) {
+  this.radiiCount=rc;
+  this.curveTypes=[-1,-1,-1];
+  this.radii=[0,0,0,0];
+  this.cycles=cyc;
+  this.fromData=this.zeroData();
+  this.toData=this.zeroData();
+  this.duration=animateDuration;
+  this.start=0;
+  this.active=false;
+  this.cstate=is;
+  this.anchor=false;
+  this.inCycle=false; // inSync
 }
 
-var animateDuration=8;
-var rotationFactor=.25;
-var pause=0;
+Curve.prototype.zeroData=function() {
+  let zd=[[0,0]];
+  for (var z=.01, counter=1; z<2*Math.PI; z+=.01) {
+    zd[counter++]=[0,0];
+  }
+  return zd;
+}
+
+Curve.prototype.zeroFromData=function() {
+  this.fromData=this.zeroData();
+}
+
+Curve.prototype.zeroToData=function() {
+  this.toData=this.zeroData();
+}
+
+Curve.prototype.isZero=function() {
+  return this.toData[0][0]==0 && this.toData[0][1]==0;
+  //return this.toData[0]==[0,0];
+}
+
+Curve.prototype.lineCurve=function() {
+  //if (this.toData[0][0]==0 && this.toData[0][1]==0) {
+  if (this.isZero()) {
+    return '';
+  }
+  var d='';
+  d+='M'+this.toData[0][0]+' '+this.toData[0][1];
+  for (var i=1; i<629; i++) {
+    d+='L'+this.toData[i][0]+' '+this.toData[i][1];
+  }
+  d+='z';
+  return d;
+}
+
+Curve.prototype.setCurve=function() {
+  var offset=function() {
+    if (curveTransition.synced) {
+      return 0;
+    }
+    if (Math.random()<rotationFactor*(1-curveComplexity())) {
+      return offset=Math.random()*Math.PI;
+    } else {
+      return 0;
+    } 
+  }();
+  let r1=this.radii[0];
+  let r2=this.radii[1];
+  let r3=this.radii[2];
+  let r4=this.radii[3];
+  let c0=this.cycles[0];
+  let c1=this.cycles[1];
+  let c2=this.cycles[2];
+  let c3=this.cycles[3];
+  switch (this.radiiCount) {
+    case 1:
+      var f1=1+(this.curveTypes[0]*c1)/c0;
+      this.toData[0]=[
+        r1*Math.cos(offset)+r2*Math.cos(f1*offset),
+        r1*Math.sin(offset)+r2*Math.sin(f1*offset)
+      ];
+      var counter=1;
+      for (let z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
+	this.toData[counter++]=[
+	  r1*Math.cos(z)+r2*Math.cos(f1*z),
+	  r1*Math.sin(z)+r2*Math.sin(f1*z)
+        ];
+      }
+      break;
+    case 2:
+      var f1=1+(this.curveTypes[0]*c1)/c0;
+      var f2=1+(this.curveTypes[0]*c1+this.curveTypes[1]*c2)/c0;
+      this.toData[0]=[
+        r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset),
+        r1*Math.sin(offset)+r2*Math.sin(f1*offset)+r3*Math.sin(f2*offset)
+      ];
+      var counter=1;
+      for (let z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
+	this.toData[counter++]=[
+	  r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z),
+	  r1*Math.sin(z)+r2*Math.sin(f1*z)+r3*Math.sin(f2*z)
+        ];
+      }
+      break;
+   case 3:
+      var f1=1+(this.curveTypes[0]*c1)/c0;
+      var f2=1+(this.curveTypes[0]*c1+this.curveTypes[1]*c2)/c0;
+      var f3=1+(this.curveTypes[0]*c1+this.curveTypes[1]*c2+this.curveTypes[2]*c3)/c0;
+      this.toData[0]=[
+        r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset)+r4*Math.cos(f3*offset),
+        r1*Math.sin(offset)+r2*Math.sin(f1*offset)+r3*Math.sin(f2*offset)+r4*Math.sin(f3*offset)
+      ];
+      var counter=1;
+      for (let z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
+	this.toData[counter++]=[
+	  r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z)+r4*Math.cos(f3*z),
+	  r1*Math.sin(z)+r2*Math.sin(f1*z)+r3*Math.sin(f2*z)+r4*Math.sin(f3*z)
+	];
+      }
+      break;
+  }
+}
+
+Curve.prototype.getMidCurve=function(frac) {
+  let d='M';
+  d+=cbLoc(this.fromData[0][0],this.toData[0][0],frac);
+  d+=' ';
+  d+=cbLoc(this.fromData[0][1],this.toData[0][1],frac);
+  for (var i=1; i<629; i++) {
+    d+='L';
+    d+=cbLoc(this.fromData[i][0],this.toData[i][0],frac);
+    d+=' ';
+    d+=cbLoc(this.fromData[i][1],this.toData[i][1],frac);
+  }
+  d+='z';
+  return d;
+}
+
+Curve.prototype.randomizeRadii=function() {
+  // 80 tied to 200 radius container 
+  let f1=80/(this.radiiCount+1);
+  let f2=2*this.radiiCount*f1;
+  for (let i=0; i<this.radiiCount+1; i++) {
+    this.radii[i]=f1+f2*Math.random();
+  }
+if (this.radiiCount==1) {
+  let rd=this.radii[0]-this.radii[1];
+  if (Math.abs(rd>5)) {
+    if (rd<0) {
+      this.radii[1]-=rd+randomFive();
+    } else {
+      this.radii[0]-=rd+randomFive();
+    }
+//console.log('cent '+rd);
+  }
+}
+/*
+  if (this.radiiCount==1) {
+    let cFactor=((c)=>{
+      let cf=c.radii[0]; 
+      for (let j=1; j<c.radiiCount+1; j++) {
+	cf-=c.radii[j];
+	cf=Math.abs(cf);
+      }
+      return cf;
+    })(this);
+    // 20 tied to 200 radius
+    if (cFactor>20) {
+this.radii[0]/=2;
+      this.radii[1]=this.radii[0]+randomTen();
+    }
+  }
+*/
+  let maxC=((c)=>{
+    let maxr=0;
+    for (let j=1; j<c.radiiCount+1; j++) {
+      maxr+=c.radii[j];
+    }
+    return maxr;
+  })(this);
+  //let fac=zoom.scale*200/maxC;
+  let fac=(zoom.scale*200/maxC)/(this.radiiCount+1);
+    for (let i=0; i<this.radiiCount+1; i++) {
+      this.radii[i]*=fac;
+    }       
+/*
+  if (this.anchor) {
+    for (let i=0; i<this.radiiCount+1; i++) {
+      this.radii[i]*=fac;
+    }       
+  } else if (maxC>zoom.scale*200) {
+    for (let i=0; i<this.radiiCount+1; i++) {
+      this.radii[i]*=fac;
+    }       
+  }
+*/
+
+if (this.radii[0]>200) {
+  crep();
+  log('maxC '+maxC+' fac '+fac);
+}
+
+}
+
+var mixedCycles=true;
+Curve.prototype.setCycles=function() {
+    for (let i in this.cycles) {
+      if (i==0) {
+        this.cycles[0]=getCycle0Match()
+      } else {
+        if (mixedCycles) {
+          if (cycleSet==10) {
+            this.cycles[i]=Math.random()<.05?5:10;
+          } else if (cycleSet==12) {
+            this.cycles[i]=Math.random()<.1?6:12;
+          } else if (cycleSet==14) {
+            this.cycles[i]=Math.random()<.2?7:14;
+          } else if (cycleSet==16) {
+            this.cycles[i]=Math.random()<.3?Math.random()<.1?4:8:16;
+          } else {
+            this.cycles[i]=cycleSet;
+          }
+        } else {
+          this.cycles[i]=cycleSet;
+        }
+      }
+    }
+}
+
+function getMaxTS() {
+  let mts=0;
+  for (let c of curves) {
+    if (c.active) {
+      mts=Math.max(mts,c.start);
+    }
+  }
+  return mts;
+}
+
+Curve.prototype.randomizeCurve=function() {
+  if (this.cstate==STD) {
+    this.fromData=this.toData.slice();
+    if (Math.random()<.7) {
+      let p35=1+curveComplexity();
+      //this.radiiCount=[1,2,3][getRandomInt(0,3,curveCount/1.2)]; //TODO include cycleSet
+      this.radiiCount=[1,2,3][getRandomInt(0,3,1+p35)];
+//var old=[1,2,3][getRandomInt(0,3,curveCount/1.2)];
+//console.log('rad '+old+' -> '+this.radiiCount);
+      for (var j=0; j<this.radiiCount; j++) {
+	if (Math.random()<.05) {
+	  this.curveTypes[j]=1;
+	} else {
+	  this.curveTypes[j]=-1;
+	}
+      }
+    }
+    this.randomizeRadii();
+    this.setCurve();
+    if (curveTransition.synced) {
+      this.duration=animateDuration*transDurationFactor;
+    } else {
+//console.log('maxts '+getMaxTS());
+      if (fillColor.fstate==TOSOLID || fillColor.fstate==SOLID) {
+        //this.duration=animateDuration*transDurationFactor;
+        //this.duration*=.7;
+        this.duration=Math.max(1000, this.duration*.3);
+//console.log('lesser dur');
+      } else {
+        this.duration=animateDuration*(.3+.7*Math.random());
+      }
+    }
+  } else {
+    // manual changes get here
+//debugger;
+  }
+}
+
+Curve.prototype.copyParameters=function(c) {
+  this.radiiCount=c.radiiCount;
+  this.curveTypes=c.curveTypes;
+  this.radii=c.radii;
+  this.cycles=c.cycles;
+}
+
+Curve.prototype.toSTD=function() {  // only called from cc change, internalize it?
+  if (this.anchor) {
+    return false;
+  }
+  if (this.cstate!=ZERO) {
+    return false;
+  }
+
+if (!cycleLock && (()=>{
+    if (Math.random()<.2) {
+      switch (cycleSet) {
+	case 6: cycleSet=12; return true;
+	case 7: cycleSet=14; return true;
+	case 8: cycleSet=16; return true;
+	case 12: cycleSet=6; return true;
+	case 14: cycleSet=7; return true;
+	case 16: cycleSet=8; return true;
+      }
+      return false;
+    } else {
+      return false;
+    }
+  })()) {
+    this.setCycles();
+// TODO set in ctl
+log('non-sync to '+cycleSet);
+}
+
+//if (Math.random()<.2) {
+/*
+if (true) {
+  // todo reset ctl
+  switch (cycleSet) {
+    case 6: cycleSet=12; break;
+    case 7: cycleSet=14; break;
+    case 8: cycleSet=16; break;
+    case 12: cycleSet=6; break;
+    case 14: cycleSet=7; break;
+    case 16: cycleSet=8; break;
+  }
+  this.setCycles();
+log('non-sync to '+cycleSet);
+}
+*/
+
+  this.cstate=STD;
+  this.randomizeCurve();
+  this.active=true;
+  this.start=0;
+  return true;
+}
+
+Curve.prototype.toZERO=function() {
+  if (this.anchor) {
+    return false;
+  }
+  if (this.cstate!=STD) {
+    return false;
+  }
+  this.cstate=TOZERO;
+  this.fromData=this.toData.slice();
+  this.zeroToData();
+  this.active=true;
+  this.start=0;
+  return true;
+}
+
+Curve.prototype.anchorMatch=function() {
+  if (this.radiiCount!=anchorCurve.radiiCount) {
+    return false;
+  }
+  for (let i in this.cycles) {
+    if (this.cycles[i]!=anchorCurve.cycles[i]) {
+      return false;
+    }
+  }
+}
+
+Curve.prototype.lineFromData=function() { // debug
+  if (this.isZero()) {
+    return '';
+  }
+  var d='';
+  d+='M'+this.fromData[0][0]+' '+this.fromData[0][1];
+  for (var i=1; i<629; i++) {
+    d+='L'+this.fromData[i][0]+' '+this.fromData[i][1];
+  }
+  d+='z';
+  return d;
+}
+
+var curves=[
+  new Curve(STD,2,[1,6,6,6]), 
+  new Curve(STD,1,[5,6,6,6]), 
+  new Curve(STD,3,[7,6,6,6]),
+  new Curve(ZERO,1,[1,6,6,6]),
+];
+curves[0].anchor=true;
+var anchorCurve=curves[0];
+
+/*
+// debug
+for (let i=0; i<MAX_CURVE_COUNT; i++) {
+  curves[i].cn=i;
+}
+*/
+
+var UNS=0, SYNC=1, TOSYNC=2; 
+var curveTransition={
+  //ctState:UNS,
+  synced:false,
+  //toEqual:false,
+  equal:false,
+  syncTS:0,
+  ctCount:0	// cycle transition count
+}
+
+var stopped=true;
+var halts={
+  stop:false,
+  sync:false,
+  stopNow:false,
+  //durationChange:false,
+  //pause:false,
+  halting:function() {
+    return stop || sync;
+  }
+}
+
+var animateDuration=15000;  // 10 sec  publish @ 12000?
+var transDurationFactor=.5;
+
+var rotationFactor=.15;
+////
 var curveCount=3;
+////
 var curveCountChangeRate=.3;
+////
 var curveCountLock=false;
-var cycleSet=3;
-var cycleChangeRate=.15;
+var cycleSet=6;
+//////
+var cycleChangeRate=.3;  // publish @ .2
+//////
 var cycleLock=false;
 var curveTypeChangeRate=.7;
 var fillHueChangeRate=.3;
 var curveChangeRate=.15;
 
+function curvesInTransition() { // no halts set
+  for (c of curves) {
+    if (c.cstate==TOZERO) {
+      return true;
+    } 
+  }
+  return false;
+}
+
+/*
+function curvesCyclesEqual() {
+  for (c of curves) {
+    for (let i in c.cycles) {
+      if (c.cycles[i]!=anchorCurve.cycles[i]) {
+        return false;
+      }
+    } 
+  }
+  return true;
+}
+*/
+
+function curvesInCycle() { // no halts set
+  for (let c of curves) {
+    if (c.inCycle) {
+      return true;
+    } 
+  }
+  return false;
+}
+
+var matchCurves=[];
+function setCurvesMatchingAnchor() {
+  matchCurves=[];
+  for (let c of curves) {
+    if (c.anchor) continue;
+    if (c.anchorMatch()) {
+      matchCurves.push(c);
+    }
+  }
+}
+
 function getZeroData() {
-  var zd=[[0,0]];
+  let zd=[[0,0]];
   for (var z=.01, counter=1; z<2*Math.PI; z+=.01) {
     zd[counter++]=[0,0];
   }
@@ -68,14 +509,16 @@ var path=document.getElementById('rpath');
 //var sgroup=document.getElementById('roid');
 var sgroup=document.getElementById('pcontrol');
 
+var SOLID=0, GRAD=1, TOSOLID=2, TOGRAD=3, FADEIN=4;
 var fillColor={
-  fromFillHSL:[40,60,60],
-  toFillHSL:[40,60,60],
+  fromFillHSL:[40,90,80],
+  toFillHSL:[40,90,80],
   hueDiff:0,
-  duration:animateDuration,
+  fillDuration:animateDuration/5,
   lock:false,
   start:null,
   active:false,
+  fstate:FADEIN,
   randomize:function() {
     this.fromFillHSL=this.toFillHSL.slice();
     this.hueDiff=fillHueChangeRate*(180-Math.round(360*Math.random()));
@@ -84,94 +527,190 @@ var fillColor={
     }
     this.toFillHSL[0]=this.fromFillHSL[0]+Math.round(this.hueDiff);
     var col=this.getHSLString();
+/*
     document.querySelectorAll('.fillCol').forEach(function(hdiv) {
       hdiv.style.backgroundColor=col;
     });
     document.getElementById('hueRep').textContent=this.toFillHSL[0];
     document.getElementById('hueSel').value=this.toFillHSL[0];
+*/
   },
   getHSLString:function() {
     return 'hsl('+this.toFillHSL[0]+','+this.toFillHSL[1]+'%,'+this.toFillHSL[2]+'%)'; 
-  }
-};
-path.style.fill=fillColor.getHSLString();
-
-var lineColor={
-  fromLineHSL:[220,100,80],
-  toLineHSL:[220,100,80],
-  hueDiff:0,
-  duration:animateDuration,
-  lock:false,
-  start:null,
-  active:false,
-  fillOffset:90,
-  randomize:function() {
-    this.fromLineHSL=this.toLineHSL.slice();
-    if (Math.random()<.3) {
-      this.fillOffset=[90,180,240][getRandomInt(0,3)]; 
-    }
-    var lineHue=(fillColor.toFillHSL[0]+this.fillOffset)%360;
-    this.hueDiff=lineHue-this.toLineHSL[0];
-    if (this.fromLineHSL[0]+this.hueDiff>360 || this.fromLineHSL[0]+this.hueDiff<0) { 
-      this.hueDiff*=-1;
-    }
-    this.toLineHSL[0]=lineHue;
-    var col=this.getHSLString();
-      document.querySelectorAll('.lineCol').forEach(function(hdiv) {
-      hdiv.style.backgroundColor=col;
-    });
-    document.getElementById('lineHueRep').textContent=this.toLineHSL[0];
-    document.getElementById('lineHueSel').value=this.toLineHSL[0];
   },
-  getHSLString:function() {
-    return 'hsl('+this.toLineHSL[0]+','+this.toLineHSL[1]+'%,'+this.toLineHSL[2]+'%)'; 
-  },
-  getHSLAString:function() {
-    //return 'hsla('+this.toLineHSL[0]+','+this.toLineHSL[1]+'%,'+this.toLineHSL[2]+'%,'+lineWO.toOpacity+')'; 
-    return 'hsl('+this.toLineHSL[0]+','+this.toLineHSL[1]+'%,'+this.toLineHSL[2]+'%)'; 
-  }
-};
-path.style.stroke=lineColor.getHSLString();
-
+  switchToSolid:function() {
+    this.type=SOLID;
+    this.fstate=SOLID;
 /*
-var duration={
-  factor:1,
-  reset:true,
-  changeSpeed:function(si) {
-    this.factor=1/Math.pow((parseInt(si.value)+2)/6,2);
-    this.reset=true;
-  },
-  change:function() {
-    if (this.reset) {
-      this.reset=false;
-    }
-  },
-  setDuration:function(anime,s) {
-    anime.setAttribute('dur',s*this.factor+'s');
-    this.reset=true;
-  },
-  set:function(anime,d) {
-    anime.setAttribute('dur',d);
-    this.reset=true;
-  }
-};
+    this.fromFillHSL[0]=stops[0].toHSL[0];
+    this.toFillHSL[0]=stops[0].toHSL[0];
+    path.style.fill=this.getHSLString();
 */
 
-var zoom={
-  fromScale:1,
-  toScale:1,
-  duration:animateDuration,
-  lock:false,
-  start:null,
-  active:false,
-  randomize:function() {
-    this.fromScale=this.toScale;
-    var zf=(curveCount+cycleSet-7)/10;
-    this.toScale=1+zf*Math.random();
-    document.getElementById('zoomRep').textContent=(this.toScale*100).toFixed(0)+'%';
-    document.getElementById('zoomSel').value=this.toScale;
+    this.active=false;
+
+log('to solid done');
+//this.fillDuration=animateDuration;
+  },
+  switchToGradient:function() {
+    this.type=GRAD;
+    this.fstate=GRAD;
+    this.active=true;
+log('to grad done');
+zoom.randomize();
+this.fillDuration=animateDuration;
   }
 };
+//path.style.fill=fillColor.getHSLString();
+path.style.fill='url(#phsRG)';
+
+var SMALL=.7;
+var zoom={
+  scale:1,
+  duration:animateDuration,
+  lock:false,
+  randomize:function() {
+    if (this.lock) return;
+//let z=this.scale;
+    if (fillColor.fstate==GRAD || fillColor.fstate==TOGRAD || fillColor.fstate==FADEIN) {
+      //var zf=(curveCount+cycleSet-7)/10;
+var old=(curveCount+cycleSet-7)/10;
+      var zf=(curveCount-1)/4;
+//console.log('zfac '+old+' -> '+zf);
+      this.scale=1.2+zf*Math.random();
+    } else { 
+      this.scale=SMALL;
+/*
+      if (curveTransition.synced) {
+	this.scale=SMALL;
+      } else if (Math.random()<.7) {
+	this.scale=SMALL;
+      } else {
+	var zf=(curveCount+cycleSet-7)/10;
+	this.scale=1+zf*Math.random();
+      }
+*/
+    }
+//console.log('rescale '+z+' to '+this.scale);
+/*
+    document.getElementById('zoomRep').textContent=(this.scale*100).toFixed(0)+'%';
+    document.getElementById('zoomSel').value=this.scale;
+*/
+  },
+  setZoom:function(z) {
+    // set controls?
+    this.scale=z;
+  }
+}
+
+var Stop=function(number,oArr) {
+  this.number=number
+  this.el=document.createElementNS("http://www.w3.org/2000/svg", "stop");
+  this.el.setAttribute('offset',oArr[0]);
+  this.el.setAttribute('stop-opacity',oArr[1]);
+  this.fromOffset=oArr[0];
+  this.toOffset=oArr[0];
+  this.oLock=true;	//
+  this.oTime=0;
+  this.fromHSL=[40,90,80];	//
+  this.toHSL=[getRandomInt(0,360),90,80];
+  this.fromHSL[0]=this.toHSL[0];
+  this.el.setAttribute('stop-color',this.getHSLString());
+  this.cLock=true;	//
+  this.hueDiff=0;
+  this.fromOpacity=oArr[1];
+  this.toOpacity=oArr[1];
+  this.state='';
+  this.signal;
+  if (oArr[0]==0) {
+    this.state='zero';
+  } else {
+    this.state='active';
+  }
+  this.animateDuration=animateDuration;
+  this.randomizeColor=function() {
+    this.fromHSL=this.toHSL.slice();
+    this.hueDiff=180-Math.round(360*Math.random());
+    if (this.fromHSL[0]+this.hueDiff>360 || this.fromHSL[0]+this.hueDiff<0) {
+      this.hueDiff*=-1;
+    }
+    this.toHSL[0]=this.fromHSL[0]+Math.round(this.hueDiff);
+  }
+  this.shiftProperties=function() {
+    this.fromOpacity=this.toOpacity;
+    if (fillColor.fstate==TOSOLID) {
+    // getSO
+    } else {
+      this.toOpacity=getSO(stops.length)[this.number][1];
+    }
+// check for mismatch here
+    this.fromOffset=this.toOffset;
+    this.toOffset=getSO(stops.length)[this.number][0];
+    //this.toOffset=so[this.number][0];
+  }
+/*
+  this.setRandomColor=function() {
+    this.hueDiff=0;
+    this.toHSL[0]=Math.round(360*Math.random());
+    this.fromHSL[0]=this.toHSL[0];
+    this.el.setAttribute('stop-color',this.getHSLString());
+  }
+  this.randomizeDuration=function() {  // unused
+    this.animateDuration=duration*(.3+.7*Math.random());
+  }
+*/
+}
+
+Stop.prototype.setOffset=function(offset) {
+  this.fromOffset=this.toOffset;
+  this.toOffset=offset;
+//console.log('** %f %f %f',offset,this.fromOffset,this.toOffset);
+}
+
+Stop.prototype.changeHue=function(inp) {
+  this.fromHSL[0]=this.toHSL[0];
+  this.toHSL[0]=parseFloat(inp.value);
+  this.el.setAttribute('stop-color',this.getHSLString());
+}
+
+Stop.prototype.getHSLString=function() {
+  return 'hsl('+this.toHSL[0]+','+this.toHSL[1]+'%,'+this.toHSL[2]+'%)';
+}
+
+Stop.prototype.setMidOffset=function(frac) {
+  let fos=this.toOffset*frac+this.fromOffset*(1-frac);
+  this.el.setAttribute('offset',fos);
+}
+
+Stop.prototype.setMidFade=function(frac) {
+  //this.el.setAttribute('stop-opacity',1-frac);
+  let op=this.toOpacity*frac+this.fromOpacity*(1-frac);
+  this.el.setAttribute('stop-opacity',op);
+}
+
+/*
+Stop.prototype.setMidColor=function(frac) {
+  if (this.state=='fade') {
+    var fill='hsl('+this.fromHSL[0]+','+this.toHSL[1]+'%,'+this.toHSL[2]*(1-frac)+'%)';
+  } else {
+    let hue=(this.fromHSL[0]+Math.round(this.hueDiff*frac)+360)%360;
+    var fill='hsl('+hue+','+this.toHSL[1]+'%,'+this.toHSL[2]+'%)';
+  }
+  this.el.setAttribute('stop-color',fill);
+}
+*/
+
+Stop.prototype.inactivate=function() {
+  if (this.state=='active') {
+    this.state='rest';
+  }
+}
+
+Stop.prototype.activate=function() {
+  if (this.state=='rest') {
+    this.state='active';
+  }
+}
 
 function getRandomInt(min, max, low) {
   min=Math.ceil(min);
@@ -183,6 +722,7 @@ function getRandomInt(min, max, low) {
   }
 }
 
+/*
 function randomColor() {
   var rgb=[160,160,160];
   var sel1=getRandomInt(0,3);
@@ -208,219 +748,153 @@ function randomColor() {
   }
   return col;
 }
+*/
 
 function changeCurveCount(cc) {
-  switch(cc) {
-    case 1:
-      switch (curveCount) {
-	case 2:
-	  curves[1].tdata=getZeroData().slice();
-          break;
-	case 3:
-	  curves[1].tdata=getZeroData().slice();
-	  curves[2].tdata=getZeroData().slice();
-          break;
-	case 4:
-	  curves[1].tdata=getZeroData().slice();
-	  curves[2].tdata=getZeroData().slice();
-	  curves[3].tdata=getZeroData().slice();
-          break;
+if (cc===curveCount) {
+  debugger;
+}
+  if (cc==1) {
+    for (let c of curves) {
+      if (c.anchor) {
+      } else {
+        c.zeroFromData();
+        c.zeroToData();
+        c.active=false;
+	c.cstate=ZERO;
       }
-      curveCount=1;
-      break;
-    case 2:
-      switch (curveCount) {
-	case 1:
-          randomizeCurve(1);
-	  break;
-	case 3:
-	  curves[2].tdata=getZeroData().slice();
-	  break;
-	case 4:
-	  curves[2].tdata=getZeroData().slice();
-	  curves[3].tdata=getZeroData().slice();
-	  break;
+    }
+  } else if (cc==2) {
+    let cct=0;
+    for (let c of curves) {
+      if (c.anchor) {
+      } else {
+        if (cct++>0) {
+          c.zeroFromData();
+          c.zeroToData();
+          c.active=false;
+	  c.cstate=ZERO;
+        } else {
+          // check STD & non-STD
+	  c.cstate=STD;
+          c.randomizeCurve();
+          c.fromData=c.toData.slice();
+          c.randomizeCurve();
+          c.active=stopped?false:true;
+        }
       }
-      curveCount=2;
-      break;
-    case 3:
-      switch (curveCount) {
-	case 1:
-          randomizeCurve(1);
-          randomizeCurve(2);
-	  break;
-	case 2:
-          randomizeCurve(2);
-	  break;
-	case 4:
-	  curves[3].tdata=getZeroData().slice();
-	  break;
+    }
+  } else if (cc==3) {
+    let cct=0;
+    for (let c of curves) {
+      if (c.anchor) {
+      } else {
+        if (cct++>1) {
+          c.zeroFromData();
+          c.zeroToData();
+          c.active=false;
+	  c.cstate=ZERO;
+        } else {
+	  c.cstate=STD;
+          c.randomizeCurve();
+          c.fromData=c.toData.slice();
+          c.randomizeCurve();
+          c.active=stopped?false:true;
+        }
       }
-      curveCount=3;
-      break;
-    case 4:
-      switch (curveCount) {
-	case 1:
-          randomizeCurve(1);
-          randomizeCurve(2);
-          randomizeCurve(3);
-	  break;
-	case 2:
-          randomizeCurve(2);
-          randomizeCurve(3);
-	  break;
-        case 3:
-          randomizeCurve(3);
-          break;
+    }
+  } else if (cc==4) {
+    for (let c of curves) {
+      if (c.anchor) {
+      } else {
+	c.cstate=STD;
+        c.randomizeCurve();
+        c.fromData=c.toData.slice();
+        c.active=stopped?false:true;
       }
-      curveCount=4;
-      break;
+    }
   }
-  document.getElementById('ccRep').textContent=curveCount;
-  document.getElementById('ccRange').value=curveCount;
+  //curveCount=cc;
   drawCurves();
 }
 
-function switchCurveCount(cc) {
-  switch(cc) {
-    case 1:
-      switch (curveCount) {
-	case 2:
-	  curves[1].zs=true;
-	  break;
-	case 3:
-	  curves[1].zs=true;
-	  curves[2].zs=true;
-	  break;
-	case 4:
-	  curves[1].zs=true;
-	  curves[2].zs=true;
-	  curves[3].zs=true;
-	  break;
-      }
-      curveCount=1;
-      break;
-    case 2:
-      switch (curveCount) {
-	case 1:
-	  curves[1].active=true;
-	  break;
-	case 3:
-	  curves[2].zs=true;
-	  break;
-	case 4:
-	  curves[2].zs=true;
-	  curves[3].zs=true;
-          break;
-      }
-      curveCount=2;
-      break;
-    case 3:
-      switch (curveCount) {
-	case 1:
-	  curves[1].active=true;
-	  curves[2].active=true;
-	  break;
-	case 2:
-	  curves[2].active=true;
-	  break;
-	case 4:
-	  curves[3].zs=true;
-	  break;
-      }
-      curveCount=3;
-      break;
-    case 4:
-      switch (curveCount) {
-	case 1:
-	  curves[1].active=true;
-	case 2:
-	  curves[2].active=true;
-	case 3:
-	  curves[3].active=true;
-      }
-      curveCount=4;
-      break;
-  }
-}
-
-function randomCurveCountChange(inloop) {
-  var rate=inloop?curveCountChangeRate/curveCount:curveCountChangeRate;
-  if (Math.random()>rate) {
-    return false;
-  }
-  var sel=powerRandom(cycleSet/13);
-  if (sel<.05) { 
-    switchCurveCount(1);
-  } else if (sel<.2) { 
-    switchCurveCount(2);
-  } else if (sel<.8) { 
-    switchCurveCount(3);
-  } else {
-    switchCurveCount(4);
-  }
+function reportCurveCount() {
+//log('cc change to '+curveCount);
   document.getElementById('ccRep').textContent=curveCount;
   document.getElementById('ccRange').value=curveCount;
 }
 
-function setCurve(cn) {
-  var offset=function() {
-    if (Math.random()<rotationFactor*(1-curveComplexity())) {
-      return offset=Math.random()*Math.PI;
-    } else {
-      return 0;
-    } 
-  }();
-  var r1=curves[cn].r[0];
-  var r2=curves[cn].r[1];
-  var r3=curves[cn].r[2];
-  var r4=curves[cn].r[3];
-  var c0=curves[cn].c0;
-  var c1=curves[cn].c1;
-  var c2=curves[cn].c2;
-  var c3=curves[cn].c3;
-  switch (curves[cn].rc) {
-    case 1:
-      var f1=1+(curves[cn].ct[0]*c1)/c0;
-      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset);
-      var y=r1*Math.sin(offset)+r2*Math.sin(f1*offset);
-      curves[cn].tdata[0]=[x,y];
-      var counter=1;
-      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
-	x=r1*Math.cos(z)+r2*Math.cos(f1*z);
-	y=r1*Math.sin(z)+r2*Math.sin(f1*z);
-	curves[cn].tdata[counter++]=[x,y];
-      }
-      break;
-    case 2:
-      var f1=1+(curves[cn].ct[0]*c1)/c0;
-      var f2=1+(curves[cn].ct[0]*c1+curves[cn].ct[1]*c2)/c0;
-      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset);
-      var y=r1*Math.sin(offset)+r2*Math.sin(f1*offset)+r3*Math.sin(f2*offset);
-      curves[cn].tdata[0]=[x,y];
-      var counter=1;
-      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
-	x=r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z);
-	y=r1*Math.sin(z)+r2*Math.sin(f1*z)+r3*Math.sin(f2*z);
-        curves[cn].tdata[counter++]=[x,y];
-      }
-      break;
-    case 3:
-      var f1=1+(curves[cn].ct[0]*c1)/c0;
-      var f2=1+(curves[cn].ct[0]*c1+curves[cn].ct[1]*c2)/c0;
-      var f3=1+(curves[cn].ct[0]*c1+curves[cn].ct[1]*c2+curves[cn].ct[2]*c3)/c0;
-      var x=r1*Math.cos(offset)+r2*Math.cos(f1*offset)+r3*Math.cos(f2*offset)+r4*Math.cos(f3*offset);
-      var y=r1*Math.sin(offset)+r2*Math.sin(f1*offset)+r3*Math.sin(f2*offset)+r4*Math.sin(f3*offset);
-      curves[cn].tdata[0]=[x,y];
-      var counter=1;
-      for (var z=.01*c0+offset; z<2*Math.PI*c0+offset; z+=.01*c0) {
-	x=r1*Math.cos(z)+r2*Math.cos(f1*z)+r3*Math.cos(f2*z)+r4*Math.cos(f3*z);
-	y=r1*Math.sin(z)+r2*Math.sin(f1*z)+r3*Math.sin(f2*z)+r4*Math.sin(f3*z);
-        curves[cn].tdata[counter++]=[x,y];
-      }
-      break;
+function randomCurveCountChange(curve) {
+  if (curveCountLock) {
+    return false;
   }
-}      
+  if (zoom.scale==SMALL) {
+    return false;
+  }
+  let p35=.35-curveComplexity();  // .35 desirable level
+  let cdel=curveCountChangeRate+Math.abs(p35);
+//let skew=p35/.35;
+//console.log('cc check skew '+p35+' '+skew);
+  if (Math.random()<cdel) {
+    switch (curveCount) {
+      case 1:
+        for (c of curves) {
+          if (c==curve) {
+            continue;
+          }
+          if (c.toSTD()) {
+            curveCount++;
+            reportCurveCount();
+            return true;
+          }
+        }
+        return false;
+      case 2:
+//console.log('one p '+(.9+p35));
+        if (Math.random()<(.9+p35)) { // add
+	  for (c of curves) {
+	    if (c==curve) {
+	      continue;
+	    }
+            if (c.toSTD()) {
+              curveCount++;
+              reportCurveCount();
+              return true;
+            }
+          }
+        } else {
+          if (curve.toZERO()) {
+            return true;
+          }
+        }
+        return false;
+      case 3:
+        if (Math.random()<(.1+p35)) {
+          for (c of curves) {
+	    if (c==curve) {
+	      continue;
+	    }
+            if (c.toSTD()) {
+              curveCount++;
+              reportCurveCount();
+              return true;
+            }
+          }
+        } else {
+          if (curve.toZERO()) {
+            return true;
+          }
+        }
+        return false;
+      case 4:
+        if (curve.toZERO()) {
+          return true;
+        }
+    }
+    return false;
+  }
+  return false;
+}
 
 function getCycle0Match() {
   switch (cycleSet) {
@@ -460,61 +934,47 @@ function getCycle0Match() {
 }
 
 function resetCycleSet() {
-  curves[0].c1=cycleSet;
-  curves[0].c2=cycleSet;
-  curves[0].c3=cycleSet;
-  curves[0].c4=cycleSet;
-  curves[0].c0=getCycle0Match();
-  for (var cn=1; cn<MAX_CURVE_COUNT; cn++) {
-    if (cycleSet==10) {
-      curves[cn].c1=Math.random()<.05?5:10;
-      curves[cn].c2=Math.random()<.05?5:10;
-      curves[cn].c3=Math.random()<.05?5:10;
-      curves[cn].c4=Math.random()<.05?5:10;
-    } else if (cycleSet==12) {
-      curves[cn].c1=Math.random()<.1?6:12;
-      curves[cn].c2=Math.random()<.1?6:12;
-      curves[cn].c3=Math.random()<.1?6:12;
-      curves[cn].c4=Math.random()<.1?6:12;
-    } else if (cycleSet==14) {
-      curves[cn].c1=Math.random()<.2?7:14;
-      curves[cn].c2=Math.random()<.2?7:14;
-      curves[cn].c3=Math.random()<.2?7:14;
-      curves[cn].c4=Math.random()<.2?7:14;
-    } else if (cycleSet==16) {
-      curves[cn].c1=Math.random()<.3?Math.random()<.1?4:8:16;
-      curves[cn].c2=Math.random()<.3?Math.random()<.1?4:8:16;
-      curves[cn].c3=Math.random()<.3?Math.random()<.1?4:8:16;
-      curves[cn].c4=Math.random()<.3?Math.random()<.1?4:8:16;
-    } else {
-      curves[cn].c1=cycleSet;
-      curves[cn].c2=cycleSet;
-      curves[cn].c3=cycleSet;
-      curves[cn].c4=cycleSet;
-    }
-    curves[cn].c0=getCycle0Match();
+  for (let c of curves) {
+    c.setCycles();
   }
+//  setCurvesMatchingAnchor();
 }
 
 function randomizeCycles() {
-  var goodArray=function() {
-    switch (curveCount) {
-      case 1: return [17,16,15,14,13,12,11,10,9,8,7,6];
-      case 2: return [14,15,13,16,12,17,11,10,9,8,7,6];
-      case 3: return [10,11,9,12,8,13,7,14,6,15,16,17];
+  if (Math.random()<.1) {
+    // soft symmetric
+    for (let c of curves) {
+      c.cycles[0]=getCycle0Match();
     }
-    return [6,7,8,9,10,11,12,13,14,15,16,17];
+log('soft recycle');
+  } else {
+let yx=cycleSet;
+    // 10 cycles demoted
+    cycleSet=(()=>{
+      switch (curveCount) {
+	case 1: return [17,16,15,14,13,12,11,9,10,8,7,6];
+	case 2: return [14,15,13,16,12,17,11,9,10,8,7,6];
+	case 3: return [11,10,9,12,8,13,7,14,6,15,16,17];
+      }
+      return [6,7,8,9,11,10,12,13,14,15,16,17];
+    })()[getRandomInt(0,12,3)];
+    resetCycleSet();
+if (yx!=cycleSet) {
+    curveTransition.ctCount++;
+}
+    document.getElementById('cvRep').textContent=cycleSet;
+    document.getElementById('cvRange').value=cycleSet;
+log('maj '+yx+' to '+cycleSet);
   }
-  cycleSet=goodArray()[getRandomInt(0,12,4)];
-  resetCycleSet();
-  document.getElementById('cvRep').textContent=cycleSet;
-  document.getElementById('cvRange').value=cycleSet;
+
 }
 
 function curveComplexity() {
   let comp1=0;	// combine radii count with curve count
-  for (let cn=0; cn<curveCount; cn++) {
-    comp1+=curves[cn].rc;
+  for (let c of curves) {
+    if (c.cstate!=ZERO) {
+      comp1+=c.radiiCount;
+    }
   }
   // need to change if max curve goes>4 or max cycle>17
   comp1=(comp1-1)/22;
@@ -526,63 +986,11 @@ function randomTen() {
   return 10-20*Math.random();
 }
 
-function randomizeRadii(cn) {
-  var f1=80/(curves[cn].rc+1);
-  var f2=2*curves[cn].rc*f1;
-  for (var i=0; i<curves[cn].rc+1; i++) {
-    curves[cn].r[i]=f1+f2*Math.random();
-  }
-  if (curves[cn].rc==1) {
-    var cFactor=(()=>{
-      let cf=curves[cn].r[0]; 
-      for (var j=1; j<curves[cn].rc+1; j++) {
-	cf-=curves[cn].r[j];
-	cf=Math.abs(cf);
-      }
-      return cf;
-    })();
-    //var cFactor=centralFactor(cn);
-    if (cFactor>20) {
-      curves[cn].r[1]=curves[cn].r[0]+randomTen();
-    }
-  }
-  var maxC=function() {
-    var maxr=0;
-    for (var i=0; i<curves[cn].rc+1; i++) {
-      maxr+=curves[cn].r[i];
-    }
-    return maxr;
-  }();
-  var fac=zoom.toScale*200/maxC;
-  if (cn==0) {
-    for (var i=0; i<curves[cn].rc+1; i++) {
-      curves[cn].r[i]*=fac;
-    }
-  } else if (maxC>zoom.toScale*200) {
-    for (var i=0; i<curves[cn].rc+1; i++) {
-      curves[cn].r[i]*=fac;
-    }
-  }
+function randomFive() {
+  return 5-10*Math.random();
 }
 
-function randomizeCurve(cn) {
-  curves[cn].fdata=curves[cn].tdata.slice();
-  if (Math.random()<.7) {
-    curves[cn].rc=[1,2,3][getRandomInt(0,3,curveCount/1.2 /*TODO include cycleSet*/)];
-    for (var j=0; j<curves[cn].rc; j++) {
-      if (Math.random()<.05) {
-	curves[cn].ct[j]=1;
-      } else {
-	curves[cn].ct[j]=-1;
-      }
-    }
-  }
-  randomizeRadii(cn);
-  setCurve(cn);
-  curves[cn].dur=animateDuration*(.3+.7*Math.random());
-}
-
-function isAnimationActive() {
+function isAActive() {
   for (var i=0; i<curveCount; i++) {
     if (curves[i].active) {
       return true;
@@ -591,73 +999,38 @@ function isAnimationActive() {
   if (fillColor.active) { 
     return true; 
   }
-/*
-  if (zoom.active) {
-    return true;
-  }
-  if (rotation.active) { 
-    return true; 
-  }
-  if (lineColor.active) { 
-    return true; 
-  }
-  if (lineWO.active) { 
-    return true; 
-  }
-  if (pauseTS) {
-    return true;
-  }
-*/
   return false;
+}
+
+function drawCurve() {
+  let d='';
+  for (let i=0; i<arguments.length; i++) {
+    d+=arguments[i].lineCurve();
+  }
+  path.setAttribute('d',d);
 }
 
 function drawCurves() {
   var d='';
-  for (var cn=0; cn<curveCount; cn++) {
-    d+='M'+curves[cn].tdata[0][0]+' '+curves[cn].tdata[0][1];
-    for (var i=1; i<629; i++) {
-      d+='L'+curves[cn].tdata[i][0]+' '+curves[cn].tdata[i][1];
-    }
-    d+='z';
-  }
-  path.setAttribute('d',d);
-}
-
-function drawCurve(cn) {
-  var d='';
-  d+='M'+curves[cn].tdata[0][0]+' '+curves[cn].tdata[0][1];
-  for (var i=1; i<629; i++) {
-    d+='L'+curves[cn].tdata[i][0]+' '+curves[cn].tdata[i][1];
-  }
-  d+='z';
-  path.setAttribute('d',d);
-}
-
-function lineCurve(cn) {
-  if (curves[cn].tdata[0][0]==0 && curves[cn].tdata[0][1]==0) {
-    return '';
-  }
-  var d='';
-  d+='M'+curves[cn].tdata[0][0]+' '+curves[cn].tdata[0][1];
-  for (var i=1; i<629; i++) {
-    d+='L'+curves[cn].tdata[i][0]+' '+curves[cn].tdata[i][1];
-  }
-  d+='z';
-  return d;
-}
-
-function isLineActive() {
-  for (var i=0; i<curveCount; i++) {
-    if (curves[i].active) {
-      return true;
+  for (c of curves) {
+    //if (c.active) {
+    //if (c.cstate==STD) {
+    if (c.cstate!=ZERO) {
+      d+='M'+c.toData[0][0]+' '+c.toData[0][1];
+      for (var i=1; i<629; i++) {
+	d+='L'+c.toData[i][0]+' '+c.toData[i][1];
+      }
+      d+='z';
+      c.start=0;
     }
   }
-  return false;
+  path.setAttribute('d',d);
+  // set state
 }
 
 function cbLoc(p1,p2,frac) {
-  var f1=.1;
-  var f2=.9;
+  let f1=.1;
+  let f2=.9;
   var e1=Math.pow(1-frac,3)*p1;
   var e2=3*frac*Math.pow(1-frac,2)*(p1+(p2-p1)*f1);
   var e3=3*(1-frac)*Math.pow(frac,2)*(p1+(p2-p1)*f2);
@@ -666,199 +1039,261 @@ function cbLoc(p1,p2,frac) {
 }
 
 function animate(ts) {
+  if (halts.stopNow) {
+    park();
+    return;
+  }
   var endMove=false;
   var d='';
-  for (var cn=0; cn<MAX_CURVE_COUNT; cn++) {
-    if (curves[cn].active) {
-      if (!curves[cn].start) {
-	curves[cn].start=ts;
+  for (var cx of curves) {
+    if (cx.active) {
+      if (cx.start==0) {
+	cx.start=ts;
       }
-      var progress=ts-curves[cn].start;
-      if (progress<curves[cn].dur*1000) {
-	var frac=progress/(curves[cn].dur*1000);
-	d+='M';
-        d+=cbLoc(curves[cn].fdata[0][0],curves[cn].tdata[0][0],frac);
-        d+=' ';
-        d+=cbLoc(curves[cn].fdata[0][1],curves[cn].tdata[0][1],frac);
-	for (var i=1; i<629; i++) {
-	  d+='L';
-	  d+=cbLoc(curves[cn].fdata[i][0],curves[cn].tdata[i][0],frac);
-	  d+=' ';
-	  d+=cbLoc(curves[cn].fdata[i][1],curves[cn].tdata[i][1],frac);
-	}
-        d+='z';
+      var progress=ts-cx.start;
+      if (progress<cx.duration) {
+	var frac=progress/(cx.duration);
+        d+=cx.getMidCurve(frac);
       } else {
-	if (curves[cn].zs) {
-	    curves[cn].fdata=curves[cn].tdata.slice();
-	    curves[cn].tdata=getZeroData().slice();
-	    curves[cn].zs=false;
-	    curves[cn].active=true;
-	    curves[cn].start=false;
-        } else if (stops.stop || stops.cycleChange || stops.pause || stops.durationChange) {
-          curves[cn].active=false;
+        cx.start=0;
+        cx.inCycle=false;
+
+
+/*
+if (cx.cstate==TOEQ) {
+  if (cx.anchor) {
+    cx.cstate=EQUAL;
+log('anc eq');
+  } else {
+    cx.cstate=ZERO;
+cx.zeroFromData();
+cx.zeroToData();
+    curveCount--;
+    reportCurveCount();
+    cx.active=false;
+    anchorCurve.cstate=STD;
+log('sub curve');
+  }
+}
+*/
+
+
+	if (cx.cstate==TOZERO) {
+	  cx.cstate=ZERO;
+          curveCount--;
+          reportCurveCount();
+	  cx.active=false;
+	//} else if (cx.cstate==TOSTD) { cx.cstate=STD;
+	}
+        if (curvesInTransition()) {
+          if (cx.cstate==STD) {
+            cx.randomizeCurve();
+          }
         } else {
-          if (cn<curveCount) {
-            if (!curveCountLock) {
-	      randomCurveCountChange(true);
-            }
-	    if (Math.random()<.15) {
-	      curves[cn].c0=getCycle0Match();
-	    }
-	    if (Math.random()<cycleChangeRate/curveCount && !cycleLock) {
-	      stops.cycleChange=true;
-	    }
-	    randomizeCurve(cn);
-	    curves[cn].start=ts;
-	    if (Math.random()<.2/curveCount) {
-	      if (!fillColor.active && !fillColor.lock) {
-		fillColor.randomize();
-                if (!lineColor.lock) {
-		  lineColor.randomize();
-                }
-		fillColor.active=true;
-		fillColor.start=false;
-	      }
-	    }
-	    if (Math.random()<.05 && !zoom.lock) {
-	      if (!zoom.active) {
-		zoom.randomize();
-		//zoom.active=true;
-		//zoom.start=false;
-	      }
-	    }
+          if (halts.stop || halts.sync) {
+            cx.active=false;
           } else {
-            // clean up zeroed curves
-	    curves[cn].active=false; 
+	    if (curveTransition.synced) {
+	      if (!curvesInCycle()) {
+log('cycle stop or cont '+!cycleSet%2);
+                if (!cycleSet%2 && Math.random()<.8 && curveTransition.ctCount<1) {
+                  for (let c of curves) {
+                    c.cycles[0]=getCycle0Match();
+                  }
+c.duration=animateDuration/2;
+log('soft cycle');
+                } else {
+		  // exit synchrony 
+		  curveTransition.synced=false;
+		  fillColor.active=true;  // TODO unless locked
+		  fillColor.start=0;
+curveTransition.syncTS=0;
+log('cycle off');
+                }
+              }
+	    } else {
+	      if (randomCurveCountChange(cx)) {
+	      } else {
+		if (!cycleLock && !curveTransition.synced && zoom.scale==SMALL && fillColor.fstate==SOLID && curveTransition.ctCount<1) {
+log('change cycle');
+		  halts.sync=true;
+		}
+	      }
+            }
+            if (cx.cstate==STD) {
+              cx.randomizeCurve();
+            }
           }
         }
+	//if (Math.random()<.3 && CT!='cycle' && !halts.sync) {
+	if (Math.random()<.3 && !curveTransition.synced && !halts.sync) {
+	  zoom.randomize();
+	}
 	endMove=true;
       }
     } else {
-      d+=lineCurve(cn);
+      d+=cx.lineCurve();
     }
-  }
-
-  if (fillColor.active) {
-    if (!fillColor.start) {
-      fillColor.start=ts;
-    }
-    var progress=ts-fillColor.start;
-    if (progress<animateDuration*1000) {
-      var frac=progress/(animateDuration*1000);
-      var fhue=(fillColor.fromFillHSL[0]+Math.round(fillColor.hueDiff*frac)+360)%360;
-      var fill='hsl('+fhue+','+fillColor.toFillHSL[1]+'%,'+fillColor.toFillHSL[2]+'%)'; 
-      path.style.fill=fill;
-      var lhue=(lineColor.fromLineHSL[0]+Math.round(lineColor.hueDiff*frac)+360)%360;
-      var stroke='hsl('+lhue+','+lineColor.toLineHSL[1]+'%,'+lineColor.toLineHSL[2]+'%)'; 
-      path.style.stroke=stroke;
-    } else {
-      fillColor.active=false;
-    }
-  }
-
-/*
-  if (zoom.active) {
-    if (!zoom.start) {
-      zoom.start=ts;
-    }
-    var progress=ts-zoom.start;
-    if (progress<animateDuration*1000) {
-      var frac=progress/(animateDuration*1000);
-      var scale=zoom.fromScale+(zoom.toScale-zoom.fromScale)*frac;
-      //var matrix='matrix(0,-'+scale+','+scale+',0,200,200)';
-      //sgroup.setAttribute('transform',matrix);
-      //sgroup.style.transform='scale('+scale+')';
-    } else {
-      zoom.active=false;
-    }
-  }
-*/
+  } // curve loop
 
   if (!endMove) {
     path.setAttribute('d',d);
   }
 
-  if (isLineActive()) {
+  if (fillColor.fstate==SOLID) {
+    if (fillColor.active) {  // remove ?
+       if (halts.stop || halts.sync) {
+	 fillColor.active=false;
+       } else {
+	 if (curveTransition.ctCount>0 && !curveTransition.synced) {
+	   fillColor.fstate=TOGRAD;
+  /*
+	   for (let stop of stops) {
+	     stop.fromHSL[0]=fillColor.toFillHSL[0];
+	     stop.toHSL[0]=fillColor.toFillHSL[0];
+	     // the following 4 not necessary?
+	     stop.fromOpacity=1;
+	     stop.toOpacity=1;
+	     stop.el.setAttribute('stop-color',fillColor.getHSLString());
+	     stop.el.setAttribute('stop-opacity',1);
+	   }
+  */
+  //	 path.style.fill='url(#phsRG)';
+  console.log('to grad start');
+  fillColor.fillDuration=animateDuration*.1;
+  //console.log('filldur '+fillColor.fillDuration);
+  curveTransition.ctCount=0;
+	 } 
+       }
+    }
+  } else { // gradient or transitions
+    for (let stop of stops) {
+      //if (stop.state=='active' || stop.state=='fade') {
+      if (stop.state=='active') {
+	if (!stop.oTime) {
+	  stop.oTime=ts;
+	}
+	var progress=ts-stop.oTime;
+	if (progress<fillColor.fillDuration) {
+	  let frac=progress/fillColor.fillDuration;
+	  stop.setMidOffset(frac);
+	  stop.setMidFade(frac);
+	} else {
+	  // all stops done
+	  stop.oTime=0;
+	  stop.inactivate();
+	  if (stopsInactive()) {
+	    if (halts.stop || halts.sync) {
+	      fillColor.active=false;
+	    } else {
+	      shiftStops();
+	    }
+	    if (fillColor.fstate==GRAD) {
+  //log('Cyc '+cycleChangeRate*(.5+Math.abs(cycleSet-9)/16));
+	      if (Math.random()<cycleChangeRate*(.5+Math.abs(cycleSet-9)/16)) {
+		fillColor.fillDuration=animateDuration*.3;
+		fillColor.fstate=TOSOLID;
+		zoom.setZoom(SMALL);
+  log('to solid start');
+	      }
+	    } else if (fillColor.fstate==TOSOLID) {
+	      if (stops[stops.length-1].toHSL[0]==stops[stops.length-2].toHSL[0] && stops[stops.length-2].toOffset==1) {
+		fillColor.switchToSolid();
+	      }
+	    } else if (fillColor.fstate==TOGRAD) {
+	      if (stops[stops.length-1].toHSL[0]!=stops[stops.length-2].toHSL[0]) {
+		  fillColor.switchToGradient();
+		}
+  /*
+	    } else if (fillColor.fstate==FADEIN) {
+	      if (stops[stops.length-1].signal) {
+		 fillColor.fillDuration=animateDuration;
+		 fillColor.fstate=GRAD;
+	      }
+  */
+	    }
+	    activateStops();
+	  }
+	}
+      }  // active stops
+    }  // stop loop
+  }
+
+  if (isAActive()) {
     requestAnimationFrame(animate);
-  } else {
-    // TODO nonlineactive
-    if (isAnimationActive()) {
-      requestAnimationFrame(animate);
+  } else { // all stop inflection, mostly for cycle changes?
+    if (halts.stop) { // synchronized stop
+      park();
     } else {
-      if (stops.stop) {
-	stopped=true;
-        document.querySelector('.abtn').textContent='start';
-       // exiting requestAnimationFrame calls
-      } else {
-	if (stops.cycleChange) {
-	  randomizeCycles();
-	  stops.cycleChange=false;
-	} else if (Math.random()<cycleChangeRate && !cycleLock) {
-	  randomizeCycles();
-	}
-	for (var cn=0; cn<curveCount; cn++) {
-	  randomizeCurve(cn, stops.pause);
-	  curves[cn].active=true;
-	  curves[cn].start=false;
-	}
-	requestAnimationFrame(animate);
+      if (halts.sync) {
+	randomizeCycles();
+        for (let c of curves) {
+          if (c.active) {
+            c.inCycle=true;
+          }
+        }
+	halts.sync=false;
+        curveTransition.synced=true;
+} else {
+//debugger;
       }
+      for (c of curves) {
+	if (c.cstate==STD) {
+	  c.randomizeCurve();
+	  c.active=true;
+	}
+	c.start=0; // could be problem for new sync ?
+      }
+      requestAnimationFrame(animate);
     }
   }
+}
+
+function init() {
+  shiftStops();
+  for (c of curves) {
+    if (c.cstate==STD) {
+      c.randomizeCurve();
+    }
+  }
+  start();
 }
 
 function start() {
   if (stopped) {
     stopped=false;
-    stops.stop=false;
-    for (var cn=0; cn<curveCount; cn++) {
-      randomizeCurve(cn);
-      curves[cn].active=true;
-      curves[cn].start=false;
+    halts.stop=false;
+    halts.stopNow=false;
+    activateStops();
+    fillColor.active=true;
+    for (c of curves) {
+      if (c.cstate==STD) {
+        c.randomizeCurve();
+        c.active=true;
+        c.start=0;
+      }
     }
-    if (!fillColor.lock) {
-      fillColor.randomize();
-      lineColor.randomize();
-      fillColor.active=true;
-      fillColor.start=false;
-    }
-    document.querySelector('.abtn').textContent='stop';
+    document.querySelector('#ss').textContent='Stop';
+    document.querySelector('#onoff').innerHTML='&#10679;';
     requestAnimationFrame(animate);
   } else {
-    stops.stop=true;
+    if (halts.stop) {
+      halts.stopNow=true;
+    } else {
+      halts.stop=true;
+      document.querySelector('#ss').textContent='Stopping';
+    }
   }
 }
 
-function stop() {
-  stops.stop=true;
-}
-
-function hideCurve2(ts) {
-  var z=document.querySelector('.c2show');
-  if (z==null) {
-  } else {
-    z.className="c2hide";
-    requestAnimationFrame(hideCurve2);
-  }
-}
-function showCurve2(ts) {
-  var z=document.querySelector('.c2hide');
-  if (z==null) {
-  } else {
-    z.className="c2show";
-    requestAnimationFrame(showCurve2);
-  }
+function park() {
+  stopped=true;
+  document.querySelector('#ss').textContent='Start';
+  document.querySelector('#onoff').innerHTML='&#10687;';
 }
 
 function changeDuration(si) {
-/*
-  if (isAnimationActive()) {
-    stops.durationChange=true;
-  } else {
-    animateDuration=si.value;
-  }
-*/
-    animateDuration=si.value;
+  animateDuration=si.value*1000;
   document.getElementById('durRep').textContent=si.value+'s';
 }
 
@@ -867,23 +1302,22 @@ function changeRotation(si) {
   document.getElementById('rotRep').textContent=(si.value*100).toFixed(0)+'%';
 }
 
-function changePause(si) {
-  pause=si.value;
-}
-
+/*
 function changeDamp(si) {
   curveChangeRate=si.value;
 }
+*/
 
 function inputCurveCount(si) {
   document.getElementById('ccRep').textContent=si.value;
-  if (isAnimationActive()) {
+  if (isAActive()) {
     document.getElementById('kCount').checked=true;
     curveCountLock=true;
-    switchCurveCount(parseInt(si.value));
+//    switchCurveCount(parseInt(si.value));
   } else {
-    changeCurveCount(parseInt(si.value));
+//    changeCurveCount(parseInt(si.value));
   }
+  changeCurveCount(parseInt(si.value));
 }
 
 function lockCurveCount(cb) {
@@ -898,15 +1332,23 @@ function inputCurveCycles(si) {
   document.getElementById('cvRep').textContent=si.value;
   cycleSet=parseInt(si.value);
   resetCycleSet();
-  if (isAnimationActive()) {
-    cycleLock=true;
-    document.getElementById('kCycle').checked='checked';
-  } else {
-    for (var cn=0; cn<curveCount; cn++) {
-      setCurve(cn);
+  if (isAActive()) {
+    if (fillColor.fstate==GRAD || fillColor.fstate==TOGRAD) {
+      cycleLock=true;
+      document.getElementById('kCycle').checked='checked';
     }
-    drawCurves();
   }
+  for (c of curves) {
+//    if (c.cstate!=ZERO) {
+    c.setCurve();
+    c.fromData=c.toData.slice();
+    if (c.cstate==STD) {
+//      c.setCurve();
+//      c.fromData=c.toData.slice();
+      c.randomizeCurve();
+    }
+  }
+  drawCurves();
 }
 
 function lockCurveCycles(cb) {
@@ -925,7 +1367,7 @@ function changeFillHue(inp) {
     hdiv.style.backgroundColor=col;
   });
   path.style.fill=fillColor.getHSLString();
-  if (isAnimationActive()) {
+  if (isAActive()) {
     document.getElementById('kHue').checked=true;
     fillColor.lock=true;
     fillColor.active=false;
@@ -945,111 +1387,24 @@ function lockHue(cb) {
   }
 }
 
-function changeFillSaturation(inp) {
-  fillColor.toFillHSL[1]=parseInt(inp.value);
-  document.getElementById('satRep').textContent=inp.value+'%';
-  var col=fillColor.getHSLString();
-  document.querySelectorAll('.fillCol').forEach(function(hdiv) {
-    hdiv.style.backgroundColor=col;
-  });
-  ctx.fillStyle=fillColor.getHSLString();
-  if (isAnimationActive()) {
-  } else {
-    drawCurves();
-  }
-}
-
-function changeFillLuminosity(inp) {
-  fillColor.toFillHSL[2]=parseInt(inp.value);
-  document.getElementById('lumRep').textContent=inp.value+'%';
-  var col=fillColor.getHSLString();
-  document.querySelectorAll('.fillCol').forEach(function(hdiv) {
-    hdiv.style.backgroundColor=col;
-  });
-  ctx.fillStyle=fillColor.getHSLString();
-  if (isAnimationActive()) {
-  } else {
-    drawCurves();
-  }
-}
-
-function inputLineWidth(inp) {
-  path.style.setProperty('stroke-width',inp.value,'');
-  document.getElementById('widthRep').textContent=parseFloat(inp.value).toFixed(1);
-}
-
-function changeLineHue(inp) {	// immediate
-  lineColor.toLineHSL[0]=parseInt(inp.value);
-  document.getElementById('lineHueRep').textContent=inp.value;
-  var col=lineColor.getHSLString();
-  document.querySelectorAll('.lineCol').forEach(function(hdiv) {
-    hdiv.style.backgroundColor=col;
-  });
-  path.style.stroke=lineColor.getHSLAString();
-  if (isAnimationActive()) {
-    document.getElementById('kLineHue').checked=true;
-    lineColor.lock=true;
-    lineColor.active=false;
-  } else {
-    drawCurves();
-  }
-}
-
-function lockLineHue(cb) {
-  if (cb.checked) {
-    lineColor.lock=true;
-  } else {
-    lineColor.lock=false;
-    stops.durationChange=true;  // no change, just resync
-  }
-}
-
-function changeLineSaturation(inp) {
-  lineColor.toLineHSL[1]=parseInt(inp.value);
-  document.getElementById('lineSatRep').textContent=inp.value;
-  var col=lineColor.getHSLString();
-  document.querySelectorAll('.lineCol').forEach(function(hdiv) {
-    hdiv.style.backgroundColor=col;
-  });
-  path.style.stroke=lineColor.getHSLAString();
-  if (isAnimationActive()) {
-  } else {
-    drawCurves();
-  }
-}
-
-function changeLineLuminosity(inp) {	// immediate
-  lineColor.toLineHSL[2]=parseInt(inp.value);
-  document.getElementById('lineLumRep').textContent=inp.value;
-  var col=lineColor.getHSLString();
-  document.querySelectorAll('.lineCol').forEach(function(hdiv) {
-    hdiv.style.backgroundColor=col;
-  });
-  path.style.stroke=lineColor.getHSLAString();
-  if (isAnimationActive()) {
-  } else {
-    drawCurves();
-  }
-}
-
+/*
 function resetScale() {
-  var rescale=zoom.toScale/zoom.fromScale;
+  var rescale=zoom.scale/zoom.fromScale;
   for (var cn=0; cn<curveCount; cn++) {
-    for (var i=0; i<curves[cn].rc+1; i++) {
-      curves[cn].r[i]*=rescale;
+    for (var i=0; i<curves[cn].radiiCount+1; i++) {
+      curves[cn].radii[i]*=rescale;
     }
-    setCurve(cn);
+    curves[cn].setCurve();
   }
   drawCurves();
 }
 
 function inputZoom(inp) {
-  zoom.fromScale=zoom.toScale;
-  zoom.toScale=parseFloat(inp.value);
+  zoom.fromScale=zoom.scale;
+  zoom.scale=parseFloat(inp.value);
   document.getElementById('zoomRep').textContent=(inp.value*100).toFixed(0)+'%';
-  //sgroup.style.transform='scale('+inp.value+')';
   zoom.active=false;
-  if (isAnimationActive()) {
+  if (isAActive()) {
     document.getElementById('kScale').checked=true;
     zoom.lock=true;
   } else {
@@ -1064,6 +1419,120 @@ function lockScale(cb) {
     zoom.lock=false;
   }
 }
+*/
+
+//////////
+
+function activateStops() {
+  for (stop of stops) {
+    stop.activate();
+  }
+}
+
+function stopsInactive() {
+  for (stop of stops) {
+    if (stop.state=='active') {
+      return false;
+    }
+  }
+  return true;
+}
+
+function shiftStops() {
+//checkToStops();
+  insertStop();
+  deleteStop();
+  for (let i in stops) {
+    stops[i].number=i;
+    stops[i].shiftProperties();
+    if (i==stops.length-1) {
+//      if (fillColor.fstate==FADEIN) {
+      if (stops[i].signal) {
+        fillColor.fstate=GRAD;
+        fillColor.fillDuration=animateDuration;
+        stops[i].signal=false;
+      }
+    }
+  }
+if (fillColor.fstate==TOSOLID) {
+  fillColor.fillDuration=Math.max(500, fillColor.fillDuration*.7);
+} else if (fillColor.fstate==TOGRAD) {
+  fillColor.fillDuration=Math.min(animateDuration, fillColor.fillDuration/.7);
+}
+//checkFromStops();
+//log('shift stops');
+}
+
+var gradient=document.querySelector('#phsRG');
+
+function getSO(count) {
+  let sa=[[0,1]];
+  if (count==1) {
+    return sa;
+  } else if (count==2) {
+    sa.push([1,1]);
+    return sa;
+  } else if (count==3) {
+    sa.push([.5,.5]);
+    sa.push([1,0]);
+    return sa;
+  } else {
+    let seg=1/(count-2);
+    for (let i=1; i<count-2; i++) {
+      let nos=0.18*Math.pow(seg*i,2)+0.85*seg*i;
+      sa.push([nos,1-Math.pow(seg*i,5)]);
+    }
+    sa.push([1,0]);
+    sa.push([1,0]);
+  }
+  return sa;
+}
+
+function getSOX(count) {
+  let sa=[[0,1]];
+  let seg=1/(count-1);
+  for (let i=1; i<count-1; i++) {
+    let nos=0.18*Math.pow(seg*i,2)+0.85*seg*i;
+    sa.push([nos,1-Math.pow(seg*i,5)]);
+  }
+  sa.push([1,0]);
+  sa.push([1,0]);
+  return sa;
+}
+
+var MAX_STOP_COUNT=6;
+var so=getSO(MAX_STOP_COUNT);
+var stops=[];
+
+for (let i in so) {
+  let stopx=new Stop(i,[so[i][0],0]);
+  stops.push(stopx);
+  gradient.appendChild(stopx.el);
+}
+stops[0].signal=true;
+
+function insertStop() {
+  stops.unshift(new Stop(0,[0,1]));
+  stops[0].state='zero';
+  stops[1].state='active';  // maybe 'rest'
+  gradient.insertBefore(stops[0].el, gradient.firstChild);
+  if (fillColor.fstate==TOSOLID) {
+    stops[0].fromHSL=stops[1].fromHSL;
+    stops[0].toHSL=stops[1].toHSL;
+    stops[0].el.setAttribute('stop-color',stops[1].getHSLString());
+  }
+  // set position flags here
+}
+
+function deleteStop() {
+//log('deleting stop');
+  gradient.removeChild(gradient.lastElementChild);
+  stops.pop();
+}
+
+function increaseStops() { }
+
+//////////
 
 function setMenu(menu,on) {
   if(on) {
@@ -1103,10 +1572,10 @@ function menuAnimate(timestamp, mdata) {
   var frac=progress/400;
   if (mdata.open) {
     mdata.divstyle.height=Math.min(frac*mdata.ht, mdata.ht) + 'px';
-    mdata.divstyle.width=Math.min(180+frac*(mdata.wd-180), mdata.wd) + 'px';
+    mdata.divstyle.width=Math.min(120+frac*(mdata.wd-120), mdata.wd) + 'px';
   } else {
     mdata.divstyle.height=mdata.ht-Math.min(frac*mdata.ht, mdata.ht) + 'px';
-    var mWidth=mdata.wd-(mdata.wd-180)*frac;
+    var mWidth=mdata.wd-(mdata.wd-120)*frac;
     mdata.divstyle.width=mWidth+'px';
   }
   if (progress<400) {
@@ -1148,7 +1617,7 @@ function togMenu(menu,show) {
       requestAnimationFrame(function(ts) { menuAnimate(ts,mdata); });
       setMenu(menu,false);
     }
-    checkMenus();
+    //checkMenus();
   } else {
     mdata.open=show;
     requestAnimationFrame(function(ts) { menuAnimate(ts,mdata); });
@@ -1156,6 +1625,163 @@ function togMenu(menu,show) {
   }
 }
 
-resize();
+onresize();
 
-start();
+init();
+
+function crep() {
+  let s={'active':[],'cycles':[],'state':[],'radcnt':[],'radii':[]};
+  let u='';
+  for (let cur of curves) { 
+    s.active.push(cur.active);
+    s.cycles.push(cur.cycles.toString());
+    s.state.push(['ZERO','TOZERO','STD'][cur.cstate]);
+    s.radcnt.push(cur.radiiCount);
+    s.radii.push(((c)=>{
+      let rint=[];
+      for (let i=0; i<c.radiiCount+1; i++) {
+        rint.push(c.radii[i].toFixed(0));
+      }
+      return rint.toString();
+    })(cur));
+//cur.radii.toString());
+  }
+  console.table(s);
+}
+
+function brep() {
+  let f=0, count=0;
+  for (let cur of curves) { 
+    if (cur.cstate==STD) {
+      for (let i=0; i<cur.radiiCount; i++) { 
+        f+=cur.curveTypes[i];
+        count++;
+      }
+    }
+  }
+  console.log(f/count);
+}
+
+function srep2(c) {
+  if (c !=undefined) {
+    console.log('from '+c)
+  }
+  let s='';
+  let to='';
+  let fr='';
+  let ops=''
+  for (let i in stops) { 
+    s+=' '+stops[i].state;
+    let tv=parseFloat(stops[i].toOpacity).toFixed(3);
+    to+=' '+tv;
+    let fo=parseFloat(stops[i].fromOpacity).toFixed(3);
+    fr+=' '+fo;
+    let op=parseFloat(stops[i].el.getAttribute('stop-opacity')).toFixed(3);
+    ops+=' '+op
+  }
+  console.log('stop - '+s);
+  console.log('  to - '+to);
+  console.log('from - '+fr);
+  console.log('elop - '+ops);
+  ops='';
+  let ss=gradient.getElementsByTagName('stop');
+  for (let ele of ss) {
+    let rep=parseFloat(ele.getAttribute('stop-opacity')).toFixed(3);
+    ops+=' '+rep;
+  }
+  console.log('elem - '+ops);
+}
+
+function srep(c) {
+  if (c !=undefined) {
+    console.log('from '+c)
+  }
+  let s='';
+  let o='';
+  let x='';
+  for (let stop of stops) { 
+    s+=' '+stop.state;
+    o+=' '+stop.toOpacity;
+    x+=' '+stop.toOffset;
+  }
+  console.log(' '+s);
+  console.log('**toOpacity** '+o);
+  console.log('**toOffset ** '+x);
+  let col=''
+  let ops=''
+  let rep=''
+  let ss=gradient.getElementsByTagName('stop');
+  for (let ele of ss) {
+    //rep+=' '+parseFloat(ele.getAttribute('offset')).toFixed(3);
+    col+=' '+ele.getAttribute('stop-color');
+    ops+=' '+ele.getAttribute('stop-opacity');
+    rep+=' '+ele.getAttribute('offset');
+  }
+  console.log('- '+col);
+  console.log('- '+ops);
+  console.log('- '+rep);
+}
+
+function checkFromStops() {
+  let log='FOX';
+  let mismatch=false;
+  for (let i in stops) {
+    let d=Math.abs(stops[i].fromOpacity-stops[i].el.getAttribute('stop-opacity'));
+    if (d>.01) {
+      console.log('fromis '+i+' ele: '+stops[i].el.getAttribute('stop-opacity')+' stop: '+stops[i].fromOpacity);
+      mismatch=true;
+    }
+  }
+  if (mismatch) {
+    srep2();
+//console.log('BAD');
+    debugger;
+  }
+}
+
+function checkSOStops() {
+  for (let i=0; i<stops.length; i++) {
+    if (stops[i].toOpacity!=so[i][1]) {
+alert('so');
+    }
+  }
+}
+
+function checkToStops() {
+  let ss=gradient.getElementsByTagName('stop');
+  let log='TT';
+  let mismatch=false;
+  for (let i=0; i<stops.length; i++) {
+    let d=Math.abs(stops[i].toOpacity-ss.item(i).getAttribute('stop-opacity'));
+    if (d>.01) {
+      console.log('tomisp '+i+' ele: '+ss.item(i).getAttribute('stop-opacity')+' stop: '+stops[i].toOpacity);
+      mismatch=true;
+    }
+    log+=' '+stops[i].toOpacity;
+  }
+  console.log(log);
+  if (mismatch) {
+    srep2();
+    debugger;
+  }
+}
+
+function checkFromCurves() {
+  let cd='';
+  for (let c of curves) {
+    if (c.active) {
+      cd+=c.lineFromData();
+    }
+  }
+  let ad=path.getAttribute('d');
+  if (cd!==ad) {
+    debugger;
+  }
+}
+
+var logging=false;
+function log(e) {
+  if (logging) {
+    console.log(e);
+  }
+}
