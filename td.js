@@ -139,23 +139,62 @@ Curve.prototype.getMidCurve=function(frac) {
 }
 
 Curve.prototype.randomizeRadii=function() {
-  // 80 tied to 200 radius container 
-  let f1=80/(this.radiiCount+1);
-  let f2=2*this.radiiCount*f1;
-  for (let i=0; i<this.radiiCount+1; i++) {
-    this.radii[i]=f1+f2*Math.random();
+/*
+  let centralFactor=(c)=>{	// prototype
+    let rs=0;
+    for (let i=0; i<c.radiiCount+1; i++) {
+      rs+=c.radii[i];
+    }
+    let m=rs/(c.radiiCount+1);
+    rs=0;
+    for (let i=0; i<c.radiiCount+1; i++) {
+      rs+=Math.abs(c.radii[i]-m);
+    }
+    return rs;
   }
+*/
+  // 80 tied to 200 radius container 
+  let f1=200/(this.radiiCount+1);
+  let f2=2*this.radiiCount*f1;
+//  do {
+    this.radii[0]=f1+f1*Math.random();
+    if (this.radiiCount==1) {
+      this.radii[1]=this.radii[0]+randomTwenty();
+    } else if (this.radiiCount==2) {
+      this.radii[1]=f1+f1*Math.random();
+      this.radii[2]=Math.abs(this.radii[0]-this.radii[1])+randomTwenty();
+    } else if (this.radiiCount==3) {
+      // complicated to centralize, just random radii
+      this.radii[1]=f1+f1*Math.random();
+      this.radii[2]=f1+f1*Math.random();
+      this.radii[3]=f1+f1*Math.random();
+    } //else { debugger; }
+
+/*
+  for (let i=0; i<this.radiiCount+1; i++) {
+    //this.radii[i]=f1+f2*Math.random();
+    this.radii[i]=f1+f1*Math.random();
+  }
+*/
+//  } while (centralFactor(this)>20);
+//console.log('ctr '+ctr+' cent '+centralFactor(this));
+
+/*
 if (this.radiiCount==1) {
   let rd=this.radii[0]-this.radii[1];
-  if (Math.abs(rd>5)) {
+  if (Math.abs(rd)>10) {
     if (rd<0) {
-      this.radii[1]-=rd+randomFive();
+      this.radii[1]-=Math.abs(rd)+randomFive();
     } else {
-      this.radii[0]-=rd+randomFive();
+      this.radii[0]-=Math.abs(rd)+randomFive();
     }
-//console.log('cent '+rd);
   }
 }
+if (Math.abs(rd)>50) {
+console.log('cent2 '+centrality(this));
+halts.stopNow=true;
+}
+*/
 /*
   if (this.radiiCount==1) {
     let cFactor=((c)=>{
@@ -175,16 +214,16 @@ this.radii[0]/=2;
 */
   let maxC=((c)=>{
     let maxr=0;
-    for (let j=1; j<c.radiiCount+1; j++) {
+    for (let j=0; j<c.radiiCount+1; j++) {
       maxr+=c.radii[j];
     }
     return maxr;
   })(this);
   //let fac=zoom.scale*200/maxC;
   let fac=(zoom.scale*200/maxC)/(this.radiiCount+1);
-    for (let i=0; i<this.radiiCount+1; i++) {
-      this.radii[i]*=fac;
-    }       
+  for (let i=0; i<this.radiiCount+1; i++) {
+    this.radii[i]*=fac;
+  }       
 /*
   if (this.anchor) {
     for (let i=0; i<this.radiiCount+1; i++) {
@@ -197,11 +236,14 @@ this.radii[0]/=2;
   }
 */
 
-if (this.radii[0]>200) {
-  crep();
+/*
+if (centralFactor(this)>40) {
+  log('rd '+rd+' cent '+centralFactor(this));
   log('maxC '+maxC+' fac '+fac);
+  log('radii '+this.radii);
+  halts.stopNow=true;
 }
-
+*/
 }
 
 var mixedCycles=true;
@@ -564,7 +606,7 @@ this.fillDuration=animateDuration;
 //path.style.fill=fillColor.getHSLString();
 path.style.fill='url(#phsRG)';
 
-var SMALL=.7;
+var SMALL=.9;
 var zoom={
   scale:1,
   duration:animateDuration,
@@ -577,7 +619,7 @@ var zoom={
 var old=(curveCount+cycleSet-7)/10;
       var zf=(curveCount-1)/4;
 //console.log('zfac '+old+' -> '+zf);
-      this.scale=1.2+zf*Math.random();
+      this.scale=2+zf*Math.random();
     } else { 
       this.scale=SMALL;
 /*
@@ -751,9 +793,11 @@ function randomColor() {
 */
 
 function changeCurveCount(cc) {
+/*
 if (cc===curveCount) {
   debugger;
 }
+*/
   if (cc==1) {
     for (let c of curves) {
       if (c.anchor) {
@@ -982,6 +1026,10 @@ function curveComplexity() {
   return comp1+comp2;
 }
 
+function randomTwenty() {
+  return 20-40*Math.random();
+}
+
 function randomTen() {
   return 10-20*Math.random();
 }
@@ -1057,27 +1105,6 @@ function animate(ts) {
       } else {
         cx.start=0;
         cx.inCycle=false;
-
-
-/*
-if (cx.cstate==TOEQ) {
-  if (cx.anchor) {
-    cx.cstate=EQUAL;
-log('anc eq');
-  } else {
-    cx.cstate=ZERO;
-cx.zeroFromData();
-cx.zeroToData();
-    curveCount--;
-    reportCurveCount();
-    cx.active=false;
-    anchorCurve.cstate=STD;
-log('sub curve');
-  }
-}
-*/
-
-
 	if (cx.cstate==TOZERO) {
 	  cx.cstate=ZERO;
           curveCount--;
@@ -1159,10 +1186,11 @@ log('change cycle');
 	   }
   */
   //	 path.style.fill='url(#phsRG)';
-  console.log('to grad start');
+log('to grad start');
   fillColor.fillDuration=animateDuration*.1;
   //console.log('filldur '+fillColor.fillDuration);
   curveTransition.ctCount=0;
+zoom.randomize();
 	 } 
        }
     }
@@ -1191,7 +1219,7 @@ log('change cycle');
 	    if (fillColor.fstate==GRAD) {
   //log('Cyc '+cycleChangeRate*(.5+Math.abs(cycleSet-9)/16));
 	      if (Math.random()<cycleChangeRate*(.5+Math.abs(cycleSet-9)/16)) {
-		fillColor.fillDuration=animateDuration*.3;
+		fillColor.fillDuration=animateDuration*.2;
 		fillColor.fstate=TOSOLID;
 		zoom.setZoom(SMALL);
   log('to solid start');
@@ -1250,6 +1278,7 @@ log('change cycle');
 }
 
 function init() {
+  zoom.randomize();
   shiftStops();
   for (c of curves) {
     if (c.cstate==STD) {
