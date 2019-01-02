@@ -2,7 +2,7 @@ onresize=function() {
   document.getElementById('asvg').style.maxHeight=window.innerHeight-20+'px';
 }
 
-var ZERO=0, TOZERO=1, STD=2, TOEQ=3, EQUAL=4;
+var ZERO=0, TOZERO=1, STD=2;
 var Curve=function(is, rc, cyc) {
   this.radiiCount=rc;
   this.curveTypes=[-1,-1,-1];
@@ -263,6 +263,9 @@ Curve.prototype.randomizeCurve=function() {
     }
     this.randomizeRadii();
     this.setCurve();
+if (curveTransition.ctState=='sync_soft') {
+  this.duration=Math.max(animateDuration/5, this.duration*.9);
+} else 
     if (curveTransition.synced) {
       this.duration=animateDuration*transDurationFactor;
     } else {
@@ -407,7 +410,7 @@ var halts={
   }
 }
 
-var animateDuration=10000;  // publish @ 15000?
+var animateDuration=15000;  // publish @ 15000?
 var transDurationFactor=.5;
 
 var rotationFactor=.15;
@@ -419,7 +422,7 @@ var curveCountChangeRate=.3;  // publish @ .3
 var curveCountLock=false;
 var cycleSet=6;
 //////
-var cycleChangeRate=.9;  // publish @ .3
+var cycleChangeRate=.4;  // publish @ .3 ?
 //////
 var cycleLock=false;
 var fillHueChangeRate=.3;
@@ -837,9 +840,7 @@ if (cc===curveCount) {
     }
   }
   drawCurves();
-
-curveCount=cc;
-
+  curveCount=cc;
 }
 
 function reportCurveCount() {
@@ -1596,6 +1597,7 @@ function getSO(count) {
   return sa;
 }
 
+/*
 function getSOX(count) {
   let sa=[[0,1]];
   let seg=1/(count-1);
@@ -1607,6 +1609,7 @@ function getSOX(count) {
   sa.push([1,0]);
   return sa;
 }
+*/
 
 var MAX_STOP_COUNT=5;
 var so=getSO(MAX_STOP_COUNT);
