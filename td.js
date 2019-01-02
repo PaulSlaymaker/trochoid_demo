@@ -1,5 +1,3 @@
-var MAX_CURVE_COUNT=4;
-
 onresize=function() {
   document.getElementById('asvg').style.maxHeight=window.innerHeight-20+'px';
 }
@@ -143,19 +141,23 @@ Curve.prototype.randomizeRadii=function() {
   let f1=200/(this.radiiCount+1);
 //  let f2=2*this.radiiCount*f1;
     this.radii[0]=f1+f1*Math.random();
+    //this.radii[0]=centralRandom(f1);
     if (this.radiiCount==1) {
       this.radii[1]=this.radii[0]+randomTwenty();
     } else if (this.radiiCount==2) {
       this.radii[1]=f1+f1*Math.random();
+      //this.radii[1]=centralRandom(f1);
       this.radii[2]=Math.abs(this.radii[0]-this.radii[1])+randomTwenty();
+      //this.radii[2]=Math.abs(Math.abs(this.radii[0])-Math.abs(this.radii[1]))+randomTwenty();
     } else if (this.radiiCount==3) {
       // complicated to centralize, just random radii
       this.radii[1]=f1+f1*Math.random();
       this.radii[2]=f1+f1*Math.random();
       this.radii[3]=f1+f1*Math.random();
+      //this.radii[1]=centralRandom(f1);
+      //this.radii[2]=centralRandom(f1);
+      //this.radii[3]=centralRandom(f1);
     } //else { debugger; }
-//console.log('ctr '+ctr+' cent '+centralFactor(this));
-
 /*
 if (this.radiiCount==1) {
   let rd=this.radii[0]-this.radii[1];
@@ -249,9 +251,8 @@ Curve.prototype.randomizeCurve=function() {
   if (this.cstate==STD) {
     this.fromData=this.toData.slice();
     if (Math.random()<.7) {
-      let p35=1+curveComplexity();
-      //this.radiiCount=[1,2,3][getRandomInt(0,3,curveCount/1.2)]; //TODO include cycleSet
-      this.radiiCount=[1,2,3][getRandomInt(0,3,1+p35)];
+      let p35=2+curveComplexity();
+      this.radiiCount=[1,2,3][getRandomInt(0,3,p35)];
       for (var j=0; j<this.radiiCount; j++) {
 	if (Math.random()<.05) {
 	  this.curveTypes[j]=1;
@@ -265,19 +266,16 @@ Curve.prototype.randomizeCurve=function() {
     if (curveTransition.synced) {
       this.duration=animateDuration*transDurationFactor;
     } else {
-//console.log('maxts '+getMaxTS());
       if (fillColor.fstate==TOSOLID || fillColor.fstate==SOLID) {
         //this.duration=animateDuration*transDurationFactor;
         //this.duration*=.7;
         this.duration=Math.max(animateDuration/5, this.duration*.3);
-//console.log('lesser dur');
       } else {
         this.duration=animateDuration*(.3+.7*Math.random());
       }
     }
   } else {
     // manual changes get here
-//debugger;
   }
 }
 
@@ -384,16 +382,10 @@ var curves=[
   new Curve(STD,1,[5,6,6,6]), 
   new Curve(STD,3,[7,6,6,6]),
   new Curve(ZERO,1,[1,6,6,6]),
+  new Curve(ZERO,1,[11,6,6,6]),
 ];
 curves[0].anchor=true;
 var anchorCurve=curves[0];
-
-/*
-// debug
-for (let i=0; i<MAX_CURVE_COUNT; i++) {
-  curves[i].cn=i;
-}
-*/
 
 var UNS=0, SYNC=1, TOSYNC=2; 
 var curveTransition={
@@ -415,22 +407,21 @@ var halts={
   }
 }
 
-var animateDuration=15000;  // publish @ 15000?
+var animateDuration=10000;  // publish @ 15000?
 var transDurationFactor=.5;
 
 var rotationFactor=.15;
 ////
 var curveCount=3;
 ////
-var curveCountChangeRate=.3;
+var curveCountChangeRate=.3;  // publish @ .3
 ////
 var curveCountLock=false;
 var cycleSet=6;
 //////
-var cycleChangeRate=.3;  // publish @ .3
+var cycleChangeRate=.9;  // publish @ .3
 //////
 var cycleLock=false;
-var curveTypeChangeRate=.7;
 var fillHueChangeRate=.3;
 //var curveChangeRate=.15;
 
@@ -456,6 +447,7 @@ function curvesCyclesEqual() {
 }
 */
 
+/*
 var matchCurves=[];
 function setCurvesMatchingAnchor() {
   matchCurves=[];
@@ -466,6 +458,7 @@ function setCurvesMatchingAnchor() {
     }
   }
 }
+*/
 
 function getZeroData() {
   let zd=[[0,0]];
@@ -499,7 +492,6 @@ function powerRandom(p) {
 }
 
 var path=document.getElementById('rpath');
-//var sgroup=document.getElementById('roid');
 var sgroup=document.getElementById('pcontrol');
 
 var SOLID=0, GRAD=1, TOSOLID=2, TOGRAD=3, FADEIN=4;
@@ -564,12 +556,12 @@ var zoom={
   lock:false,  // presently unused
   randomize:function() {
     if (this.lock) return;
-//let z=this.scale;
-    if (fillColor.fstate==GRAD || fillColor.fstate==TOGRAD || fillColor.fstate==FADEIN) {
+
+    if (curveTransition.synced) {
+      this.scale=1.5;
+    } else if (fillColor.fstate==GRAD || fillColor.fstate==TOGRAD || fillColor.fstate==FADEIN) {
       //var zf=(curveCount+cycleSet-7)/10;
-var old=(curveCount+cycleSet-7)/10;
       var zf=(curveCount-1)/4;
-//console.log('zfac '+old+' -> '+zf);
       this.scale=2+zf*Math.random();
     } else { 
       this.scale=SMALL;
@@ -804,6 +796,36 @@ if (cc===curveCount) {
       }
     }
   } else if (cc==4) {
+    let cct=0;
+    for (let c of curves) {
+      if (c.anchor) {
+      } else {
+        if (cct++>2) {
+          c.zeroFromData();
+          c.zeroToData();
+          c.active=false;
+	  c.cstate=ZERO;
+        } else {
+	  c.cstate=STD;
+          c.randomizeCurve();
+          c.fromData=c.toData.slice();
+          c.randomizeCurve();
+          c.active=stopped?false:true;
+        }
+      }
+    }
+/*
+    for (let c of curves) {
+      if (c.anchor) {
+      } else {
+	c.cstate=STD;
+        c.randomizeCurve();
+        c.fromData=c.toData.slice();
+        c.active=stopped?false:true;
+      }
+    }
+*/
+  } else if (cc==5) {
     for (let c of curves) {
       if (c.anchor) {
       } else {
@@ -814,8 +836,10 @@ if (cc===curveCount) {
       }
     }
   }
-  //curveCount=cc;
   drawCurves();
+
+curveCount=cc;
+
 }
 
 function reportCurveCount() {
@@ -831,10 +855,10 @@ function randomCurveCountChange(curve) {
   if (zoom.scale==SMALL) {
     return false;
   }
-  let p35=.35-curveComplexity();  // .35 desirable level
+  let p35=1.5*(.35-curveComplexity());  // .35 desirable level
   let cdel=curveCountChangeRate+Math.abs(p35);
 //let skew=p35/.35;
-//console.log('cc check skew '+p35+' '+skew);
+log('cc check '+cdel);
   if (Math.random()<cdel) {
     switch (curveCount) {
       case 1:
@@ -850,7 +874,7 @@ function randomCurveCountChange(curve) {
         }
         return false;
       case 2:
-//console.log('one p '+(.9+p35));
+log('add 3 <'+(.9+p35));
         if (Math.random()<(.9+p35)) { // add
 	  for (c of curves) {
 	    if (c==curve) {
@@ -869,7 +893,8 @@ function randomCurveCountChange(curve) {
         }
         return false;
       case 3:
-        if (Math.random()<(.1+p35)) {
+log('add 4 <'+(.2+p35));
+        if (Math.random()<(.2+p35)) {
           for (c of curves) {
 	    if (c==curve) {
 	      continue;
@@ -887,6 +912,30 @@ function randomCurveCountChange(curve) {
         }
         return false;
       case 4:
+        if (Math.random()<(.2+p35)) {
+          for (c of curves) {
+	    if (c==curve) {
+	      continue;
+	    }
+            if (c.toSTD()) {
+              curveCount++;
+              reportCurveCount();
+              return true;
+            }
+          }
+        } else {
+          if (curve.toZERO()) {
+            return true;
+          }
+        }
+        return false;
+/*
+        if (curve.toZERO()) {
+          return true;
+        }
+        return false;
+*/
+      case 5:
         if (curve.toZERO()) {
           return true;
         }
@@ -994,7 +1043,7 @@ function curveComplexity() {
     }
   }
   // need to change if max curve goes>4 or max cycle>17
-  comp1=(comp1-1)/22;
+  comp1=(comp1-1)/28;
   let comp2=(cycleSet-2)/30;
   return comp1+comp2;
 }
@@ -1102,13 +1151,17 @@ function animate(ts) {
 	    if (curveTransition.synced) {
 //log('cycle stop or cont '+!cycleSet%2);
 	      if (!(cycleSet%2) && Math.random()<.8 && curveTransition.ctCount<1) {
+/*
 		for (let c of curves) {
 		  c.cycles[0]=getCycle0Match();
-c.duration=animateDuration/2;
+c.duration=animateDuration*transDurationFactor;
 		}
+*/
+softRecycle();
 log('soft cycle2');
 	      } else {
 		// exit synchrony 
+curveTransition.ctState='unsync_steady';
 		curveTransition.synced=false;
 		fillColor.active=true;  // TODO unless locked
 		fillColor.start=0;
@@ -1120,6 +1173,7 @@ log('cycle off');
 		if (!curveTransition.synced && zoom.scale==SMALL && fillColor.fstate==SOLID && curveTransition.ctCount<1) {
 log('change cycle');
 		  halts.sync=true;
+curveTransition.ctState='to_sync';
 		}
 	      }
             }
@@ -1145,30 +1199,17 @@ log('change cycle');
 
   if (fillColor.fstate==SOLID) {
     if (fillColor.active) {  // remove ?
-       if (halts.stop || halts.sync) {
-	 fillColor.active=false;
-       } else {
-	 if (curveTransition.ctCount>0 && !curveTransition.synced) {
-	   fillColor.fstate=TOGRAD;
-  /*
-	   for (let stop of stops) {
-	     stop.fromHSL[0]=fillColor.toFillHSL[0];
-	     stop.toHSL[0]=fillColor.toFillHSL[0];
-	     // the following 4 not necessary?
-	     stop.fromOpacity=1;
-	     stop.toOpacity=1;
-	     stop.el.setAttribute('stop-color',fillColor.getHSLString());
-	     stop.el.setAttribute('stop-opacity',1);
-	   }
-  */
-  //	 path.style.fill='url(#phsRG)';
+      if (halts.stop || halts.sync) {
+        fillColor.active=false;
+      } else {
+        if (curveTransition.ctCount>0 && !curveTransition.synced) {
+   	  fillColor.fstate=TOGRAD;
 log('to grad start');
-  fillColor.fillDuration=animateDuration*.1;
-  //console.log('filldur '+fillColor.fillDuration);
-  curveTransition.ctCount=0;
-zoom.randomize();
-	 } 
-       }
+ 	  fillColor.fillDuration=animateDuration*.1;
+ 	  curveTransition.ctCount=0;
+ 	  zoom.randomize();
+        } 
+      }
     }
   } else { // gradient or transitions
     for (let stop of stops) {
@@ -1248,8 +1289,6 @@ log('to solid start');
 	      }
             }
           }
-*/
-/*
         if (true) {
           for (let c of curves) {
             if (c.cstate==STD) {
@@ -1273,6 +1312,7 @@ log('to solid start');
               c.active=true;
             }
           }
+///}
 */
 
         if((()=>{ 
@@ -1282,7 +1322,7 @@ if (curveTransition.ctState!='ct_soft') {
   curveTransition.ctState='ct_soft';
 }
 */
-            if (Math.random()>.2) { 
+            if (Math.random()>.15) { 
 	      for (let c of curves) {
 		if (c.cstate==STD) {
 		  for (let i=1; i<c.cycles.length; i++) {
@@ -1297,6 +1337,8 @@ if (curveTransition.ctState!='ct_soft') {
             return false;
           })()) {
           softRecycle();
+curveTransition.ctState='sync_soft';
+          zoom.randomize();
           randomizeCurves();
         } else {
           if (!cycleLock) {
@@ -1304,6 +1346,7 @@ if (curveTransition.ctState!='ct_soft') {
           } else {
             curveTransition.ctCount=1;
           }
+curveTransition.ctState='sync_trans';
 	  halts.sync=false;
           randomizeCurves();
         }
@@ -1311,14 +1354,6 @@ if (curveTransition.ctState!='ct_soft') {
 //} else {
 //debugger;
       }
-/*
-      for (let c of curves) {
-	if (c.cstate==STD) {
-	  c.randomizeCurve();
-	  c.active=true;
-	}
-      }
-*/
       requestAnimationFrame(animate);
     }
   }
@@ -1433,6 +1468,7 @@ function lockCurveCycles(cb) {
   }
 }
 
+/*
 function changeFillHue(inp) {
   fillColor.toFillHSL[0]=parseInt(inp.value);
   document.getElementById('hueRep').textContent=inp.value;
@@ -1446,7 +1482,6 @@ function changeFillHue(inp) {
     fillColor.lock=true;
     fillColor.active=false;
   } else {
-///
     drawCurves();
   }
 }
@@ -1461,7 +1496,6 @@ function lockHue(cb) {
   }
 }
 
-/*
 function resetScale() {
   var rescale=zoom.scale/zoom.fromScale;
   for (var cn=0; cn<curveCount; cn++) {
@@ -1628,19 +1662,6 @@ function setMenu(menu,on) {
   });
 }
 
-function checkMenus() {
-  var stat=0;
-  var props=document.querySelectorAll('.pmenu');
-  props.forEach(function(m) {
-    stat+=parseInt(m.dataset.state);
-  });
-  if (stat==0) {
-    setMenu(document.getElementById('mainmenu'),false);
-  } else if (stat==3) {
-    setMenu(document.getElementById('mainmenu'),true);
-  }
-}
-
 function menuAnimate(timestamp, mdata) {
   if (!mdata.start) mdata.start=timestamp;
   var progress = timestamp - mdata.start;
@@ -1658,25 +1679,6 @@ function menuAnimate(timestamp, mdata) {
   } 
 }
 
-function togAll(tb) {
-  var props=document.querySelectorAll('.pmenu');
-  if (tb.dataset.state=='0') {
-    props.forEach(function(m) {
-      if (m.dataset.state=='0') {
-        togMenu(m,true);
-      }
-    });
-    setMenu(tb,true);
-  } else {
-    props.forEach(function(m) {
-      if (m.dataset.state=='1') {
-        togMenu(m,false);
-      }
-    });
-    setMenu(tb,false);
-  }
-}
-
 function togMenu(menu,show) {
   var cd=document.getElementById('cdiv'+menu.dataset.con);
   var ti=document.getElementById('props'+menu.dataset.con);
@@ -1692,7 +1694,6 @@ function togMenu(menu,show) {
       requestAnimationFrame(function(ts) { menuAnimate(ts,mdata); });
       setMenu(menu,false);
     }
-    //checkMenus();
   } else {
     mdata.open=show;
     requestAnimationFrame(function(ts) { menuAnimate(ts,mdata); });
@@ -1703,6 +1704,62 @@ function togMenu(menu,show) {
 onresize();
 
 init();
+
+
+/*
+var CSOpen=true;
+var CSTime=0;
+var FSTime=0;
+document.getElementsByTagName('body').item(0).onmousemove=function() {
+  if (CSOpen) {
+    FSTime=new Date().getTime();
+  } else {
+    requestAnimationFrame(anShow);
+    CSOpen=true;
+  }
+}
+function anHide(ts) {
+  let lapse=new Date().getTime()-FSTime;
+  if (lapse>5000) {  // publish @ 20000 ?
+    if (!CSTime) CSTime=ts;
+    let progress=ts-CSTime;
+    if (progress<2000) {
+      let cstyle=document.getElementById('ctrls').style;
+      let frac=progress/2000;
+      //document.getElementById('ctrls').style.opacity=1-frac;
+      //document.getElementById('ctrls').style.width=120*(1-frac)+'px';
+      cstyle.opacity=1-frac;
+      cstyle.width=120*(1-frac)+'px';
+      requestAnimationFrame(anHide);
+    } else {
+      CSOpen=false;
+      CSTime=0;
+    }
+  } else {
+    requestAnimationFrame(anHide);
+  }
+}
+document.getElementsByTagName('body').item(0).onmouseleave=function() {
+console.log('oml');
+  requestAnimationFrame(anHide);
+}
+function anShow(ts) {
+    if (!CSTime) CSTime=ts;
+    let progress=ts-CSTime;
+    if (progress<500) {
+      let frac=progress/500;
+      document.getElementById('ctrls').style.opacity=frac;
+      document.getElementById('ctrls').style.width=120*(frac)+'px';
+      requestAnimationFrame(anShow);
+    } else {
+      CSOpen=true;
+      CSTime=0;
+      document.getElementById('ctrls').style.width='auto';
+      document.getElementById('ctrls').style.opacity=1;
+    }
+}
+*/
+
 
 function crep() {
   let s={'active':[],'cycles':[],'state':[],'radcnt':[],'radii':[]};
