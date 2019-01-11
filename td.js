@@ -57,6 +57,9 @@ Curve.prototype.lineCurve=function() {
 Curve.prototype.setCurve=function() {
   let offset=(()=>
   {
+    if (curveTransition.ctState=='async_soft') {
+      return 0;
+    }
     if (curveTransition.synced) {
       return 0;
     }
@@ -220,31 +223,42 @@ function getMaxTS() {
   return mts;
 }
 
+Curve.prototype.randomizeRadiiCount=function() {
+  let p35=2+curveComplexity();
+  this.radiiCount=[1,2,3][getRandomInt(0,3,p35)];
+}
+
 Curve.prototype.randomizeCurve=function() {
   if (this.cstate==STD) {
     this.fromData=this.toData.slice();
-    if (Math.random()<.7) {
-      let p35=2+curveComplexity();
-      this.radiiCount=[1,2,3][getRandomInt(0,3,p35)];
-      for (var j=0; j<this.radiiCount; j++) {
-	if (Math.random()<.05) {
-	  this.curveTypes[j]=1;
-	} else {
-	  this.curveTypes[j]=-1;
+    if (curveTransition.ctState=='async_soft') {
+    //let ci=this.cycles[0];
+      this.cycles[0]=getCycle0Match();
+    //console.log(ci+' to '+this.cycles[0]);
+      this.randomizeRadiiCount();
+    } else {
+      if (Math.random()<.7) {
+	this.randomizeRadiiCount();
+	for (var j=0; j<this.radiiCount; j++) {
+	  if (Math.random()<.05) {
+	    this.curveTypes[j]=1;
+	  } else {
+	    this.curveTypes[j]=-1;
+	  }
 	}
       }
     }
     this.randomizeRadii();
     this.setCurve();
-if (curveTransition.ctState=='sync_soft') {
-  this.duration=Math.max(animateDuration/5, this.duration*.9);
-} else 
-    if (curveTransition.synced) {
+    if (curveTransition.ctState=='async_soft') {
+      this.duration=animateDuration*(.3+.7*Math.random());
+    } else if (curveTransition.ctState=='sync_soft') {
+      this.duration=Math.max(animateDuration/5, this.duration*.9);
+    } else if (curveTransition.synced) {
       this.duration=animateDuration*transDurationFactor;
     } else {
       if (fillColor.fstate==TOSOLID || fillColor.fstate==SOLID) {
         //this.duration=animateDuration*transDurationFactor;
-        //this.duration*=.7;
         this.duration=Math.max(animateDuration/5, this.duration*.3);
       } else {
         this.duration=animateDuration*(.3+.7*Math.random());
@@ -350,7 +364,7 @@ var curveTransition={
   //ctState:UNS,
   synced:false,
   ctCount:0,	// cycle transition count
-  ctState:'unsync_steady' // 'sync_soft'  and 2 transitions?
+  ctState:'async_steady' // 'sync_soft'  and 2 transitions?
 }
 
 var stopped=true;
@@ -378,6 +392,7 @@ var curveCountLock=false;
 var cycleSet=6;
 //////
 var cycleChangeRate=.4;  // publish @ .4
+var softCycleRate=.4;
 //////
 var cycleLock=false;
 var fillHueChangeRate=.3;
@@ -517,6 +532,8 @@ var zoom={
 
     if (curveTransition.synced) {
       this.scale=1.5;
+    } else if (curveTransition.ctState=='async_soft') {
+      this.scale=2;
     } else if (fillColor.fstate==GRAD || fillColor.fstate==TOGRAD || fillColor.fstate==FADEIN) {
       //var zf=(curveCount+cycleSet-7)/10;
       var zf=(curveCount-1)/4;
@@ -813,7 +830,7 @@ function randomCurveCountChange(curve) {
   let p35=1.5*(.35-curveComplexity());  // .35 desirable level
   let cdel=curveCountChangeRate+Math.abs(p35);
 //let skew=p35/.35;
-log('cc check '+cdel);
+//log('cc check '+cdel);
   if (Math.random()<cdel) {
     switch (curveCount) {
       case 1:
@@ -829,7 +846,7 @@ log('cc check '+cdel);
         }
         return false;
       case 2:
-log('add 3 <'+(.9+p35));
+//log('add 3 <'+(.9+p35));
         if (Math.random()<(.9+p35)) { // add
 	  for (c of curves) {
 	    if (c==curve) {
@@ -848,7 +865,7 @@ log('add 3 <'+(.9+p35));
         }
         return false;
       case 3:
-log('add 4 <'+(.2+p35));
+//log('add 4 <'+(.2+p35));
         if (Math.random()<(.2+p35)) {
           for (c of curves) {
 	    if (c==curve) {
@@ -1105,30 +1122,44 @@ function animate(ts) {
           } else {
 	    if (curveTransition.synced) {
 //log('cycle stop or cont '+!cycleSet%2);
-	      if (!(cycleSet%2) && Math.random()<.8 && curveTransition.ctCount<1) {
+	      if (!(cycleSet%2) && Math.random()<softCycleRate && curveTransition.ctCount<1) {
 /*
 		for (let c of curves) {
 		  c.cycles[0]=getCycle0Match();
 c.duration=animateDuration*transDurationFactor;
 		}
 */
-softRecycle();
+//softRecycle();
+cx.cycles[0]=getCycle0Match();
 log('soft cycle2');
 	      } else {
 		// exit synchrony 
-curveTransition.ctState='unsync_steady';
+                curveTransition.ctState='async_steady';
 		curveTransition.synced=false;
+//curveTransition.ctCount=0;
 		fillColor.active=true;  // TODO unless locked
 		fillColor.start=0;
 log('cycle off');
 	      }
 	    } else {
+              // unsynced
 	      if (randomCurveCountChange(cx)) {
 	      } else {
-		if (!curveTransition.synced && zoom.scale==SMALL && fillColor.fstate==SOLID && curveTransition.ctCount<1) {
+//		if (!curveTransition.synced && zoom.scale==SMALL && fillColor.fstate==SOLID && curveTransition.ctCount<1) {
+		//if (!curveTransition.synced && fillColor.fstate==SOLID) {
+		if (fillColor.fstate==SOLID) {
+                  //if (cycleSet%2==0 && Math.random()<.8 && curveTransition.ctState!='to_sync') {
+                  if (cycleSet%2==0 && Math.random()<softCycleRate) {
+log('async soft from '+curveTransition.ctState);
+                    curveTransition.ctState='async_soft';
+                  } else {
+		    //if (zoom.scale==SMALL && curveTransition.ctCount<1) {
+		    if (curveTransition.ctCount<1) {
 log('change cycle');
-		  halts.sync=true;
-curveTransition.ctState='to_sync';
+		      halts.sync=true;
+                      curveTransition.ctState='to_sync';
+		    } 
+                  }
 		}
 	      }
             }
@@ -1137,7 +1168,6 @@ curveTransition.ctState='to_sync';
             }
           }
         }
-	//if (Math.random()<.3 && CT!='cycle' && !halts.sync) {
 	if (Math.random()<.3 && !curveTransition.synced && !halts.sync) {
 	  zoom.randomize();
 	}
@@ -1158,10 +1188,13 @@ curveTransition.ctState='to_sync';
         fillColor.active=false;
       } else {
         if (curveTransition.ctCount>0 && !curveTransition.synced) {
+// && curveTransition=='async_steady'
    	  fillColor.fstate=TOGRAD;
+//curveTransition.ctState='async_steady';
 log('to grad start');
  	  fillColor.fillDuration=animateDuration*.1;
  	  curveTransition.ctCount=0;
+curveTransition.ctState='async_steady';
  	  zoom.randomize();
         } 
       }
@@ -1276,7 +1309,7 @@ log('to solid start');
 
         if((()=>{ 
             if (cycleSet%2) { return false; }
-            if (Math.random()>.2) { 
+            if (Math.random()<softCycleRate) { 
 	      for (let c of curves) {
 		if (c.cstate==STD) {
 		  for (let i=1; i<c.cycles.length; i++) {
@@ -1291,7 +1324,7 @@ log('to solid start');
             return false;
           })()) {
           softRecycle();
-curveTransition.ctState='sync_soft';
+          curveTransition.ctState='sync_soft';
           zoom.randomize();
           randomizeCurves();
         } else {
@@ -1300,11 +1333,12 @@ curveTransition.ctState='sync_soft';
           } else {
             curveTransition.ctCount=1;
           }
-curveTransition.ctState='sync_trans';
-	  halts.sync=false;
+          curveTransition.ctState='sync_trans';
+//	  halts.sync=false;
           randomizeCurves();
         }
         curveTransition.synced=true;
+halts.sync=false;
 //} else {
 //debugger;
       }
@@ -1315,6 +1349,16 @@ curveTransition.ctState='sync_trans';
 
 function init() {
   zoom.randomize();
+if (stops.length>2) {
+  stops[1].fromHSL[1]=0;
+  stops[1].toHSL[1]=0;
+  stops[1].fromHSL[2]=20;
+  stops[1].toHSL[2]=20;
+  stops[2].fromHSL[1]=0;
+  stops[2].toHSL[1]=0;
+  stops[2].fromHSL[2]=20;
+  stops[2].toHSL[2]=20;
+}
   //shiftStops();
   randomizeCurves();
   start();
@@ -1575,20 +1619,6 @@ function getSO(count) {
   return sa;
 }
 
-/*
-function getSOX(count) {
-  let sa=[[0,1]];
-  let seg=1/(count-1);
-  for (let i=1; i<count-1; i++) {
-    let nos=0.18*Math.pow(seg*i,2)+0.85*seg*i;
-    sa.push([nos,1-Math.pow(seg*i,5)]);
-  }
-  sa.push([1,0]);
-  sa.push([1,0]);
-  return sa;
-}
-*/
-
 var MAX_STOP_COUNT=5;
 var so=LUM?getSOL(MAX_STOP_COUNT):getSO(MAX_STOP_COUNT);
 var stops=[];
@@ -1615,7 +1645,6 @@ function insertStop() {
 }
 
 function deleteStop() {
-//log('deleting stop');
   gradient.removeChild(gradient.lastElementChild);
   stops.pop();
 }
