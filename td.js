@@ -1,5 +1,3 @@
-var LUM=true;
-
 onresize=function() {
   document.getElementById('asvg').style.maxHeight=window.innerHeight-20+'px';
 }
@@ -353,7 +351,7 @@ var curves=[
   new Curve(STD,2,[1,6,6,6]), 
   new Curve(STD,1,[5,6,6,6]), 
   new Curve(STD,3,[7,6,6,6]),
-  new Curve(ZERO,1,[1,6,6,6]),
+  new Curve(STD,1,[1,6,6,6]),
   new Curve(ZERO,1,[11,6,6,6]),
 ];
 curves[0].anchor=true;
@@ -567,21 +565,15 @@ var Stop=function(number,oArr) {
   this.number=number
   this.el=document.createElementNS("http://www.w3.org/2000/svg", "stop");
   this.el.setAttribute('offset',oArr[0]);
-if (LUM) {
-} else {
-  this.el.setAttribute('stop-opacity',oArr[1]);
-}
+  //this.el.setAttribute('stop-opacity',oArr[1]);
   this.fromOffset=oArr[0];
   this.toOffset=oArr[0];
   this.oLock=true;	//
   this.oTime=0;
-if (LUM) {
   this.fromHSL=[40,oArr[2],oArr[3]];
   this.toHSL=[getRandomInt(0,360),oArr[2],oArr[3]];
-} else {
-  this.fromHSL=[40,90,80];
-  this.toHSL=[getRandomInt(0,360),90,80];
-}
+  //this.fromHSL=[40,90,80];
+  //this.toHSL=[getRandomInt(0,360),90,80];
   this.fromHSL[0]=this.toHSL[0];
   this.el.setAttribute('stop-color',this.getHSLString());
   this.cLock=true;	//
@@ -847,7 +839,7 @@ function randomCurveCountChange(curve) {
         return false;
       case 2:
 //log('add 3 <'+(.9+p35));
-        if (Math.random()<(.9+p35)) { // add
+        if (Math.random()<(1+p35)) { // add
 	  for (c of curves) {
 	    if (c==curve) {
 	      continue;
@@ -866,7 +858,7 @@ function randomCurveCountChange(curve) {
         return false;
       case 3:
 //log('add 4 <'+(.2+p35));
-        if (Math.random()<(.2+p35)) {
+        if (Math.random()<(.5+p35)) {
           for (c of curves) {
 	    if (c==curve) {
 	      continue;
@@ -884,7 +876,7 @@ function randomCurveCountChange(curve) {
         }
         return false;
       case 4:
-        if (Math.random()<(.2+p35)) {
+        if (Math.random()<(.3+p35)) {
           for (c of curves) {
 	    if (c==curve) {
 	      continue;
@@ -969,18 +961,9 @@ log('soft cycle');
 }
 
 function randomizeCycles() {
-/*
-  if (Math.random()<.1) {
-    // soft symmetric, move out
-    for (let c of curves) {
-      c.cycles[0]=getCycle0Match();
-    }
-log('soft recycle');
-  } else {
-*/
-let yx=cycleSet;
-    // 10 cycles demoted
+  let yx=cycleSet;
     cycleSet=(()=>{
+      // 10 cycles demoted
       switch (curveCount) {
 	case 1: return [17,16,15,14,13,12,11,9,10,8,7,6];
 	case 2: return [14,15,13,16,12,17,11,9,10,8,7,6];
@@ -995,7 +978,7 @@ if (yx!=cycleSet) {
     document.getElementById('cvRep').textContent=cycleSet;
     document.getElementById('cvRange').value=cycleSet;
 log('maj '+yx+' to '+cycleSet);
-//  }
+  return yx;
 }
 
 function randomizeCurves() {
@@ -1210,11 +1193,8 @@ curveTransition.ctState='async_steady';
 	if (progress<fillColor.fillDuration) {
 	  let frac=progress/fillColor.fillDuration;
 	  stop.setMidOffset(frac);
-if (LUM) {
-  stop.setMidColor(frac);
-} else {
-	  stop.setMidFade(frac);
-}
+          stop.setMidColor(frac);
+	  //stop.setMidFade(frac);
 	} else {
 	  stop.oTime=0;
 	  stop.inactivate();
@@ -1542,11 +1522,8 @@ function shiftStops() {
   deleteStop();
   for (let i in stops) {
     stops[i].number=i;
-if (LUM) {
     stops[i].shiftPropertiesL();
-} else {
-    stops[i].shiftProperties();
-}
+    //stops[i].shiftProperties();
     if (i==stops.length-1) {
 //      if (fillColor.fstate==FADEIN) {
       if (stops[i].signal) {
@@ -1620,7 +1597,8 @@ function getSO(count) {
 }
 
 var MAX_STOP_COUNT=5;
-var so=LUM?getSOL(MAX_STOP_COUNT):getSO(MAX_STOP_COUNT);
+//var so=LUM?getSOL(MAX_STOP_COUNT):getSO(MAX_STOP_COUNT);
+var so=getSOL(MAX_STOP_COUNT);
 var stops=[];
 
 for (let i=0; i<so.length; i++) {
