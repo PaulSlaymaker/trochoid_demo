@@ -1208,7 +1208,7 @@ onresize();
 
 init();
 
-var logging=true;	// publish @ false
+var logging=false;	// publish @ false
 function log(e) {
   if (logging) {
     console.log(e);
