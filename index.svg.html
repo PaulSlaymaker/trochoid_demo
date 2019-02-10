@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="author" content="Paul Slaymaker">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Dynamic mandalas by Paul Slaymaker</title>
+  <style type="text/css">
+    * { box-sizing:border-box; }
+    body { font-family:sans-serif; font-size:0.8em; background:#333; }
+    button.abtn { margin:4px 6px; width:60px; }
+    tr.phead { background:#FAFAFF; border-bottom:1px solid silver; }
+    div.pmain { background:#EFEFF8; border-bottom:1px solid silver; padding:4px 8px; text-align:left; white-space:nowrap; cursor:pointer; font-size:0.9em; }
+    div.pmenu { background:#EFEFF8; border-bottom:1px solid silver; padding:4px 8px; text-align:left; white-space:nowrap; cursor:pointer; font-size:0.9em; }
+    button.pmenux { display:block; width:100%; padding:4px 8px; text-align:center; white-space:nowrap; font-size:0.9em; }
+    span.indic { float:right; margin-left:20px; transform:rotate(0deg); color:#888; font-size:10pt; }
+    div.tacont { overflow:hidden; width:120px; height:0; }
+    table.ctable { width:400px; margin:auto; border-bottom:1px solid silver; border-collapse:collapse; background:#FFF; }
+    td.tlabel { text-align:right; padding:4px 8px; white-space:nowrap; }
+    td.control { text-align:left; white-space:nowrap; }
+    div.treport { float:left; width:64px; margin-top:4px; text-align:right; border:1px solid silver; padding-right:2px; }
+    input.sliderP { float:left; width:100px; margin-left:8px; }
+  </style>
+</head>
+<body>
+  <div style="display:table; width:100%;">
+    <div id="ascell" style="display:table-cell; width:100%; text-align:center;">
+      <svg id="asvg" viewbox="0,0,400,400" style="margin-left:1px; height:auto;">
+        <defs>
+	  <clipPath id="rframe">
+	    <circle id="ccirc" cx="0" cy="0" r="200"/>
+	  </clipPath>
+	  <radialGradient id="phsRG" cx="0" cy="0" fx="0" fy="0" spreadMethod="pad" r="200" gradientUnits="userSpaceOnUse">
+          </radialGradient>
+	</defs>
+        <g id="pcontrol" transform="matrix(0, -1, 1, 0, 200, 200)" clip-path="url(#rframe)">
+	  <path id="rpath" style="stroke:none; fill:#CCAA66; fill-opacity:1; fill-rule:evenodd;" d=""/>
+	</g>
+      </svg>
+    </div>
+    <div style="display:table-cell; vertical-align:top; text-align:center;">
+<div id="ctrls" style="overflow:hidden;">
+      <button class="pmenux" onclick="start();">
+        <span id="onoff" class="indic" style="font-weight:bold;">&#10679;</span>
+        <span id="ss">Start</span>
+      </button>
+
+      <button class="pmenux" data-state="0" title="show" data-con="anim" onclick="togMenu(this)">
+	<span class="indic">&#10148;</span>
+	Properties
+      </button>
+      <div id="cdivanim" class="tacont">
+	<table id="propsanim" cellspacing="0" class="ctable">
+	  <tr class="phead">
+	    <td colspan="2">&#160;</td><td style="white-space:nowrap; padding:4px;">Lock value</td>
+	  </tr>
+	  <tr><td colspan="3" style="padding:4px;"></td></tr>
+	  <tr>
+	    <td class="tlabel">Transition speed:</td>
+	    <td class="control">
+	      <div id="durRep" class="treport" style="text-align:center;">15s</div>
+	      <input type="range" class="sliderP" min="1" max="30" value="15" oninput="changeDuration(this);"></input>
+	    </td>
+	  </tr>
+	  <tr>
+	    <td class="tlabel">Rotation effect:</td>
+	    <td class="control">
+	      <div id="rotRep" class="treport" style="text-align:center;">15%</div>
+	      <input type="range" class="sliderP" min="0" max="1" step="0.01" value=".15" oninput="changeRotation(this);"></input>
+	    </td>
+	  </tr>
+	  <tr>
+	    <td class="tlabel">Curve count:</td>
+	    <td class="control">
+	      <div id="ccRep" class="treport" style="text-align:center;">3</div>
+	      <input id="ccRange" type="range" class="sliderP" min="1" max="5" value="3" oninput="inputCurveCount(this)"></input>
+	    </td>
+	    <td><input id="kCount" type="checkbox" onclick="lockCurveCount(this);"/></td>
+	  </tr>
+	  <tr>
+	    <td class="tlabel">Curve cycle count:</td>
+	    <td class="control">
+	      <div id="cvRep" class="treport" style="text-align:center;">6</div>
+	      <input id="cvRange" type="range" class="sliderP" min="2" max="17" value="6" oninput="inputCurveCycles(this)"></input>
+	    </td>
+	    <td><input id="kCycle" type="checkbox" onclick="lockCurveCycles(this);"/></td>
+	  </tr>
+	  <tr><td colspan="3" style="padding:4px;"></td></tr>
+	</table>
+      </div>
+<!--
+      <button class="pmenux" onclick="document.getElementsByTagName('body').item(0).requestFullscreen();">
+        <span class="indic" style="font-weight:bold;">&#1679;</span>
+        <span id="ss">Full screen</span>
+      </button>
+-->
+      <button class="pmenux" onclick="this.firstChild.click()"><a href="http://paulslaymaker.no-ip.org/as/qd.html" style="text-decoration:none; color:black; display:block; cursor:default;" target="_blank">
+          <span class="indic"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAB3RJTUUH4QgJBAMZFPs1EwAAABl0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC4yMfEgaZUAAABOSURBVChTY2CgG0hLS/sPw1BLzbGIIdwDksTiunI0Q/BqCIUaAtaEYRiaoAGUHwpVaE1IA0heH28A4vADWA8xTkIxHKcG5GBEZ9MtfhkARII9lbtXnkYAAAAASUVORK5CYII="/></span>
+          Questions?
+        </a>
+      </button>
+</div>
+
+    </div>
+
+    </div>
+  </body>
+  <script type="text/javascript" src="td.js"></script>
+</html>

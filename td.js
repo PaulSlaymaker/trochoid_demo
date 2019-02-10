@@ -211,6 +211,7 @@ Curve.prototype.setCycles=function() {
   }
 }
 
+/*
 function getMaxTS() {
   let mts=0;
   for (let c of curves) {
@@ -220,6 +221,7 @@ function getMaxTS() {
   }
   return mts;
 }
+*/
 
 Curve.prototype.randomizeRadiiCount=function() {
   let p35=2+curveComplexity();
@@ -429,7 +431,6 @@ function setCurvesMatchingAnchor() {
     }
   }
 }
-*/
 
 function getZeroData() {
   let zd=[[0,0]];
@@ -447,6 +448,7 @@ function getZeroCurve() {
   d+='z';
   return d;
 }
+*/
 
 function powerRandom(p) {
   function rec(p,r) {
@@ -527,7 +529,6 @@ var zoom={
   lock:false,  // presently unused
   randomize:function() {
     if (this.lock) return;
-
     if (curveTransition.synced) {
       this.scale=1.5;
     } else if (curveTransition.ctState=='async_soft') {
@@ -1306,7 +1307,6 @@ log('to solid start');
           softRecycle();
           curveTransition.ctState='sync_soft';
           zoom.randomize();
-          randomizeCurves();
         } else {
           if (!cycleLock) {
 	    randomizeCycles();
@@ -1315,8 +1315,8 @@ log('to solid start');
           }
           curveTransition.ctState='sync_trans';
 //	  halts.sync=false;
-          randomizeCurves();
         }
+        randomizeCurves();
         curveTransition.synced=true;
 halts.sync=false;
 //} else {
