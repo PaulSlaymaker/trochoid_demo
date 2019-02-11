@@ -979,7 +979,7 @@ log('to small start');
 		  } else {
 
 if (curveTransition.ctState=='async_soft') {
-  if (Math.random()<.1) {
+  if (Math.random()<.3) {
       halts.sync=true;
       curveTransition.ctState='to_sync';
   }
