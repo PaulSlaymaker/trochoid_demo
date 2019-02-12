@@ -13,7 +13,7 @@ ctx.lineWidth=.5;
 //ctx.strokeStyle='hsl(120,100%,60%)';
 ctx.fillStyle='hsla(0,0%,0%,.01)';
 
-var animateDuration=15000;
+var animateDuration=16000;
 var transDurationFactor=1;
 var curveCount=3;
 var curveCountLock=false;
@@ -165,11 +165,10 @@ Curve.prototype.randomizeRadii=function() {
   //this.radii[0]=f1+f1*Math.random();
   this.radii[0]=f1+randomTwenty();
   if (this.radiiCount==1) {
-    this.radii[1]=this.radii[0]+randomTwenty();
+    this.radii[1]=this.radii[0]+randomTwenty()/2;
   } else if (this.radiiCount==2) {
     this.radii[1]=f1+f1*Math.random();
     this.radii[2]=Math.abs(this.radii[0]-this.radii[1])+randomTwenty();
-    //this.radii[2]=Math.abs(Math.abs(this.radii[0])-Math.abs(this.radii[1]))+randomTwenty();
   } else if (this.radiiCount==3) {
     // complicated to centralize, just random radii
     this.radii[1]=f1+f1*Math.random();
@@ -212,24 +211,21 @@ Curve.prototype.randomizeCurve=function() {
     }
     this.randomizeRadii();
     this.setCurve();
-    if (curveTransition.ctState=='to_sync') {
-      this.duration=Math.max(animateDuration/5, this.duration*.6);
+    if (curveTransition.ctState=='to_small') {
+      this.duration=Math.max(animateDuration/10, this.duration*.6);
+    } else if (curveTransition.ctState=='to_sync') {
+      this.duration=Math.max(animateDuration/10, this.duration*.6);
     } else if (curveTransition.ctState=='async_soft') {
       this.duration=animateDuration*(.6+.4*Math.random());
     } else if (curveTransition.ctState=='sync_soft') {
-      this.duration=Math.max(animateDuration/5, this.duration*.9);
+      this.duration=Math.max(animateDuration/10, this.duration*.9);
     } else if (curveTransition.synced) {
       this.duration=animateDuration*transDurationFactor;
     } else {
       if (fillColor.fstate==TOSOLID || fillColor.fstate==SOLID) {
-/****sol****/
         this.duration=animateDuration;
-/****sol****
-        //this.duration=Math.max(animateDuration/5, this.duration*.3);
-        this.duration=Math.max(animateDuration/10, this.duration*.3);
-*/
+//        this.duration=Math.max(animateDuration/10, this.duration*.3);
       } else {
-        //this.duration=animateDuration*(.3+.7*Math.random());
         this.duration=animateDuration*(.6+.4*Math.random());
       }
     }
@@ -311,17 +307,10 @@ Curve.prototype.setCurve=function() {
 }
 
 Curve.prototype.toSTD=function() {
-/*
-  if (this.anchor) {
-    return false;
-  }
-  if (this.cstate!=ZERO || this.cstate!=CSMALL) {
-*/
   if (this.cstate!=ZERO) {
     return false;
   }
-
-if (!cycleLock && (()=>{
+  if (!cycleLock && (()=>{
     if (Math.random()<.2) {
       switch (cycleSet) {
 	case 6: cycleSet=12; return true;
@@ -344,7 +333,6 @@ if (!cycleLock && (()=>{
 for (let i in this.radiiCount) {
   this.radii[i]/=3;
 }
-//this.duration=animateDuration*2;
   this.active=true;
   this.start=0;
   return true;
@@ -430,13 +418,11 @@ var fillColor={
   active:false,
   fstate:GRAD,
   switchToSolid:function() {
-    //this.type=SOLID;
     this.fstate=SOLID;
     this.active=false;
 log('to solid done');
   },
   switchToGradient:function() {
-    //this.type=GRAD;
     this.fstate=GRAD;
     this.active=true;
 log('to grad done');
@@ -576,7 +562,6 @@ function insertStop() {
     stops[0].fromHSL=stops[1].fromHSL.slice();
     stops[0].toHSL=stops[1].toHSL.slice();
   }
-  // set position flags here
 }
 
 function deleteStop() {
@@ -667,9 +652,8 @@ log('soft cycle');
 }
 
 function randomizeCycles() {
-  let yx=cycleSet;
-    cycleSet=(()=>{
-      // 10 cycles demoted
+  let origSet=cycleSet;
+  cycleSet=(()=>{
       switch (curveCount) {
 	case 1: return [17,16,15,14,13,12,11,9,10,8,7,6];
 	case 2: return [14,15,13,16,12,17,11,9,10,8,7,6];
@@ -678,15 +662,13 @@ function randomizeCycles() {
       }
       return [6,7,8,9,11,10,12,13,14,15,16,17];
     })()[getRandomInt(0,12,2)];
-    resetCycleSet();
-if (yx!=cycleSet) {
+  resetCycleSet();
+  if (origSet!=cycleSet) {
     curveTransition.ctCount++;
-}
-
-ctx.lineWidth=0.2+0.03*(18-cycleSet);
-
-log('maj '+yx+' to '+cycleSet);
-  return yx;
+  }
+  ctx.lineWidth=0.2+0.03*(18-cycleSet);
+log('maj '+origSet+' to '+cycleSet);
+  return origSet;
 }
 
 function randomizeCurves() {
@@ -719,9 +701,9 @@ function randomCurveCountChange(curve) {
   if (curveCountLock) {
     return false;
   }
-if (fillColor.fstate==TOSOLID || fillColor.fstate==SOLID) {
-  return false;
-}
+  if (fillColor.fstate==TOSOLID || fillColor.fstate==SOLID) {
+    return false;
+  }
 /*
 if (curvesInState(TOSMALL)) {
   return false;
@@ -892,10 +874,10 @@ function setCurvesStd() {
 }
 
 function animate(ts) {
-if (halts.stopNow) {
-  stopped=true;
-  return;
-}
+  if (halts.stopNow) {
+    stopped=true;
+    return;
+  }
   var endMove=false;
   ctx.beginPath();
   for (var cx of curves) {
@@ -917,17 +899,17 @@ if (halts.stopNow) {
           if (cx.cstate==TOORB) {
             cx.zeroToData();
             cx.zeroFromData();
-cx.radii[0]=0;
+            cx.radii[0]=0;
           }
 	  cx.cstate=ZERO;
           curveCount--;
 	  cx.active=false;
 	} else if (cx.cstate==TOSMALL) {
-if (cx.radii[0]<CSIZE/2) {
-	  cx.cstate=CSMALL;
-} else {
+          if (cx.radii[0]<CSIZE/2) {
+	    cx.cstate=CSMALL;
+          } else {
 log('small reset');
-}
+          }
         }
         if (halts.stop || halts.sync) {
           cx.active=false;
@@ -949,7 +931,6 @@ log('cycle off');
 	    // unsynced
 	    if (randomCurveCountChange(cx)) {
 	    } else {
-/****sol****/
 	      if (curveTransition.ctState=='to_small') {
 		if (curvesInState(CSMALL)) {
 		  if (fillColor.fstate==SOLID) {
@@ -968,23 +949,37 @@ log('change cycle');
 		  }
 		}
 	      } else {
-		if (curveTransition.ctState!='to_small' && Math.random()<cycleChangeRate*(.5+Math.abs(cycleSet-9)/16) && !curveCountLock) {
+		if (curveTransition.ctState=='sync_soft') {
+                  // broken, not synced.
+		  curveTransition.ctState='async_steady';
+   	          fillColor.fstate=TOGRAD;
+log('broke transition 1');
+                } else { 
+                  if (Math.random()<cycleChangeRate*(.5+Math.abs(cycleSet-9)/16) && !curveCountLock) {
 		  //if (curveTransition.ctState=='async_steady') {
-		  if (fillColor.fstate==GRAD) {
-                    if (setCurvesSmall()) {
-		      curveTransition.ctState='to_small';
-		      fillColor.fstate=TOSOLID;
+		    if (fillColor.fstate==GRAD) {
+                      if (setCurvesSmall()) {
+		        curveTransition.ctState='to_small';
+		        fillColor.fstate=TOSOLID;
 log('to small start');
+                      }
                     }
 		  } else {
-
-if (curveTransition.ctState=='async_soft') {
-  if (Math.random()<.3) {
-      halts.sync=true;
-      curveTransition.ctState='to_sync';
-  }
-}
-
+		    if (curveTransition.ctState=='async_soft') {
+		      if (Math.random()<.5) {
+			  halts.sync=true;
+			  curveTransition.ctState='to_sync';
+		      }
+		    } else if (curveTransition.ctState=='sync_soft' || curveTransition.ctState=='sync_trans') {
+		      // broken, not synced.
+		      if (fillColor.fstate==SOLID) {
+			if (curveTransition.ctCount<1) {
+		    log('broke change cycle2');
+			  halts.sync=true;
+			  curveTransition.ctState='to_sync';
+			}
+		      }
+		    }
                   }
 		}
 	      }
@@ -1058,15 +1053,6 @@ log('to grad start');
 	    } else {
 	      shiftStops();
 	      if (fillColor.fstate==GRAD) {
-
-/****sol****/
-//if (curveTransition.ctState=='to_small') { }
-/*
-if (Math.random()<cycleChangeRate*(.5+Math.abs(cycleSet-9)/16 && !curveCountLock)) {
-setCurvesSmall();
-log('to small start');
-}
-*/
 
 /****sol****
 		if (Math.random()<cycleChangeRate*(.5+Math.abs(cycleSet-9)/16) && !curveCountLock) {
@@ -1154,6 +1140,7 @@ ctx.lineWidth=.2;
 }
 
 function init() {
+  canvas.addEventListener("click", start, false);
   zoom.randomize();
 if (stops.length>2) {
   stops[1].fromHSL[1]/=2;
@@ -1178,11 +1165,9 @@ function start() {
     fillColor.active=true;
     for (c of curves) {
       if (c.cstate==ZERO) continue;
-//      if (c.cstate==STD) {
-        c.randomizeCurve();
-        c.active=true;
-        c.start=0;
-//      }
+      c.randomizeCurve();
+      c.active=true;
+      c.start=0;
     }
     requestAnimationFrame(animate);
   } else {
@@ -1198,20 +1183,21 @@ function start() {
   }
 }
 
+/*
 function touch() {
   start();
 }
+*/
 
-canvas.addEventListener("click", touch, false);
 
 onresize();
 
 init();
 
-var logging=false;	// publish @ false
+var logging=true;	// publish @ false
 function log(e) {
   if (logging) {
-    console.log(e);
+    console.log(Date().substring(16,25)+e);
   }
 }
 
