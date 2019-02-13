@@ -187,8 +187,11 @@ Curve.prototype.randomizeRadii=function() {
 }
 
 Curve.prototype.randomizeRadiiCount=function() {
+/*
   let p35=1+curveComplexity();
   this.radiiCount=[1,2,3][getRandomInt(0,3,p35)];
+*/
+  this.radiiCount=[1,2,3][getRandomInt(0,3)];
 }
 
 Curve.prototype.randomizeCurve=function() {
@@ -198,8 +201,10 @@ Curve.prototype.randomizeCurve=function() {
       this.cycles[0]=getCycle0Match();
       this.randomizeRadiiCount();
     } else {
-      if (Math.random()<.7) {
+//      if (Math.random()<.7) {
 	this.randomizeRadiiCount();
+//      }
+      if (Math.random()<.7) {
 	for (var j=0; j<this.radiiCount; j++) {
           if (Math.random()<.1) {
 	    this.curveTypes[j]=1;
@@ -226,7 +231,7 @@ Curve.prototype.randomizeCurve=function() {
         this.duration=animateDuration;
 //        this.duration=Math.max(animateDuration/10, this.duration*.3);
       } else {
-        this.duration=animateDuration*(.6+.4*Math.random());
+        this.duration=animateDuration*(.7+.3*Math.random());
       }
     }
   } else {
@@ -953,6 +958,7 @@ log('change cycle');
                   // broken, not synced.
 		  curveTransition.ctState='async_steady';
    	          fillColor.fstate=TOGRAD;
+                  setCurvesStd();
 log('broke transition 1');
                 } else { 
                   if (Math.random()<cycleChangeRate*(.5+Math.abs(cycleSet-9)/16) && !curveCountLock) {
@@ -974,7 +980,7 @@ log('to small start');
 		      // broken, not synced.
 		      if (fillColor.fstate==SOLID) {
 			if (curveTransition.ctCount<1) {
-		    log('broke change cycle2');
+log('broke change cycle2');
 			  halts.sync=true;
 			  curveTransition.ctState='to_sync';
 			}
