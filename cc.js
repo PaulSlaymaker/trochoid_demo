@@ -18,7 +18,7 @@ var transDurationFactor=.5;
 var curveCount=3;
 //var curveCountLock=false;
 var cycleSet=7;
-var cycleChangeRate=.8;  // publish @ .2?
+var cycleChangeRate=.2;  // publish @ .2?
 var softCycleRate=.4;
 //var cycleLock=false;
 var curveCountChangeRate=.7;
@@ -844,7 +844,6 @@ if (curvesInState(TOSMALL)) {
           if (c.toSTD()) {
             curveCount++;
             curveCountRanger.setValue(curveCount);
-            //reportCurveCount(true);
             return true;
           }
         }
@@ -859,7 +858,6 @@ if (curvesInState(TOSMALL)) {
             if (c.toSTD()) {
               curveCount++;
               curveCountRanger.setValue(curveCount);
-              //reportCurveCount(true);
               return true;
             }
           }
@@ -879,7 +877,6 @@ if (curvesInState(TOSMALL)) {
             if (c.toSTD()) {
               curveCount++;
               curveCountRanger.setValue(curveCount);
-              //reportCurveCount(true);
               return true;
             }
           }
@@ -899,7 +896,6 @@ if (curvesInState(TOSMALL)) {
             if (c.toSTD()) {
               curveCount++;
               curveCountRanger.setValue(curveCount);
-              //reportCurveCount(true);
               return true;
             }
           }
@@ -946,6 +942,7 @@ function getSOL(count) {
   return sa;
 }
 
+/*
 function isLineActive() {
   for (var i=0; i<curveCount; i++) {
     if (curves[i].active) {
@@ -954,6 +951,7 @@ function isLineActive() {
   }
   return false;
 }
+*/
 
 function cbLoc(p1,p2,frac) {
   return p1*(1-frac)+p2*frac;
@@ -1031,7 +1029,6 @@ function animate(ts) {
 	  cx.cstate=ZERO;
           curveCount--;
           curveCountRanger.setValue(curveCount);
-          //reportCurveCount(true);
 	  cx.active=false;
 	} else if (cx.cstate==TOSMALL) {
           if (cx.radii[0]<CSIZE/2) {
@@ -1116,25 +1113,6 @@ log('broke change cycle2');
                   }
 		}
 	      }
-
-/****sol****
-	      if (fillColor.fstate==SOLID) {
-                if (curvesInState(CSMALL)) {
-		  if (cycleSet%2==0 && Math.random()<softCycleRate) {
-  log('async soft from '+curveTransition.ctState);
-		    curveTransition.ctState='async_soft';
-		  } else {
-		    if (curveTransition.ctCount<1) {
-  //if (curvesOnScale(SMALL)) {
-  //log('on scale '+fillColor.fstate);
-  log('change cycle');
-		      halts.sync=true;
-		      curveTransition.ctState='to_sync';
-		    }
-		  }
-                }
-              }
-*/
             }
           }
           cx.randomizeCurve();
@@ -1145,6 +1123,7 @@ log('broke change cycle2');
 	endMove=true;
       }
     } else {
+      // useful only when going sync?
       cx.lineCurve();
     }
   }
@@ -1272,21 +1251,6 @@ ctx.fillStyle='hsl(0,0%,0%)';
   }
 }
 
-/*
-var lTransit={
-  start:0,
-  duration:animateDuration,
-  transition:function(ts) {
-    if (!this.start) {
-      this.start=ts;
-    }
-    let progress=ts-this.start;
-    if (progress<this.duration) {
-    }
-  }
-}
-*/
-
 function init() {
   canvas.addEventListener("click", start, false);
   zoom.randomize();
@@ -1349,44 +1313,6 @@ function btnBlur(ctl) {
   ctl.parentNode.parentNode.className='mb';
 }
 
-/*
-function rangeMO(bd) {
-  bd.parentNode.parentNode.children[1].style.opacity=1;
-  bd.parentNode.parentNode.children[2].style.color='blue';
-}
-
-function rmou(bd) {
-  bd.parentNode.parentNode.children[2].style.color='black';
-  if (document.activeElement!=bd) {
-    bd.parentNode.parentNode.children[1].style.opacity=0;
-  }
-}
-
-function rangeFocus(ctl) {
-  ctl.parentNode.parentNode.className='mb infoc';
-  ctl.parentNode.parentNode.children[1].style.opacity=1;
-}
-
-function rangeBlur(ctl) {
-  ctl.parentNode.parentNode.className='mb';
-  ctl.parentNode.parentNode.children[1].style.opacity=0;
-}
-*/
-
-function cbmov(bd) {
-  bd.parentNode.children[0].style.color='blue';
-}
-
-function cbmou(bd) {
-  bd.parentNode.children[0].style.color='black';
-}
-
-function cbfocus(bd) {
-}
-
-function cbblur(bd) {
-}
-
 var Ranger=function(id, rangeInput, lockInput) {
   this.box=document.querySelector('#'+id);
   this.slider=this.box.children[1];
@@ -1425,12 +1351,10 @@ var Ranger=function(id, rangeInput, lockInput) {
     rself.displayDiv.style.color='black';
   }
   this.input.onfocus=function() {
-    //rself.box.className='mb infoc';
     rself.box.children[2].classList.add('infoc');
     rself.slider.style.opacity=1;
   }
   this.input.onblur=function() {
-    //rself.box.className='mb';
     rself.box.children[2].classList.remove('infoc');
     rself.slider.style.opacity=0;
   }
@@ -1524,10 +1448,10 @@ var cycleRanger=new Ranger(
 );
 
 var menu=new function() {
-this.fdr=document.querySelectorAll('.bgfade');
-  this.cpan=document.querySelector('#cpan');
+  this.fdr=document.querySelectorAll('.bgfade');
   this.mbut=document.querySelector('#pmenu');
-  this.xbut=document.querySelector('#xmenu');
+  this.mrep=document.querySelector('#pmrep');
+  this.xrep=this.mbut.children[0];
   this.open=true;
   this.cdiv=document.querySelector('#ctl');
   let ms=this;
@@ -1540,7 +1464,6 @@ this.fdr=document.querySelectorAll('.bgfade');
     } else {
       ms.open=true;
     }
-    //requestAnimationFrame(menuAnimate);
     requestAnimationFrame(ms.animate);
   }
   this.animate=function(ts) {
@@ -1549,20 +1472,18 @@ this.fdr=document.querySelectorAll('.bgfade');
     let frac=progress/400;
     if (progress<400) {
       if (ms.open) {
-for (let x of ms.fdr) {
-  x.style.background='hsl(0,0%,'+(1-frac)*96+'%)';
-}
-	//ms.cpan.style.background='hsl(0,0%,'+(1-frac)*96+'%)';
-	ms.mbut.style.opacity=frac*0.8+(1-frac)*0.001;
-	ms.xbut.style.opacity=(1-frac)*0.8+frac*0.001;
+	for (let x of ms.fdr) {
+	  x.style.background='hsl(0,0%,'+(1-frac)*96+'%)';
+	}
+	ms.mrep.style.opacity=frac*0.8+(1-frac)*0.001;
+	ms.xrep.style.opacity=(1-frac)*0.8+frac*0.001;
 	ms.cdiv.style.opacity=(1-frac)*0.8+frac*0.001;
       } else {
-for (let x of ms.fdr) {
-  x.style.background='hsl(0,0%,'+frac*96+'%)';
-}
-	//ms.cpan.style.background='hsl(0,0%,'+frac*96+'%)';
-	ms.mbut.style.opacity=(1-frac)*0.8+frac*0.001;
-	ms.xbut.style.opacity=frac*0.8+(1-frac)*0.001;
+	for (let x of ms.fdr) {
+	  x.style.background='hsl(0,0%,'+frac*96+'%)';
+	}
+	ms.mrep.style.opacity=(1-frac)*0.8+frac*0.001;
+	ms.xrep.style.opacity=frac*0.8+(1-frac)*0.001;
 	ms.cdiv.style.opacity=frac*0.8+(1-frac)*0.001;
       }
       requestAnimationFrame(ms.animate);
@@ -1574,36 +1495,6 @@ for (let x of ms.fdr) {
     }
   }
 }();
-
-function menuAnimate(ts) {
-  if (!menu.start) menu.start=ts;
-  let progress=ts-menu.start;
-  let frac=progress/400;
-  if (menu.open) {
-    menu.mbut.style.opacity=frac*.8+(1-frac)*0.001;
-    menu.mxdiv.style.opacity=(1-frac)*0.8+frac*0.001;
-  } else {
-    menu.mbut.style.opacity=(1-frac)*0.8+frac*0.001;
-    menu.mxdiv.style.opacity=frac*0.8+(1-frac)*0.001;
-  }
-  if (progress<400) {
-    requestAnimationFrame(menuAnimate);
-  } else {
-    menu.start=0;
-  }
-}
-
-function lockCurveCount(cb) {
-  if (cb.checked) {
-    curveCountRanger.lock=true;
-    cb.parentNode.children[0].innerHTML='&#128274';
-    cb.title='Unlock curve count';
-  } else {
-    curveCountRanger.lock=false;
-    cb.parentNode.children[0].innerHTML='&#128275';
-    cb.title='Lock curve count';
-  }
-}
 
 function inputCurveCycles(si) {
   //cycleSet=parseInt(si.value);
@@ -1618,7 +1509,6 @@ function inputCurveCycles(si) {
     }
   }
 */
-
   for (c of curves) {
     c.setCurve();
     if (c.cstate==STD) {
@@ -1630,9 +1520,7 @@ function inputCurveCycles(si) {
     }
     //c.fromData=c.toData.slice();
   }
-
   //drawCurves();
-
 }
 
 /*
@@ -1641,12 +1529,11 @@ function touch() {
 }
 */
 
-
 onresize();
 
 init();
 
-var logging=true;	// publish @ false
+var logging=false;	// publish @ false
 function log(e) {
   if (logging) {
     console.log(Date().substring(16,25)+e);
