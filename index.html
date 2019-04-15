@@ -10,15 +10,15 @@
   canvas { max-width:100%; border-radius:400px; }
   #xmenu, #pmenu { border:none; cursor:pointer; padding:none; font-weight:bold; background:none; line-height:1; font-size:28pt; }
   div.mb { position:relative; margin:0; padding:0; text-align:center; font-weight:bold; border-top:1px dotted #BBB; border-right:1px solid transparent; border-bottom:1px solid transparent; border-left:1px solid transparent; }
-  div.pholder { width:188px; padding:4px; }
+  div.pholder { width:188px; padding:4px; height:25px; }
   div.slider { position:absolute; top:0px; left:0px; height:26px; opacity:0; background:hsl(240, 30%, 86%); display:block; width:70px; padding:4px 0; border-right:4px solid hsl(240,30%,74%); }
 /* 70 of 132 */
   div.rtext { position:absolute; top:0px; left:0px; }
   div.rlabel { display:inline-block; float:left; white-space:nowrap; padding:4px 0; width:120px; }
   div.rep { display:inline-block; float:left; width:32px;margin-right:2px; border-left:1px dotted #EEE; padding:4px 4px 4px 0; text-align:right; }
-  div.inputdiv { position:absolute; top:0px; left:0px; }
+  div.inputdiv { position:absolute; top:0px; left:0px; height:26px; border:1px solid transparent; }
   input.range { height:24px; opacity:0.01; cursor:pointer; margin:0; width:152px; }
-  input.cb { position:absolute; top:0; left:0; opacity:0.01; width:24px; height:24px; cursor:pointer; margin:0; }
+  input.cb { position:absolute; top:0; left:0; opacity:0.01; width:100%; height:24px; cursor:pointer; margin:0; }
   div.infoc { border:1px dotted #99F; }
   div.locksym { text-align:center; font-size:14px; padding:2px 0; color:black; }
 </style>
@@ -28,7 +28,7 @@
     <canvas id="cta" width="800" height="800"></canvas>
   </div>
 
-<div id="cpan" style="position:absolute; top:8px; right:8px;">
+<div id="cpan" class="bgfade" style="position:absolute; top:8px; right:8px;">
   <div style="text-align:right;">
     <button id="xmenu" style="opacity:0;">&#215;</button>
     <button id="pmenu" style="position:absolute; top:0; right:0; color:white; opacity:.8;">&#8801;<!--&#9776;--></button>
@@ -56,33 +56,50 @@
     </div>
     <div id="ccctl" class="mb">
       <div class="pholder">&#160;</div>
-      <div id="ccBar" class="slider">&#160;</div>
-      <div id="counttxt" class="rtext">
+      <div class="slider">&#160;</div>
+      <div class="rtext">
         <div class="rlabel">Curve count</div>
         <div id="ccRep" class="rep">3</div>
-        <div id="cclock" class="rep" style="position:relative; padding:0;">
-          <div class="locksym">&#128275;</div>
-          <input type="checkbox" class="cb" title="Lock curve count">
-        </div>
       </div>
       <div class="inputdiv">
         <input type="range" class="range" min="1" max="5" value="3">
+        <div class="rep" style="position:relative; padding:0; float:right; height:24px; height:26px; margin-top:-1px;">
+          <div class="locksym" style="clear:right;">&#128275;</div>
+          <input type="checkbox" class="cb" title="Lock curve count">
+        </div>
       </div>
     </div>
-
     <div id="cycctl" class="mb">
       <div class="pholder">&#160;</div>
-      <div id="cycBar" class="slider">&#160;</div>
-      <div id="cyctxt" class="rtext">
+      <div class="slider">&#160;</div>
+      <div class="rtext">
         <div class="rlabel">Curve cycles</div>
         <div id="cycRep" class="rep">7</div>
-        <div id="cclock" class="rep" style="position:relative; padding:0;">
+      </div>
+      <div class="inputdiv">
+        <input type="range" class="range" min="2" max="17" value="7">
+        <div class="rep" style="position:relative; padding:0; float:right; height:24px; height:26px; margin-top:-1px;">
           <div class="locksym">&#128275;</div>
           <input type="checkbox" class="cb" title="Lock cycle count">
         </div>
       </div>
+    </div>
+
+    <div class="mb">
+      <div class="pholder">&#160;</div>
+      <div class="rtext">
+        <div class="rlabel" style="width:188px; margin-top:-3px">
+          Questions?&#160;&#160;
+<div style="display:inline-block; width;30px; position:relative;">
+  <span class="bgfade" style="position:absolute; top:2px; left:6px; font-size:10px; font-weight:bold;">&#8599;</span>
+  <span class="bgfade" style="font-size:17px; font-weight:bold;">&#9723;</span>
+</div>
+        </div>
+      </div>
       <div class="inputdiv">
-        <input type="range" class="range" min="2" max="17" value="7">
+        <button style="width:188px; height:24px; display:block; cursor:pointer; padding:0; border:none; opacity:.01;" onfocus="btnFocus(this)" onblur="btnBlur(this)" onmouseover="bmov(this)" onmouseout="bmou(this)" onclick="this.firstChild.click()"><a href="http://paulslaymaker.no-ip.org/as/qc.html" style="text-decoration:none; color:black; display:block; cursor:default;" target="_blank"></a>
+        </button>
+
       </div>
     </div>
 
