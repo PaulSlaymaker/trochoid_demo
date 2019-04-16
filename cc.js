@@ -1313,10 +1313,10 @@ var Ranger=function(id, rangeInput, lockInput) {
   this.slider=this.box.children[1];
   this.displayDiv=this.box.children[2];
   this.valueDiv=this.box.children[2].children[1];
-  this.units='';
+  this.units=' ';
   this.input=this.box.children[3].children[0];
-  this.max=parseInt(this.input.max);
-  this.min=parseInt(this.input.min);
+  this.max=parseFloat(this.input.max);
+  this.min=parseFloat(this.input.min);
   this.slider.style.width=152*(this.input.value-this.min)/(this.max-this.min)+'px';
   let lockdiv=this.box.children[3].children[1];
   if (lockdiv!=undefined) {
@@ -1451,6 +1451,30 @@ var rotationRanger=new Ranger(
 );
 rotationRanger.units='%';
 
+var widthRanger=new Ranger(
+  'widctl',
+   function () {
+     ctx.lineWidth=parseFloat(widthRanger.input.value);
+     widthRanger.report();
+   }
+);
+widthRanger.units='px';
+
+var attenuationRanger=new Ranger(
+  'attctl',
+   function () {
+     ctx.fillStyle='hsla(0,0%,0%,'+attenuationRanger.input.value+')';
+     attenuationRanger.report();
+   }
+);
+attenuationRanger.report=function() {
+  if (!menu.open) {
+console.log('ATT '+(152*(attenuationRanger.input.value-attenuationRanger.min)/(attenuationRanger.max-attenuationRanger.min)));
+    attenuationRanger.slider.style.width=152*(attenuationRanger.input.value-attenuationRanger.min)/(attenuationRanger.max-attenuationRanger.min)+'px';
+    attenuationRanger.valueDiv.textContent=parseFloat(attenuationRanger.input.value).toFixed(3);
+  }
+}
+ 
 var menu=new function() {
   this.fdr=document.querySelectorAll('.bgfade');
   this.mbut=document.querySelector('#pmenu');
@@ -1465,6 +1489,9 @@ var menu=new function() {
       ms.cdiv.style.display='block';
       curveCountRanger.report();
       cycleRanger.report();
+      rotationRanger.report();
+      widthRanger.report();
+      attenuationRanger.report();
     } else {
       ms.open=true;
     }
@@ -1499,27 +1526,6 @@ var menu=new function() {
     }
   }
 }();
-
-/*
-function inputCurveCycles(si) {
-  //cycleSet=parseInt(si.value);
-  //si.parentNode.parentNode.children[2].children[1].textContent=si.value;
-  //si.parentNode.parentNode.children[1].style.width=152*(cycleSet-2)/15+'px';
-  //resetCycleSet();
-  for (c of curves) {
-    c.setCurve();
-    if (c.cstate==STD) {
-      c.randomizeCurve();
-    } else {
-      c.zeroToData();
-      c.cstat==ZERO;
-      c.fromData=c.toData.slice();
-    }
-    //c.fromData=c.toData.slice();
-  }
-  //drawCurves();
-}
-*/
 
 /*
 function touch() {
