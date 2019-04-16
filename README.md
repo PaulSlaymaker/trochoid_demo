@@ -1,2 +1,2 @@
 # trochoid_demo
-Demonstration of animated SVG using centered trochoids
+Demonstration of animation using centered trochoids
