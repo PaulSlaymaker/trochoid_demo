@@ -22,6 +22,7 @@ var cycleChangeRate=.2;  // publish @ .2?
 var softCycleRate=.4;
 //var cycleLock=false;
 var curveCountChangeRate=.7;
+var rotationFactor=.3;
 var mode='trace';
 
 function powerRandom(p) {
@@ -218,7 +219,7 @@ Curve.prototype.randomizeCurve=function() {
     this.randomizeRadii();
     this.setCurve();
     if (curveTransition.ctState=='to_small') {
-      this.duration=Math.max(animateDuration/10, this.duration*.6);
+      this.duration=Math.max(animateDuration/10, this.duration*.5);
     } else if (curveTransition.ctState=='to_sync') {
       this.duration=Math.max(animateDuration/10, this.duration*.6);
     } else if (curveTransition.ctState=='async_soft') {
@@ -249,7 +250,7 @@ Curve.prototype.setCurve=function() {
     if (curveTransition.synced) {
       return 0;
     }
-    if (Math.random()<rotation.factor*(1-curveComplexity())) {
+    if (Math.random()<rotationFactor*.41/curveComplexity()) {
       return Math.random()*Math.PI;
     } else {
       return 0;
@@ -410,11 +411,6 @@ var halts={
   sync:false,
   stopNow:false,
 }
-
-var rotation={
-  factor:.3,
-  //factor:.1,
-};
 
 var SOLID=0, GRAD=1, TOSOLID=2, TOGRAD=3;
 var fillColor={
@@ -1146,7 +1142,6 @@ for (c of curves) {
   c.duration=animateDuration*(.7+.3*Math.random());
 }
 
-
  	  zoom.randomize();
         } 
       }
@@ -1318,7 +1313,7 @@ var Ranger=function(id, rangeInput, lockInput) {
   this.slider=this.box.children[1];
   this.displayDiv=this.box.children[2];
   this.valueDiv=this.box.children[2].children[1];
-  this.ap='';
+  this.units='';
   this.input=this.box.children[3].children[0];
   this.max=parseInt(this.input.max);
   this.min=parseInt(this.input.min);
@@ -1337,7 +1332,7 @@ var Ranger=function(id, rangeInput, lockInput) {
     //log('cc change to '+curveCount);
     if (!menu.open) {
       rself.slider.style.width=152*(rself.input.value-rself.min)/(rself.max-rself.min)+'px';
-      rself.valueDiv.textContent=rself.input.value+rself.ap;
+      rself.valueDiv.textContent=rself.input.value+rself.units;
     }
   }
   this.input.onmouseover=function() {
@@ -1400,7 +1395,7 @@ var speedRanger=new Ranger(
     fillColor.fillDuration=animateDuration;
   }
 );
-speedRanger.ap='s';
+speedRanger.units='s';
 
 var curveCountRanger=new Ranger(
   'ccctl',
@@ -1423,7 +1418,7 @@ var cycleRanger=new Ranger(
   function() {
     cycleSet=parseInt(cycleRanger.input.value);
     cycleRanger.report();
-    inputCurveCycles(cycleRanger.input);
+    //inputCurveCycles(cycleRanger.input);
     resetCycleSet();
     for (c of curves) {
       c.setCurve();
@@ -1446,6 +1441,15 @@ var cycleRanger=new Ranger(
     }
   }
 );
+
+var rotationRanger=new Ranger(
+  'rotctl',
+   function () {
+    rotationFactor=parseFloat(rotationRanger.input.value)/100;
+    rotationRanger.report();
+   }
+);
+rotationRanger.units='%';
 
 var menu=new function() {
   this.fdr=document.querySelectorAll('.bgfade');
@@ -1496,19 +1500,12 @@ var menu=new function() {
   }
 }();
 
+/*
 function inputCurveCycles(si) {
   //cycleSet=parseInt(si.value);
   //si.parentNode.parentNode.children[2].children[1].textContent=si.value;
   //si.parentNode.parentNode.children[1].style.width=152*(cycleSet-2)/15+'px';
   //resetCycleSet();
-/*
-  if (isAActive()) {
-    if (fillColor.fstate==GRAD || fillColor.fstate==TOGRAD) {
-      cycleLock=true;
-      document.getElementById('kCycle').checked='checked';
-    }
-  }
-*/
   for (c of curves) {
     c.setCurve();
     if (c.cstate==STD) {
@@ -1522,6 +1519,7 @@ function inputCurveCycles(si) {
   }
   //drawCurves();
 }
+*/
 
 /*
 function touch() {

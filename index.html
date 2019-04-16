@@ -21,13 +21,13 @@
   input.cb { position:absolute; top:0; left:0; opacity:0.01; width:100%; height:24px; cursor:pointer; margin:0; }
   div.infoc { border:1px dotted #99F; }
   div.locksym { text-align:center; font-size:14px; padding:2px 0; color:black; }
+  div.lockdiv { position:relative; padding:0; float:right; height:24px; height:26px; margin-top:-1px; }
 </style>
 </head>
 <body style="font-family:sans-serif; font-size:0.8em; background:#000;">
-  <div style="text-align:center;">
-    <canvas id="cta" width="800" height="800"></canvas>
-  </div>
-
+<div style="text-align:center;">
+  <canvas id="cta" width="800" height="800"></canvas>
+</div>
 <div id="cpan" class="bgfade" style="position:absolute; top:8px; right:8px;">
   <div style="text-align:right;">
     <button id="pmenu"> 
@@ -51,13 +51,13 @@
     </div>
     <div id="durctl" class="mb">
       <div class="pholder">&#160;</div>
-      <div id="sbar" class="slider">&#160;</div>
-      <div id="speedtxt" class="rtext">
+      <div class="slider">&#160;</div>
+      <div class="rtext">
         <div class="rlabel">Animation rate</div>
-        <div id="durRep" class="rep">16s</div>
+        <div class="rep">16s</div>
       </div>
       <div class="inputdiv">
-        <input type="range" class="range" min="1" max="30" value="16">
+        <input type="range" class="range" min="1" max="40" value="16">
       </div>
     </div>
     <div id="ccctl" class="mb">
@@ -65,11 +65,11 @@
       <div class="slider">&#160;</div>
       <div class="rtext">
         <div class="rlabel">Curve count</div>
-        <div id="ccRep" class="rep">3</div>
+        <div class="rep">3</div>
       </div>
       <div class="inputdiv">
         <input type="range" class="range" min="1" max="5" value="3">
-        <div class="rep" style="position:relative; padding:0; float:right; height:24px; height:26px; margin-top:-1px;">
+        <div class="rep lockdiv">
           <div class="locksym" style="clear:right;">&#128275;</div>
           <input type="checkbox" class="cb" title="Lock curve count">
         </div>
@@ -80,7 +80,7 @@
       <div class="slider">&#160;</div>
       <div class="rtext">
         <div class="rlabel">Curve cycles</div>
-        <div id="cycRep" class="rep">7</div>
+        <div class="rep">7</div>
       </div>
       <div class="inputdiv">
         <input type="range" class="range" min="2" max="17" value="7">
@@ -90,25 +90,34 @@
         </div>
       </div>
     </div>
-
+    <div id="rotctl" class="mb">
+      <div class="pholder">&#160;</div>
+      <div class="slider">&#160;</div>
+      <div class="rtext">
+        <div class="rlabel">Rotation effect</div>
+        <div class="rep">30%</div>
+      </div>
+      <div class="inputdiv">
+        <input type="range" class="range" min="0" max="100" value="30">
+      </div>
+    </div>
+ 
     <div class="mb">
       <div class="pholder">&#160;</div>
       <div class="rtext">
         <div class="rlabel" style="width:188px; margin-top:-3px">
           Questions?&#160;&#160;
-<div style="display:inline-block; width;30px; position:relative;">
-  <span class="bgfade" style="position:absolute; top:2px; left:6px; font-size:10px; font-weight:bold;">&#8599;</span>
-  <span class="bgfade" style="font-size:17px; font-weight:bold;">&#9723;</span>
-</div>
+	  <div style="display:inline-block; width;30px; position:relative;">
+	    <span class="bgfade" style="position:absolute; top:2px; left:6px; font-size:10px; font-weight:bold;">&#8599;</span>
+	    <span class="bgfade" style="font-size:17px; font-weight:bold;">&#9723;</span>
+	  </div>
         </div>
       </div>
       <div class="inputdiv">
         <button style="width:188px; height:24px; display:block; cursor:pointer; padding:0; border:none; opacity:.01;" onfocus="btnFocus(this)" onblur="btnBlur(this)" onmouseover="bmov(this)" onmouseout="bmou(this)" onclick="this.firstChild.click()"><a href="http://paulslaymaker.no-ip.org/as/qc.html" style="text-decoration:none; color:black; display:block; cursor:default;" target="_blank"></a>
         </button>
-
       </div>
     </div>
-
   </div>
 </div>
 </body>
