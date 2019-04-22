@@ -7,6 +7,7 @@
 <title>Trochoid curves</title>
 <style type="text/css">
   * { box-sizing:border-box; }
+  body { font-family:sans-serif; font-size:0.8em; background:#000; }
   canvas { max-width:100%; border-radius:400px; }
   #pmenu { border:none; cursor:pointer; padding:none; font-weight:bold; background:none; line-height:1; font-size:26pt; }
   div.mb { position:relative; margin:0; padding:0; text-align:center; font-weight:bold; border-top:1px dotted #BBB; border-right:1px solid transparent; border-bottom:1px solid transparent; border-left:1px solid transparent; }
@@ -24,7 +25,7 @@
   div.lockdiv { position:relative; padding:0; float:right; height:24px; height:26px; margin-top:-1px; }
 </style>
 </head>
-<body style="font-family:sans-serif; font-size:0.8em; background:#000;">
+<body>
 <div style="text-align:center;">
   <canvas id="cta" width="800" height="800"></canvas>
 </div>
@@ -34,9 +35,6 @@
       <span id="xmrep" style="opacity:0;">&#215;</span>
       <span id="pmrep" style="position:absolute; top:3px; right:5px; color:white; opacity:.8;">&#8801;</span>
     </button>
-<!--
-    <button id="pmenu" style="position:absolute; top:0; right:0; color:white; opacity:.8;">&#8801;</button>
--->
 <!--&#9776;-->
   </div>
   <div id="ctl" style="opacity:0;">
@@ -49,84 +47,13 @@
         <button style="width:188px; height:24px; display:block; cursor:pointer; padding:0; border:none; opacity:.01;" onfocus="btnFocus(this)" onblur="btnBlur(this)" onmouseover="bmov(this)" onmouseout="bmou(this)" onclick="start()">&#160;</button>
       </div>
     </div>
-    <div id="durctl" class="mb">
-      <div class="pholder">&#160;</div>
-      <div class="slider">&#160;</div>
-      <div class="rtext">
-        <div class="rlabel">Animation rate</div>
-        <div class="rep">16s</div>
-      </div>
-      <div class="inputdiv">
-        <input type="range" class="range" min="1" max="40" value="16">
-      </div>
-    </div>
-    <div id="ccctl" class="mb">
-      <div class="pholder">&#160;</div>
-      <div class="slider">&#160;</div>
-      <div class="rtext">
-        <div class="rlabel">Curve count</div>
-        <div class="rep">3</div>
-      </div>
-      <div class="inputdiv">
-        <input type="range" class="range" min="1" max="5" value="3">
-        <div class="rep lockdiv">
-          <div class="locksym" style="clear:right;">&#128275;</div>
-          <input type="checkbox" class="cb" title="Lock curve count">
-        </div>
-      </div>
-    </div>
-    <div id="cycctl" class="mb">
-      <div class="pholder">&#160;</div>
-      <div class="slider">&#160;</div>
-      <div class="rtext">
-        <div class="rlabel">Curve cycles</div>
-        <div class="rep">7</div>
-      </div>
-      <div class="inputdiv">
-        <input type="range" class="range" min="2" max="17" value="7">
-        <div class="rep" style="position:relative; padding:0; float:right; height:24px; height:26px; margin-top:-1px;">
-          <div class="locksym">&#128275;</div>
-          <input type="checkbox" class="cb" title="Lock cycle count">
-        </div>
-      </div>
-    </div>
-
-    <div id="rotctl" class="mb">
-      <div class="pholder">&#160;</div>
-      <div class="slider">&#160;</div>
-      <div class="rtext">
-        <div class="rlabel">Rotation effect</div>
-        <div class="rep">30%</div>
-      </div>
-      <div class="inputdiv">
-        <input type="range" class="range" min="0" max="100" value="30">
-      </div>
-    </div>
-
-    <div id="widctl" class="mb">
-      <div class="pholder">&#160;</div>
-      <div class="slider">&#160;</div>
-      <div class="rtext">
-        <div class="rlabel">Curve width</div>
-        <div class="rep">0.5</div>
-      </div>
-      <div class="inputdiv">
-        <input type="range" class="range" min="0.1" max="5" step="0.1" value="0.5">
-      </div>
-    </div>
-
-    <div id="attctl" class="mb">
-      <div class="pholder">&#160;</div>
-      <div class="slider">&#160;</div>
-      <div class="rtext">
-        <div class="rlabel">Attenuation</div>
-        <div class="rep">0.01</div>
-      </div>
-      <div class="inputdiv">
-        <input type="range" class="range" min="0.005" max="0.1" step="0.001" value="0.01">
-      </div>
-    </div>
-
+    <div id="durctl" class="mb"></div>
+    <div id="ccctl" class="mb"></div>
+    <div id="cycctl" class="mb"></div>
+    <div id="rotctl" class="mb"></div>
+    <div id="widctl" class="mb"></div>
+    <div id="attctl" class="mb"></div>
+    <div id="grcctl" class="mb"></div>
     <div class="mb">
       <div class="pholder">&#160;</div>
       <div class="rtext">
