@@ -73,8 +73,8 @@ var zoom={
       this.scale=1;
     } else if (curveTransition.ctState=='async_soft') {
       this.scale=1;
-} else if (stops.length<3) {
-  this.scale=1;
+    } else if (stops.length<3) {
+      this.scale=1;
     } else if (fillColor.fstate==GRAD || fillColor.fstate==TOGRAD) {
 /*
       var zf=(curveCount-1)/4;
@@ -614,6 +614,11 @@ function isAActive() {
   if (fillColor.active) { 
     return true; 
   }
+/*
+  if (AWD.transition) {
+    return true; 
+  }
+*/
   return false;
 }
 
@@ -693,13 +698,6 @@ function randomizeCycles() {
 /*
   if (origSet!=cycleSet) {
     curveTransition.ctCount++;
-  }
-*/
-/*
-  if (mode=='trace') {
-    ctx.lineWidth=0.2+0.03*(18-cycleSet);
-  } else {
-    ctx.lineWidth=2;
   }
 */
   cycleRanger.setValue(cycleSet);
@@ -1024,6 +1022,9 @@ function animate(ts) {
 	}
 	ctx.closePath();
       } else {
+
+AWD.randomize();
+//randomizeAWD();
         cx.start=0;
 	if (cx.cstate==TOZERO || cx.cstate==TOORB) {
           if (cx.cstate==TOORB) {
@@ -1133,6 +1134,8 @@ log('broke change cycle2');
     }
   }
 
+  AWD.enter(ts);
+
   if (fillColor.fstate==SOLID) {
     if (fillColor.active) {  // remove ?
       if (halts.stop || halts.sync) {
@@ -1155,15 +1158,13 @@ for (c of curves) {
     }
   } else { // gradient or transitions
     for (let stop of stops) {
-
-if (stops.length==1) {
-  if (fillColor.fstate==TOSOLID) {
-    fillColor.switchToSolid();
-  } else if (fillColor.fstate==TOGRAD) {
-    fillColor.switchToGradient();
-  }
-}
-
+      if (stops.length==1) {
+	if (fillColor.fstate==TOSOLID) {
+	  fillColor.switchToSolid();
+	} else if (fillColor.fstate==TOGRAD) {
+	  fillColor.switchToGradient();
+	}
+      }
       if (stop.state=='active') {
 	if (!stop.oTime) {
 	  stop.oTime=ts;
@@ -1204,16 +1205,9 @@ if (stops.length==1) {
   }
 
   if (!endMove) {
-    //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
     ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+    //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
 //    ctx.fill('evenodd');
-/*
-if (curveTransition.ctState=='sync_trans') {
-ctx.lineWidth=.03;
-} else {
-ctx.lineWidth=.2;
-}
-*/
     ctx.strokeStyle=getGradient();
     ctx.stroke();
   }
@@ -1225,10 +1219,6 @@ ctx.lineWidth=.2;
       stopped=true;
     } else {
       if (halts.sync) {
-/*
-mode='line';
-ctx.fillStyle='hsl(0,0%,0%)';
-*/
         if((()=>{ 
             if (cycleSet%2) { return false; }
             if (Math.random()<softCycleRate) { 
@@ -1264,6 +1254,71 @@ ctx.fillStyle='hsl(0,0%,0%)';
     }
   }
 }
+
+var AWD={
+  // TODO respond to controls 
+  stdAtt:0.01,
+  fromAtt:0.01,
+  toAtt:0.01,
+  stdWidth:0.5,
+  fromWidth:0.5,
+  toWidth:0.5,
+  stdDuration:16000,
+  fromDur:16000,
+  toDur:16000,
+  transition:false,
+  start:0,
+  lock:false,
+  randomize:function() {
+    if (this.transition) return false;
+    if (speedRanger.lock) return false;
+    if (widthRanger.lock) return false;
+    if (attenuationRanger.lock) return false;
+    if (curveTransition.ctState!='async_steady') return false;
+    this.transition=true;
+    //if (Math.random()<SSS) {
+//log('start AWD');
+      this.fromAtt=this.toAtt;
+      this.fromWidth=this.toWidth;
+      if (Math.random()<0.5) {
+	this.toAtt=0.01-0.004*Math.random();
+      } else {
+	this.toAtt=0.01+0.02*Math.random();
+      }
+      this.fromWidth=this.toWidth;
+      this.toWidth=56*this.toAtt-0.1;
+      //this.set(this.toAtt);
+      this.transition=true;
+      attenuationRanger.setValue(this.toAtt);
+      widthRanger.setValue(this.toWidth);
+      this.toDur=452*this.toAtt+11;
+      animateDuration=1000*this.toDur;
+      speedRanger.setValue(this.toDur);
+      return true;
+    //}
+  },
+  enter:function(ts) {
+    if (this.transition) {
+      if (!this.start) {
+        this.start=ts;
+      }
+      let progress=ts-this.start;
+      if (progress<4000) {
+        let frac=progress/4000;
+	let op=this.toAtt*frac+this.fromAtt*(1-frac);
+	ctx.fillStyle='hsla(0,0%,0%,'+op+')';
+	let wid=this.toWidth*frac+this.fromWidth*(1-frac);
+	ctx.lineWidth=wid;
+      } else {
+	ctx.fillStyle='hsla(0,0%,0%,'+this.toAtt+')';
+	//animateDuration=1000*(452*this.toAtt+11);
+	ctx.lineWidth=this.toWidth;
+	this.start=0;
+	this.transition=false;
+      }
+    }
+  }
+};
 
 function init() {
   canvas.addEventListener("click", start, false);
@@ -1442,6 +1497,9 @@ var speedRanger=new Ranger(
       c.duration*=fracd;
     }
     fillColor.fillDuration=animateDuration;
+  },
+  function() {
+    speedRanger.setLock();
   }
 );
 speedRanger.units='s';
@@ -1508,6 +1566,9 @@ var widthRanger=new Ranger(
   function () {
     ctx.lineWidth=parseFloat(widthRanger.input.value);
     widthRanger.report();
+  },
+  function() {
+    widthRanger.setLock();
   }
 );
 widthRanger.units='px';
@@ -1518,6 +1579,9 @@ var attenuationRanger=new Ranger(
   function () {
     ctx.fillStyle='hsla(0,0%,0%,'+attenuationRanger.input.value+')';
     attenuationRanger.report();
+  },
+  function() {
+    attenuationRanger.setLock();
   }
 );
 attenuationRanger.report=function() {
@@ -1575,8 +1639,8 @@ var menu=new function() {
   this.animate=function(ts) {
     if (!ms.start) ms.start=ts;
     let progress=ts-ms.start;
-    let frac=progress/400;
     if (progress<400) {
+      let frac=progress/400;
       if (ms.open) {
 	for (let x of ms.fdr) {
 	  x.style.background='hsl(0,0%,'+(1-frac)*96+'%)';
@@ -1677,6 +1741,7 @@ var intervaler={
     intervaler.count++;
   },
   report:function() {
-    console.log(intervaler.isum/intervaler.count);
+    console.log('count '+intervaler.count);
+    console.log('mean '+intervaler.isum/intervaler.count);
   }
 }
