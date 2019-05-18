@@ -379,15 +379,16 @@ if (stops.length<3) {
   }
   this.cstate=TOORB;
   this.fromData=this.toData.slice();
-  //this.radii[0]=CSIZE*2;
-  this.radii[0]=CSIZE*1.1;
+  //this.radii[0]=CSIZE*1.1;
+  this.radii[0]=CSIZE/0.6;
   for (let i=1; i<this.radiiCount+1; i++) {
     this.radii[i]=0;
   }
   this.setCurve();
   this.active=true;
   this.start=0;
-  this.duration=animateDuration/3;
+  //this.duration=animateDuration/3;
+this.duration=animateDuration;
   return true;
 }
 
@@ -1206,10 +1207,19 @@ for (c of curves) {
 
   if (!endMove) {
     ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-    //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-//    ctx.fill('evenodd');
     ctx.strokeStyle=getGradient();
     ctx.stroke();
+/*
+    if (mode=='trace') {
+      ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+      ctx.strokeStyle=getGradient();
+      ctx.stroke();
+    } else {
+      ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+      ctx.fillStyle=getGradient();
+      ctx.fill('evenodd');
+    }
+*/
   }
 
   if (isAActive()) {
@@ -1283,7 +1293,7 @@ var AWD={
       if (Math.random()<0.5) {
 	this.toAtt=0.01-0.004*Math.random();
       } else {
-	this.toAtt=0.01+0.02*Math.random();
+	this.toAtt=0.01+0.01*Math.random();
       }
       this.fromWidth=this.toWidth;
       this.toWidth=56*this.toAtt-0.1;
@@ -1456,7 +1466,10 @@ var Ranger=function(id, label, rangeProps, rangeInput, lockInput) {
     rself.box.children[2].classList.remove('infoc');
     rself.slider.style.opacity=0;
   }
-  this.input.oninput=rangeInput;
+  this.input.oninput=function() {
+    rself.report();
+    rangeInput(rself.input.value);
+  }
   if (lockInput) {
     this.lockCB.onmouseover=function() {
       rself.lockRep.style.color='blue';
@@ -1470,36 +1483,36 @@ var Ranger=function(id, label, rangeProps, rangeInput, lockInput) {
     this.lockCB.onblur=function() {
       rself.box.children[3].children[1].classList.remove('infoc');
     }
-    this.setLock=function() {
+    //this.setLock=function() { }
+    this.lockCB.onclick=function() {
       if(rself.lockCB.checked) {
         rself.lock=true;
         rself.lockRep.innerHTML='&#128274';
-        return true;
+        //return true;
       } else {
         rself.lock=false;
         rself.lockRep.innerHTML='&#128275';
-        return false;
+        //return false;
       }
+      lockInput(rself.lock);
     }
-    this.lockCB.onclick=lockInput;
   }
 }
 
 var speedRanger=new Ranger(
   'durctl','Animation rate',
   [1,40,1,16],
-  function() {
-    let newDur=speedRanger.input.value*1000;
+  function(val) {
+    let newDur=val*1000;
     let fracd=newDur/animateDuration;
     animateDuration=newDur;
-    speedRanger.report();
     for (c of curves) {
       c.duration*=fracd;
     }
     fillColor.fillDuration=animateDuration;
   },
-  function() {
-    speedRanger.setLock();
+  function(isLocked) {
+//    speedRanger.setLock();
   }
 );
 speedRanger.units='s';
@@ -1507,13 +1520,12 @@ speedRanger.units='s';
 var curveCountRanger=new Ranger(
   'ccctl','Curve count',
   [1,5,1,3],
-  function() {
-    changeCurveCount(parseInt(curveCountRanger.input.value));
-    curveCountRanger.report();
+  function(val) {
+    changeCurveCount(parseInt(val));
   },
-  function() {
-    curveCountRanger.setLock();
-    if (curveCountRanger.lockCB.checked) {
+  function(isLocked) {
+    //curveCountRanger.setLock();
+    if (isLocked) {
       curveCountRanger.lockCB.title='Unlock curve count';
     } else {
       curveCountRanger.lockCB.title='Lock curve count';
@@ -1525,9 +1537,8 @@ curveCountRanger.lockCB.onclick(); // sets title
 var cycleRanger=new Ranger(
   'cycctl','Curve cycles',
   [2,17,1,7],
-  function() {
-    cycleSet=parseInt(cycleRanger.input.value);
-    cycleRanger.report();
+  function(val) {
+    cycleSet=parseInt(val);
     resetCycleSet();
     for (c of curves) {
       c.setCurve();
@@ -1541,7 +1552,7 @@ var cycleRanger=new Ranger(
     }
   },
   function() {
-    cycleRanger.setLock();
+    //cycleRanger.setLock();
     if (cycleRanger.lockCB.checked) {
       cycleRanger.lockCB.title='Unlock cycle count';
     } else {
@@ -1553,9 +1564,8 @@ var cycleRanger=new Ranger(
 var rotationRanger=new Ranger(
   'rotctl','Rotation effect',
   [0,100,5,30],
-  function () {
-    rotationFactor=parseFloat(rotationRanger.input.value)/100;
-    rotationRanger.report();
+  function (val) {
+    rotationFactor=parseFloat(val)/100;
   }
 );
 rotationRanger.units='%';
@@ -1563,26 +1573,25 @@ rotationRanger.units='%';
 var widthRanger=new Ranger(
   'widctl','Curve width',
   [0.1,5,0.1,0.5],
-  function () {
-    ctx.lineWidth=parseFloat(widthRanger.input.value);
-    widthRanger.report();
+  function (val) {
+    let v=parseFloat(val);
+    ctx.lineWidth=v;
+    AWD.fromWidth=AWD.toWidth;
+    AWD.toWidth=v;
   },
-  function() {
-    widthRanger.setLock();
-  }
+  function() { }  // turn on lock
 );
 widthRanger.units='px';
 
 var attenuationRanger=new Ranger(
   'attctl','Attenuation',
   [0.005,0.1,0.001,0.01],
-  function () {
-    ctx.fillStyle='hsla(0,0%,0%,'+attenuationRanger.input.value+')';
-    attenuationRanger.report();
+  function (val) {
+    ctx.fillStyle='hsla(0,0%,0%,'+val+')';
+    AWD.fromAtt=AWD.toAtt;
+    AWD.toAtt=val;
   },
-  function() {
-    attenuationRanger.setLock();
-  }
+  function() { }  // turn on lock
 );
 attenuationRanger.report=function() {
   if (!menu.open) {
@@ -1594,8 +1603,8 @@ attenuationRanger.report=function() {
 var gradientRanger=new Ranger(
   'grcctl','Gradient colors',
   [1,7,1,4],
-  function () {
-    let sc=parseInt(gradientRanger.input.value)-stops.length;
+  function (val) {
+    let sc=parseInt(val)-stops.length;
     if (sc<0) {
       for (let i=0; i>sc; i--) {
         deleteStop();
@@ -1608,7 +1617,6 @@ stops[stops.length-1].toHSL[2]=0;
       }
       shiftStops();
     }
-    gradientRanger.report();
   }
 );
  
@@ -1652,9 +1660,9 @@ var menu=new function() {
 	for (let x of ms.fdr) {
 	  x.style.background='hsl(0,0%,'+frac*96+'%)';
 	}
-	ms.mrep.style.opacity=(1-frac)*0.8+frac*0.001;
-	ms.xrep.style.opacity=frac*0.8+(1-frac)*0.001;
-	ms.cdiv.style.opacity=frac*0.8+(1-frac)*0.001;
+	ms.mrep.style.opacity=0.001;
+	ms.xrep.style.opacity=0.8;
+	ms.cdiv.style.opacity=0.8;
       }
       requestAnimationFrame(ms.animate);
     } else {
@@ -1666,7 +1674,8 @@ var menu=new function() {
       ms.start=0;
     }
   }
-}();
+}
+//();
 
 /*
 function touch() {
