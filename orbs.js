@@ -302,7 +302,7 @@ var path={
       this.toRo.dz=[-1,1][getRandomInt(0,2)];
     }
     this.toRo.randomizeRadii();
-    setTable();
+    //setTable();
 
   },
   animate:function(ts) {
@@ -760,7 +760,7 @@ var attenuationRanger=new Ranger({
 
 /*ZZZ*/
 
-
+/*
 var SR=function(obj) {
   let row=document.createElement('tr');
   let label=document.createElement('td');
@@ -857,7 +857,6 @@ var srs=[
       tt.textContent=path.toRo.type4;
     }
   }),
-/*
   new SR({
     label:'r1',
     oc:function(ft,tt) {
@@ -893,7 +892,6 @@ var srs=[
       tt.textContent=path.toRo.r5.toFixed(0);
     }
   }),
-*/
   new SR({
     label:'oRadius',
     oc:function(ft,tt) {
@@ -916,13 +914,13 @@ var srs=[
     }
   }),
 ];
-
 function setTable() {
   for (let sr of srs) {
     sr.report();
   }
 }
 setTable();
+*/
 
 var logging=false;	// publish @ false
 function log(e) {
