@@ -10,7 +10,7 @@ ctx.translate(CSIZE,CSIZE);
 //ctx.fillStyle='hsla(0,80%,80%,.3)';
 ctx.fillStyle='hsla(10,80%,50%,1)';
 ctx.strokeStyle='hsl(120,100%,60%)';
-ctx.lineJoin='round';
+//ctx.lineJoin='round';
 
 var mode='EACH';
 
@@ -51,11 +51,11 @@ function getCycle0Match() {
       return [1,2,4,5,7,8,10,11,13,14,16,17,19][getRandomInt(0,13,4)];
     case 4:
       return [1,3,5,7,9,11,13,15,17,19][getRandomInt(0,10,4)];
-///////////////////////////
     case 5:
-      return [1,2,3,4,6,7,8,9,11,12,13,14,16,17,18][getRandomInt(0,15,3)];
+      return [1,2,3,4,6,7,8,9,11,12,13,14,16,17,18,19][getRandomInt(0,16,3)];
     case 7:
-      return [1,2,3,4,5,6,8,9,10,11,12,13,15,16,17,18][getRandomInt(0,16,3)];
+      return [1,2,3,4,5,6,8,9,10,11,12,13,15,16,17,18,19][getRandomInt(0,17,3)];
+///////////////////////////
     case 8:
       return [1,3,5,7,9,11,13,15,17][getRandomInt(0,9,3)];
     case 9:
