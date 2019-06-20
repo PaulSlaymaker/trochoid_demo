@@ -540,6 +540,9 @@ function start() {
 canvas.addEventListener("click", start, false);
 start();
 
+
+
+
 var menu=new function() {
   this.fdr=document.querySelectorAll('.bgfade');
   this.mbut=document.querySelector('#pmenu');
@@ -928,3 +931,5 @@ function log(e) {
     console.log(Date().substring(16,25)+e);
   }
 }
+
+//if (!location.href.endsWith('em')) { menu=null; }

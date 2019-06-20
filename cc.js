@@ -1,3 +1,7 @@
+if (location.href.endsWith('em')) { 
+  document.querySelector('.bgfade').style.display='none';
+}
+
 var CSIZE=400;
 
 var canvas=document.querySelector('#cta');

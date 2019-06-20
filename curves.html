@@ -30,6 +30,7 @@
   <canvas id="cta" width="800" height="800"></canvas>
 </div>
 <div id="cpan" class="bgfade" style="position:absolute; top:8px; right:8px;">
+<script>if (location.href.endsWith('em')) { document.querySelector('.bgfade').style.display='none'; }</script>
   <div style="text-align:right;">
     <button id="pmenu"> 
       <span id="xmrep" style="opacity:0;">&#215;</span>
@@ -37,7 +38,7 @@
     </button>
 <!--&#9776;-->
   </div>
-  <div id="ctl" style="opacity:0;">
+  <div id="ctl" style="opacity:0; display:none;">
     <div class="mb" style="width:100%; height:24px;">
       <div class="pholder">&#160;</div>
       <div class="rtext">
