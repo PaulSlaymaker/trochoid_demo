@@ -29,16 +29,15 @@
 <div style="text-align:center;">
   <canvas id="cta" width="800" height="800"></canvas>
 </div>
-<div id="cpan" class="bgfade" style="position:absolute; top:8px; right:8px;">
+<div class="bgfade" style="position:absolute; top:8px; right:8px;">
 <script>if (location.href.endsWith('em')) { document.querySelector('.bgfade').style.display='none'; }</script>
   <div style="text-align:right;">
     <button id="pmenu"> 
       <span id="xmrep" style="opacity:0;">&#215;</span>
       <span id="pmrep" style="position:absolute; top:3px; right:5px; color:white; opacity:.8;">&#8801;</span>
     </button>
-<!--&#9776;-->
   </div>
-  <div id="ctl" style="opacity:0; display:none;">
+  <div id="ctl" style="opacity:0;">
     <div class="mb" style="width:100%; height:24px;">
       <div class="pholder">&#160;</div>
       <div class="rtext">
@@ -46,29 +45,6 @@
       </div>
       <div class="inputdiv">
         <button style="width:188px; height:24px; display:block; cursor:pointer; padding:0; border:none; opacity:.01;" onfocus="btnFocus(this)" onblur="btnBlur(this)" onmouseover="bmov(this)" onmouseout="bmou(this)" onclick="start()">&#160;</button>
-      </div>
-    </div>
-    <div id="durctl" class="mb"></div>
-    <div id="ccctl" class="mb"></div>
-    <div id="cycctl" class="mb"></div>
-    <div id="rotctl" class="mb"></div>
-    <div id="widctl" class="mb"></div>
-    <div id="attctl" class="mb"></div>
-    <div id="grcctl" class="mb"></div>
-    <div class="mb">
-      <div class="pholder">&#160;</div>
-      <div class="rtext">
-        <div class="rlabel" style="width:188px; margin-top:-3px">
-          Questions?&#160;&#160;
-	  <div style="display:inline-block; width;30px; position:relative;">
-	    <span class="bgfade" style="position:absolute; top:2px; left:6px; font-size:10px; font-weight:bold;">&#8599;</span>
-	    <span class="bgfade" style="font-size:17px; font-weight:bold;">&#9723;</span>
-	  </div>
-        </div>
-      </div>
-      <div class="inputdiv">
-        <button style="width:188px; height:24px; display:block; cursor:pointer; padding:0; border:none; opacity:.01;" onfocus="btnFocus(this)" onblur="btnBlur(this)" onmouseover="bmov(this)" onmouseout="bmou(this)" onclick="this.firstChild.click()"><a href="http://paulslaymaker.no-ip.org/as/qc.html" style="text-decoration:none; color:black; display:block; cursor:default;" target="_blank"></a>
-        </button>
       </div>
     </div>
   </div>
