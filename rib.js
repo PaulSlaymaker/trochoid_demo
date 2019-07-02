@@ -184,6 +184,12 @@ var Roulette=function(ro) {
 
   this.setCycles=function() {
     if (Math.random()<0.7) {  // put symmetry control here
+      let ca=getFactors(this.cycleSet);
+      if (ca.length==0) {
+	return this.cycleSet;
+      }
+      return ca[getRandomInt(0,ca.length)];
+    } else if (Math.random()<0.7) {  // put symmetry control here
       let ca=getFactors(ribbons.rCount);
       if (ca.length==0) {
 	return this.cycleSet;
@@ -307,7 +313,7 @@ var Roulette=function(ro) {
   this.controlledCycleChange=function(mod) {
     let count=0;
     let sMax=30;
-    let sMin=5;
+    let sMin=10;
     do {
       mod();
       var sp=rself.getSP();
@@ -378,7 +384,7 @@ var path={
       this.toRo.dz=[-1,1][getRandomInt(0,2)];
     }
     this.toRo.randomizeRadii();
-setTable();
+//setTable();
   },
   animate:function(ts) {
     if (stopped) {
@@ -594,15 +600,14 @@ ribbons.toHues[0]=(ribbons.fromHues[0]+Math.random()*360/ribbons.colorCount)%360
     return (ribbons.hFrac*ribbons.toHues[n%ribbons.colorCount]+(1-ribbons.hFrac)*ribbons.fromHues[n%ribbons.colorCount])/2%360;
   },
   transitColor:function() {
-    if (colorCountRanger.lock) return;
+    //if (colorCountRanger.lock) return;
     ribbons.fromHues=ribbons.toHues.slice();
     ribbons.toHues=[];
-if (ribbons.colorCount==2) {
-ribbons.toHues[0]=(ribbons.fromHues[0]+Math.random()*120)%360;
-} else {
-ribbons.toHues[0]=(ribbons.fromHues[0]+Math.random()*360/ribbons.colorCount)%360;
-}
-//    ribbons.toHues[0]=(ribbons.fromHues[0]+Math.random()*360/ribbons.colorCount)%360;
+    if (ribbons.colorCount==2) {
+      ribbons.toHues[0]=(ribbons.fromHues[0]+Math.random()*120)%360;
+    } else {
+      ribbons.toHues[0]=(ribbons.fromHues[0]+Math.random()*360/ribbons.colorCount)%360;
+    }
     for (let i=1; i<ribbons.colorCount; i++) {
       ribbons.toHues.push((ribbons.toHues[i-1]+360/ribbons.colorCount)%360);
     }
@@ -612,7 +617,7 @@ ribbons.toHues[0]=(ribbons.fromHues[0]+Math.random()*360/ribbons.colorCount)%360
     while ([11,13,17,19,23,29].includes(ribbons.rCount)) {
       ribbons.rCount=4+Math.round(55*Math.pow(Math.random(),1.7));
     }
-    if (colorCountRanger!=undefined && colorCountRanger.lock) return;
+    //if (colorCountRanger!=undefined && colorCountRanger.lock) return;
     ribbons.colorCount=ribbons.goodColorCount();
     ribbons.randomizeHues();
   },
@@ -629,9 +634,9 @@ ribbons.toHues[0]=(ribbons.fromHues[0]+Math.random()*360/ribbons.colorCount)%360
       path.fromRo.randomizeCycles();
       path.toRo.randomizeCycles();
       ribbons.rcTrans='R';
-setTable();
+//setTable();
 ribbonsRanger.setValue(ribbons.rCount);
-colorCountRanger.setValue(ribbons.colorCount);
+//colorCountRanger.setValue(ribbons.colorCount);
     } else if (ribbons.rcTrans=='R') {
       ribbons.rcTrans='N';
     }
@@ -777,8 +782,10 @@ function start() {
     ribbons.draw();
     path.animate();
     fade.animate();
+    document.querySelector('#ss').textContent='Stop';
   } else {
     stopped=true;
+    document.querySelector('#ss').textContent='Start';
   }
 }
 canvas.addEventListener("click", start, false);
@@ -798,7 +805,7 @@ var menu=new function() {
       rotateSpeedRanger.report();
       curveSpeedRanger.report();
       ribbonsRanger.report();
-      colorCountRanger.report();
+      //colorCountRanger.report();
       changeRateRanger.report();
     } else {
       ms.open=true;
@@ -1002,6 +1009,7 @@ var ribbonsRanger=new Ranger({
 });
 ribbonsRanger.setValue(ribbons.rCount);
 
+/*
 var colorCountRanger=new Ranger({
   label:'Color count',
   min:1,
@@ -1015,6 +1023,7 @@ var colorCountRanger=new Ranger({
   lockInput:function(isLocked) { }
 });
 colorCountRanger.setValue(ribbons.colorCount);
+*/
 
 var changeRateRanger=new Ranger({
   label:'Change rate',
@@ -1027,6 +1036,7 @@ var changeRateRanger=new Ranger({
   }
 });
 
+/*
 var SR=function(obj) {
   let row=document.createElement('tr');
   let label=document.createElement('td');
@@ -1045,7 +1055,9 @@ var SR=function(obj) {
     //}
   }
 }
+*/
 
+/*
 var srs=[
   new SR({
     label:'rib',
@@ -1089,6 +1101,7 @@ var srs=[
       tt.textContent=path.toRo.c3;
     }
   }),
+*/
 /*
   new SR({
     label:'c4',
@@ -1098,6 +1111,7 @@ var srs=[
     }
   }),
 */
+/*
   new SR({
     label:'dz',
     oc:function(ft,tt) {
@@ -1133,6 +1147,7 @@ var srs=[
       tt.textContent=path.toRo.type3;
     }
   }),
+*/
 /*
   new SR({
     label:'type4',
@@ -1177,6 +1192,7 @@ var srs=[
     }
   }),
 */
+/*
   new SR({
     label:'SP',
     oc:function(ft,tt) {
@@ -1185,12 +1201,15 @@ var srs=[
     }
   }),
 ];
+*/
 
+/*
 function setTable() {
   for (let sr of srs) {
     sr.report();
   }
 }
 setTable();
+*/
 
 start();

@@ -194,6 +194,7 @@ var Roulette=function(ro) {
     rself.type1=[-1,1][getRandomInt(0,2)];
     rself.type2=[-1,1][getRandomInt(0,2)];
     rself.type3=[-1,1][getRandomInt(0,2)];
+    rself.type4=[-1,1][getRandomInt(0,2)];
   }
   this.randomizeRadiiCount=function() {
     //rself.radiiCount=[2,3,4,5][getRandomInt(0,4,2)];
