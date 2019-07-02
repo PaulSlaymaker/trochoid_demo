@@ -79,6 +79,18 @@ function getCycleArray(n) {
 }
 
 function getColorArray(n) {
+  let a=[];
+  for (let i=2; i<10; i++) {
+    if (n%i==0) {
+      a.push(i);
+    }
+  }
+  if (a.length==0) {
+    return [2];
+  } else {
+    return a;
+  }
+/*
   let a=new Set();
   for (let i=0; i<4; i++) {
     if (n%primes[i]==0) {
@@ -88,6 +100,7 @@ function getColorArray(n) {
     }
   }
   return Array.from(a);
+*/
 }
 
 var Roulette=function(ro) {
@@ -519,13 +532,22 @@ var ribbons={
 */
   },
   goodColorCount:function() {
-/*
-    let ca=getColorArray(ribbons.rCount);
-    if (ca.length==0) {
+    let a=[];
+    for (let i=2; i<10; i++) {
+      if (ribbons.rCount%i==0) {
+	a.push(i);
+      }
+    }
+    if (a.length==0) {
       return 2;
     }
+    return a[getRandomInt(0,a.length)];
+/*
+    let ca=getColorArray(ribbons.rCount);
+    //if (ca.length==0) { return 2; }
     return ca[getRandomInt(0,ca.length)];
 */
+/*
     switch (ribbons.rCount) {
       case 4:
 	return [2,4][Math.round(Math.random())];
@@ -579,6 +601,7 @@ var ribbons={
 	}
     }
     debugger;
+*/
   },
   randomizeHues:function() {
     //ribbons.colorCount=ribbons.goodColorCount();
