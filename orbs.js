@@ -468,9 +468,9 @@ var pFrac=i/orbs.points;
   transitCount:function() {
     //if (ribbonsRanger.lock) return;
     if (orbs.ocTrans=='N') {
-      //if (Math.random()<0.3) {
+      if (Math.random()<0.7) {
         orbs.ocTrans='T';
-      //}
+      }
     } else if (orbs.ocTrans=='T') {
       orbs.points=getRandomInt(12,120,2);
       orbs.ocTrans='R';
