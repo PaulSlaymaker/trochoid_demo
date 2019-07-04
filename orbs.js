@@ -141,6 +141,9 @@ var Roulette=function(ro) {
     rself.c3=rself.setCycles();
     rself.c4=rself.setCycles();
   }
+  this.setCycle0Match=function() {
+    rself.c0=rself.getCycle0Match();
+  }
   this.getCycle0Match=function() {
     switch (rself.cycleSet) {
       case 2:
@@ -255,7 +258,7 @@ var path={
   toRo:new Roulette(),
   start:0,
   frac:0,
-  duration:7000,
+  duration:5000,
   syFactor:1,
   getMetrics:function(rotFrac, pointFrac) {
     let fromMet=this.fromRo.getMetrics(rotFrac, pointFrac);
@@ -267,7 +270,7 @@ var path={
     }
   },
   setSpeed:function(sf) { 
-    this.duration=7000/sf;
+    this.duration=5000/sf;
   },
   transit:function() {
     Object.assign(this.fromRo, this.toRo);
@@ -285,7 +288,7 @@ var path={
     } else { 
       if (Math.random()<mf) {
 	//this.toRo.c0=this.toRo.getCycle0Match();
-        this.toRo.controlledCycleChange(this.toRo.getCycle0Match, 'c0');
+        this.toRo.controlledCycleChange(this.toRo.setCycle0Match, 'c0');
       }
       if (Math.random()<mf) {
 	//this.toRo.softCycle();
@@ -303,7 +306,7 @@ var path={
       this.toRo.dz=[-1,1][getRandomInt(0,2)];
     }
     this.toRo.randomizeRadii();
-    //setTable();
+//setTable();
 
   },
   animate:function(ts) {
@@ -329,7 +332,7 @@ var Orb=function(or) {
   if (or instanceof Orb) {
     Object.assign(this, or);
   } else {
-    this.radius=5+10*Math.random();
+    this.radius=4+8*Math.random();
     this.radiusMode='';
     this.hue=getRandomInt(0,360);
     this.huediff=getRandomInt(0,180);
@@ -372,6 +375,9 @@ var orbs={
   frac:0,
   points:getRandomInt(12,40),
   duration:60000,
+  startO:0,
+  fracO:0,
+  durationO:6000,
   //atten:0.1,
   ocTrans:'N',   // N,D,H
 /*
@@ -412,7 +418,7 @@ var orbs={
     ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
     for (let i=0; i<orbs.points; i++) {
       ctx.beginPath();
-
+/*
 if (orbs.ocTrans=='D') {
   if (i%2==1) {
     var pFrac=(Math.pow(1-rotFrac,5)+i)/orbs.points;
@@ -429,12 +435,28 @@ if (orbs.ocTrans=='D') {
 } else {
   var pFrac=i/orbs.points;
 }
+*/
+var pFrac=i/orbs.points;
 
       //let metrics=path.getMetrics(rotFrac, i/orbs.points);
       let metrics=path.getMetrics(rotFrac, pFrac);
-      //ctx.arc(metrics.x,metrics.y, orbs.radius,0,2*Math.PI);
-      ctx.arc(metrics.x,metrics.y, 
-        orbs.getRadius(metrics.oFrac, rotFrac),0,2*Math.PI);
+
+      if (orbs.ocTrans=='T') {
+        let tz=Math.pow(orbs.fracO,5);
+	let x=(metrics.x)*(1-tz);
+	let y=(metrics.y)*(1-tz);
+        ctx.arc(x,y,orbs.getRadius(metrics.oFrac, rotFrac),0,2*Math.PI);
+      } else if (orbs.ocTrans=='R') {
+        let tz=Math.pow(1-orbs.fracO,5);
+	let x=(metrics.x)*(1-tz);
+	let y=(metrics.y)*(1-tz);
+        ctx.arc(x,y,orbs.getRadius(metrics.oFrac, rotFrac),0,2*Math.PI);
+      } else {
+        ctx.arc(metrics.x,metrics.y, 
+          orbs.getRadius(metrics.oFrac, rotFrac),0,2*Math.PI);
+      }
+
+
       ctx.fillStyle='hsla('+
         orbs.getHue(metrics.oFrac, rotFrac)+',90%,'+
         orbs.getLum(metrics.oFrac)+'%,'+
@@ -443,15 +465,34 @@ if (orbs.ocTrans=='D') {
       ctx.closePath();
     }
   },
+  transitCount:function() {
+    //if (ribbonsRanger.lock) return;
+    if (orbs.ocTrans=='N') {
+      //if (Math.random()<0.3) {
+        orbs.ocTrans='T';
+      //}
+    } else if (orbs.ocTrans=='T') {
+      orbs.points=getRandomInt(12,120,2);
+      orbs.ocTrans='R';
+//setTable();
+      orbsRanger.setValue(orbs.points);
+      orbs.transit();
+      orbs.start=0;
+      orbs.frac=0;
+    } else if (orbs.ocTrans=='R') {
+      orbs.ocTrans='N';
+    }
+  },
   transit:function() {
     Object.assign(this.fromOrb, this.toOrb);
     this.toOrb=new Orb(this.fromOrb);
     //if (Math.random()<0.7) { this.toOrb.randomizeRadiusMode(); }
-    this.toOrb.radius=4+10*Math.random();
+    this.toOrb.radius=4+8*Math.random();
     this.toOrb.randomizeRadiusMode();
     this.toOrb.hue=getRandomInt(0,360);
     this.toOrb.huediff=getRandomInt(0,180);
 
+/*
     if (!orbsRanger.lock) {
       if (orbs.ocTrans=='N' || orbs.ocTrans=='D') {
 	if (orbs.points>90) {
@@ -481,18 +522,16 @@ if (orbs.ocTrans=='D') {
 	orbs.ocTrans='N';
       }
     }
+*/
 
+/*
 if (!speedRanger.lock) {
   let spd=20+20*Math.random();
   orbs.setSpeed(spd/30);
 //path.setSpeed(spd/30);
   speedRanger.setValue(spd);
-/*
-    let spd=[2,3,4][getRandomInt(0,3)];
-    orbs.setSpeed(spd/3);
-    speedRanger.setValue(spd);
-*/
 }
+*/
 
     if (!attenuationRanger.lock) {
       //orbs.toOrb.atten=0.01+0.3*Math.random();
@@ -515,6 +554,18 @@ if (!speedRanger.lock) {
       orbs.start=0;
       orbs.frac=0;
     }
+    if (!orbs.startO) {
+      orbs.startO=ts;
+    }
+    let progO=ts-orbs.startO;
+    if (progO<orbs.durationO) {
+      orbs.fracO=progO/orbs.durationO;
+    } else {
+      orbs.transitCount();
+      orbs.startO=0;
+      orbs.fracO=0;
+    }
+
     orbs.draw(orbs.frac);
     requestAnimationFrame(orbs.animate);
   },
@@ -540,9 +591,6 @@ function start() {
 }
 canvas.addEventListener("click", start, false);
 start();
-
-
-
 
 var menu=new function() {
   this.fdr=document.querySelectorAll('.bgfade');
@@ -861,6 +909,8 @@ var srs=[
       tt.textContent=path.toRo.type4;
     }
   }),
+*/
+/*
   new SR({
     label:'r1',
     oc:function(ft,tt) {
@@ -896,6 +946,8 @@ var srs=[
       tt.textContent=path.toRo.r5.toFixed(0);
     }
   }),
+*/
+/*
   new SR({
     label:'oRadius',
     oc:function(ft,tt) {
@@ -918,6 +970,9 @@ var srs=[
     }
   }),
 ];
+*/
+
+/*
 function setTable() {
   for (let sr of srs) {
     sr.report();
@@ -932,5 +987,3 @@ function log(e) {
     console.log(Date().substring(16,25)+e);
   }
 }
-
-//if (!location.href.endsWith('em')) { menu=null; }
