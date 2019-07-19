@@ -487,7 +487,7 @@ var C2={
   transitCycle:function() {
     if (C2.cTrans=='N') {
 	// TODO, increase with C0 mean or sum
-      if (Math.random()<0.2) {	// publish @ 0.1
+      if (Math.random()<0.1) {	// publish @ 0.1
         C2.cTrans='T';
         C2.RX=120+100*(1-2*Math.random());
       }
