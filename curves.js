@@ -298,11 +298,6 @@ Roulette.prototype.randomizeCurve=function(assureSweep) {
     counter++
     // assurance only for transiting Roulettes?
   } while (sweep==0 && assureSweep);  
-/*
-if (counter>2) {
-log('RRR '+counter);
-}
-*/
   this.randomizeRadii();
   this.setCurve();
 //setTable();
@@ -392,19 +387,20 @@ var Curve=function(con,name) {
   this.dStart=0;
   this.dDuration=animateDuration*(0.7+0.3*Math.random());
   this.dFrac=1;
-  this.getHue=function(frac) {
-    let midHue=con.hFrac*(this.toHue-this.fromHue)+this.fromHue;
+  this.getHue=function() {
+    let midHue=C2.hFrac*(this.toHue-this.fromHue)+this.fromHue;
     return Math.round(midHue%360);
   }
   this.transit=function() {
     Object.assign(this.fromRo, this.toRo);
     this.toRo=new Roulette(this.fromRo);
     //this.toRo.transitRandomizeCurve();
-this.sweepRandomize();
+    this.sweepRandomize();
     this.dDuration=animateDuration*(0.7+0.3*Math.random());
   }
   this.draw=function() {
-    con.draw(this);
+    //con.draw(this);
+    C2.draw(this);
   }
   let cSelf=this;
   this.animate=function(ts) {
@@ -457,11 +453,6 @@ Curve.prototype.sweepRandomize=function() {
     this.toRo.softCycle(Math.max(1,complexDamper/counter));
     this.toRo.randomizeTypes();
   } while (this.sweepFactor()<1 && counter<10);
-/*
-if (counter>2) {
-log('ZZZ '+counter);
-}
-*/
   this.toRo.randomizeRadii();
   this.toRo.setCurve();
 //setTable();
@@ -484,12 +475,15 @@ var C2={
   getHue:function() {
     return C2.hFrac*(this.toHue-this.fromHue)+this.fromHue;
   },
+  getCurveHue:function(n) {
+    C2.curves[n].getHue();
+  },
   transitCycle:function() {
     if (C2.cTrans=='N') {
 	// TODO, increase with C0 mean or sum
-      if (Math.random()<0.1) {	// publish @ 0.1
+      if (Math.random()<0.2) {	// publish @ 0.1
         C2.cTrans='T';
-        C2.RX=120+100*(1-2*Math.random());
+        C2.RX=180+100*(1-2*Math.random());
       }
     } else if (C2.cTrans=='T') {
       C2.cTrans='R';
@@ -503,16 +497,6 @@ var C2={
         c.toRo.randomizeCycles();
         c.toRo.c0=getCycle0Match(complexDamper);
         c.sweepRandomize();
-/*
-let counter=0;
-do {
-  c.toRo.simpleRandomizeCurve();
-  counter++;
-} while (c.sweepFactor()<1);
-if (counter>1) {
-log('SSS '+counter);
-}
-*/
       }
     } else if (C2.cTrans=='R') {
 //ctx.fillStyle='hsla(0,0%,0%,.01)';
@@ -524,19 +508,26 @@ log('SSS '+counter);
     C2.toHue=Math.round(Math.random()*360);
     for (let i=0; i<curveCount; i++) {
       C2.curves[i].fromHue=C2.curves[i].toHue;
+      let hueDiff=360/(curveCount+1)*(1+i%curveCount);
+      C2.curves[i].toHue=Math.round((C2.toHue+hueDiff+60/(curveCount+1)*(1-2*Math.random()))%360);
+/*
       if (curveCount==2) {
-        let hueDiff=120+120*(i%2);
-        C2.curves[i].toHue=Math.round((C2.toHue+hueDiff+20*(1-2*Math.random()))%360);
+        //let hueDiff=120*(1+i%2);
+        //C2.curves[i].toHue=Math.round((C2.toHue+hueDiff+20*(1-2*Math.random()))%360);
+        C2.curves[i].toHue=Math.round((C2.toHue+hueDiff+60/(curveCount+1)*(1-2*Math.random()))%360);
       } else if (curveCount==3) {
-        let hueDiff=90+90*(i%3);
+        //let hueDiff=90+90*(i%3);
         C2.curves[i].toHue=Math.round((C2.toHue+hueDiff+15*(1-2*Math.random()))%360);
       } else if (curveCount==4) {
-        let hueDiff=72+72*(i%4);
+        //let hueDiff=72+72*(i%4);
         C2.curves[i].toHue=Math.round((C2.toHue+hueDiff+12*(1-2*Math.random()))%360);
+      } else if (curveCount==5) {
+        //let hueDiff=60+60*(i%5);
+        C2.curves[i].toHue=Math.round((C2.toHue+hueDiff+10*(1-2*Math.random()))%360);
       } else {
         debugger;
       }
-      //C2.curves[i].randomizeHue(i);
+*/
     }
   },
   draw:function(curve) {
@@ -578,7 +569,8 @@ log('SSS '+counter);
       }
     }
     ctx.closePath();
-    ctx.strokeStyle=getGradient(Math.round(curve.getHue(C2.hFrac)));
+    //ctx.strokeStyle=getGradient(Math.round(curve.getHue(C2.hFrac)));
+    ctx.strokeStyle=getGradient(Math.round(curve.getHue()));
     ctx.stroke();
   },
   changeCurveCount() {
@@ -586,24 +578,28 @@ log('SSS '+counter);
     if (curveCount==2) {
       if (Math.random()<0.8) {
         C2.addCurve(2);
-complexDamper*=complexDamperCurveFactor;
-//log('add curve 3');
+        complexDamper*=complexDamperCurveFactor;
       }
     } else if (curveCount==3) {
       if (Math.random()<0.4) {
         C2.addCurve(3);
-complexDamper*=complexDamperCurveFactor;
-//log('add curve 4');
+        complexDamper*=complexDamperCurveFactor;
       } else if (Math.random()<0.2) {
         C2.removeCurve(2);
-complexDamper/=complexDamperCurveFactor;
-//log('remove curve 3');
+        complexDamper/=complexDamperCurveFactor;
       }
     } else if (curveCount==4) {
       if (Math.random()<0.3) {
         C2.removeCurve(3);
-complexDamper/=complexDamperCurveFactor;
-//log('remove curve 4');
+        complexDamper/=complexDamperCurveFactor;
+      } else if (Math.random()<0.3) {
+        C2.addCurve(4);
+        complexDamper*=complexDamperCurveFactor;
+      }
+    } else if (curveCount==5) {
+      if (Math.random()<0.5) {
+        C2.removeCurve(4);
+        complexDamper/=complexDamperCurveFactor;
       }
     } else {
       debugger;
@@ -681,7 +677,7 @@ complexDamper/=complexDamperCurveFactor;
     }
   }
 }
-C2.curves=[new Curve(C2,'one'), new Curve(C2,'two'), new Curve(C2,'tre'), new Curve(C2,'qua')];
+C2.curves=[new Curve(C2,'one'), new Curve(C2,'two'), new Curve(C2,'tre'), new Curve(C2,'qua'), new Curve(C2,'pen')];
 
 var stopped=true;
 
@@ -794,10 +790,13 @@ function start() {
   if (stopped) {
     stopped=false;
     document.querySelector('#ss').textContent='Stop';
+    for (let c of C2.curves) requestAnimationFrame(c.animate);
+/*
     requestAnimationFrame(C2.curves[0].animate);
     requestAnimationFrame(C2.curves[1].animate);
     requestAnimationFrame(C2.curves[2].animate);
     requestAnimationFrame(C2.curves[3].animate);
+*/
     requestAnimationFrame(C2.animate);
     requestAnimationFrame(fade.animate);
   } else {
@@ -945,7 +944,7 @@ var speedRanger=new Ranger({
 var curveCountRanger=new Ranger({
   label:'Curve count',
   min:2,
-  max:4,
+  max:5,
   step:1,
   value:2,
   oninput:function(val) {
@@ -954,6 +953,17 @@ var curveCountRanger=new Ranger({
   lockInput:function(isLocked) { 
     C2.curveCountLock=isLocked;
   }
+});
+
+var complexityRanger=new Ranger({
+  label:'Curve complexity',
+  min:1,
+  max:10,
+  step:1,
+  value:3,
+  oninput:function(val) {
+    complexDamper=(49-4*val)/9;
+  },
 });
 
 var menu=new function() {
@@ -970,6 +980,7 @@ var menu=new function() {
       ms.cdiv.style.display='block';
       speedRanger.report();
       curveCountRanger.report();
+      complexityRanger.report();
     } else {
       ms.open=true;
     }
@@ -1016,6 +1027,7 @@ function log(e) {
     console.log(Date().substring(16,25)+e);
   }
 }
+
 var SR=function(obj) {
   let row=document.createElement('tr');
   let label=document.createElement('td');
@@ -1023,6 +1035,10 @@ var SR=function(obj) {
   row.appendChild(label);
   document.querySelector('#reptable').appendChild(row);
   this.tds=[
+    {
+      from:row.appendChild(document.createElement('td')),
+      to:row.appendChild(document.createElement('td'))
+    },
     {
       from:row.appendChild(document.createElement('td')),
       to:row.appendChild(document.createElement('td'))
@@ -1053,7 +1069,7 @@ var SR=function(obj) {
   let sself=this;
   if (obj.hasOwnProperty('oc')) {
     this.report=function() {
-      for (let i=0; i<4; i++) {
+      for (let i=0; i<sself.tds.length; i++) {
       if (i>=curveCount) {
 	  sself.tds[i].from.style.display='none';
 	  sself.tds[i].to.style.display='none';
@@ -1066,6 +1082,7 @@ var SR=function(obj) {
     }
   } 
 }
+
 var srs=[
   new SR({
     text1:'from',
@@ -1158,12 +1175,6 @@ var srs=[
     }
   }),
   new SR({
-    label:'dur',
-    oc:function(tds, idx) {
-      tds[idx].to.textContent=C2.curves[idx].dDuration.toFixed(0);
-    }
-  }),
-  new SR({
     label:'sf',
     oc:function(tds, idx) {
       tds[idx].to.textContent=C2.curves[idx].sweepFactor();
@@ -1190,6 +1201,7 @@ function setTable() {
     sr.report();
   }
 }
+
 Rarray=[];
 */
 
