@@ -11,15 +11,20 @@ function dist(x1,y1,x2,y2) {
   return Math.pow(Math.pow(x2-x1,2)+Math.pow(y2-y1,2),0.5);
 }
 
+var OPTA=2.4;
+var FADE=true;
 //var VMAX=0.13;
-var VMAX=0.06;
+//var VMAX=0.06;
+var VMAX=0.08;
 var REPULSE=7;
 //var ATTR=0.06;
 //var ATTR=0.027;
+var ACUT=1;
 var ATTR=0.18;
 var EFACTOR=1;
 var ADIST=20;
-var PREP=0.2;
+//var PREP=0.2;
+var PREP=0;
 var LF=function() {
   //this.x=200*(1-2*Math.random());
   //this.y=200*(1-2*Math.random());
@@ -103,13 +108,13 @@ var stopped=true;
 const sp={
   b:(()=>{
 	   let a=[];
-	   for (let i=0; i<240; i++) {
+	   for (let i=0; i<120; i++) {
 	     a.push(new LF());
 	   }
 	   return a;
 	 })(),
   aStart:0,
-  aDuration:4000,
+  aDuration:2000,
   //this.dFrac=1;
   nnSet:function() {
     let pd=0;
@@ -130,14 +135,14 @@ const sp={
 	  let dy=o2.y-o1.y;
 	  o1.vy+=Math.sign(dy)*ATTR*Math.pow(1/dy,2);
 	  //o1.vy+=ATTR/(o2.y-o1.y);
-	  if (dx<6 && dy<6) {
-            if (dx<2 && dy<2) {
+	  if (dx<ACUT && dy<ACUT) {
+//            if (dx<0.5 && dy<0.5) {
               o1.hue=Math.max(0,--o1.hue);
               o2.hue=Math.max(0,--o2.hue);
-            }
+ //           }
             pd++;
-            o1.radius=Math.max(o1.radius-.005,2);
-            o2.radius=Math.max(o2.radius-.005,2);
+            o1.radius=Math.max(o1.radius-.01,2);
+            o2.radius=Math.max(o2.radius-.01,2);
 //o1.lum=Math.min(100,o1.lum+0.001);
 //o2.lum=Math.min(100,o2.lum+0.001);
 	  }
@@ -150,13 +155,25 @@ const sp={
     sp.pd=pd;
   },
   lastTS:0,
+  adjust:function() {
+    let cDist=sp.pd/sp.b.length;
+    if (cDist<OPTA) {
+      ATTR=Math.min(1, ATTR+(OPTA-cDist)/20*Math.random());
+VMAX=Math.max(0.01,VMAX-0.01);
+    } else {
+      ATTR=Math.max(0.01, ATTR-(cDist-OPTA)/20*Math.random());
+VMAX=Math.min(0.13,VMAX+0.01);
+    }
+  },
   animate:function(ts) {
     if (stopped) return;
     let td=ts-sp.lastTS;
     sp.lastTS=ts;
     if (td<100) { // prevent jumps
       sp.nnSet();
-      ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+      if (!FADE) {
+        ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+      }
       for (let o of sp.b) {
 	o.draw(td);
       }
@@ -170,24 +187,8 @@ const sp={
       //cSelf.draw();
     } else {
       sp.aStart=0;
+      sp.adjust();
 setTable();
-      if (sp.pd/sp.b.length>12) {
-	ATTR-=0.008;
-      } else if (sp.pd/sp.b.length>11) {
-	ATTR-=0.004;
-      } else if (sp.pd/sp.b.length>10) {
-	ATTR-=0.002;
-      } else if (sp.pd/sp.b.length>9) {
-	ATTR-=0.001;
-      } else if (sp.pd/sp.b.length<2) {
-	ATTR+=0.008;
-      } else if (sp.pd/sp.b.length<3) {
-	ATTR+=0.004;
-      } else if (sp.pd/sp.b.length<4) {
-	ATTR+=0.002;
-      } else if (sp.pd/sp.b.length<5) {
-	ATTR+=0.001;
-      }
       //cSelf.dFrac=0;
     }
     requestAnimationFrame(sp.animate);
@@ -199,8 +200,30 @@ function start() {
     stopped=false;
     sp.lastTS=performance.now();
     requestAnimationFrame(sp.animate);
+    if (FADE) {
+      requestAnimationFrame(fade.animate);
+    }
   } else {
     stopped=true;
+  }
+}
+
+var fade={
+  start:0,
+  animate:function(ts) {
+    if (stopped) {
+      return;
+    }
+    if (!fade.start) {
+      fade.start=ts;
+    }
+    if (ts-fade.start>60) {
+      let z=
+      ctx.fillStyle='hsla(0,0%,0%,.05)';
+      ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+      fade.start=0;
+    }
+    requestAnimationFrame(fade.animate);
   }
 }
 
