@@ -922,7 +922,6 @@ var Ranger=function(obj) {
       obj.oninput(rself.input.value);
     }
     if (stopped) {
-      orbs.draw(1);
     }
   }
 }

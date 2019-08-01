@@ -11,11 +11,11 @@ function dist(x1,y1,x2,y2) {
   return Math.pow(Math.pow(x2-x1,2)+Math.pow(y2-y1,2),0.5);
 }
 
-var OPTA=2.4;
+var OPTA=2.6;
 var FADE=true;
 //var VMAX=0.13;
 //var VMAX=0.06;
-var VMAX=0.08;
+var VMAX=0.09;
 var REPULSE=7;
 //var ATTR=0.06;
 //var ATTR=0.027;
@@ -159,7 +159,7 @@ const sp={
     let cDist=sp.pd/sp.b.length;
     if (cDist<OPTA) {
       ATTR=Math.min(1, ATTR+(OPTA-cDist)/20*Math.random());
-VMAX=Math.max(0.01,VMAX-0.01);
+VMAX=Math.max(0.05,VMAX-0.01);
     } else {
       ATTR=Math.max(0.01, ATTR-(cDist-OPTA)/20*Math.random());
 VMAX=Math.min(0.13,VMAX+0.01);
