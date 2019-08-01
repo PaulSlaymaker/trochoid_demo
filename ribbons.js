@@ -748,7 +748,6 @@ var Ranger=function(obj) {
       obj.oninput(rself.input.value);
     }
     if (stopped) {
-      ribbons.draw(1);
     }
   }
 }
