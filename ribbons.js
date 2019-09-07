@@ -128,7 +128,6 @@ var Roulette=function(ro) {
       x=rself.r1*Math.cos(t)+rself.r2*Math.cos(f1*t)+rself.r3*Math.cos(f2*t)+rself.r4*Math.cos(f3*t)+rself.r5*Math.cos(f4*t);
       y=rself.r1*Math.sin(t)+rself.r2*Math.sin(f1*t)+rself.r3*Math.sin(f2*t)+rself.r4*Math.sin(f3*t)+rself.r5*Math.sin(f4*t);
     } else {
-      debugger;
     }
     return {x:x,y:y};
   }
@@ -216,7 +215,6 @@ var Roulette=function(ro) {
       rself.r4=0;
       rself.r5=0;
     } else {
-      debugger;
     }
   }
   this.randomizeCycles=function() {
@@ -387,7 +385,7 @@ var ribbons={
   DS:0, // rotational increment to next line
   //DSinc:0.0002,
   //DSinc:0.00015,
-  DSinc:0.0003,
+  DSinc:0.0002,
   rcTrans:'N',   // N,D,H
   colorCount:2,
   hStart:0,
@@ -400,6 +398,7 @@ var ribbons={
   tFrac:0,
   fromHues:[Math.round(Math.random()*360)],
   toHues:[Math.round(Math.random()*360)],
+  revY:false,
   goodCycleSet:function() {
     let ca=getCycleArray(ribbons.rCount);
     //let ca=getFactors(ribbons.rCount);
@@ -470,9 +469,9 @@ if (path.mf==0) return;
   },
   randomize:function() {
     ribbons.randomizeCount();
-    //if (colorCountRanger!=undefined && colorCountRanger.lock) return;
     ribbons.colorCount=ribbons.goodColorCount();
     ribbons.randomizeHues();
+    ribbons.revY=Math.random()<0.2;
   },
   transitCount:function() {
     if (ribbonsRanger.lock) return;
@@ -491,7 +490,6 @@ if (path.mf==0) return;
       ribbons.rcTrans='R';
 //setTable();
       ribbonsRanger.setValue(ribbons.rCount);
-//colorCountRanger.setValue(ribbons.colorCount);
     } else if (ribbons.rcTrans=='R') {
       ribbons.rcTrans='N';
     }
@@ -501,26 +499,35 @@ if (path.mf==0) return;
       let xy1=path.getMetrics(ribbons.DS,i);
       //let xy2=path.getMetrics(ribbons.DS,i+1);
       //let xy2=path.getMetrics(ribbons.DS,i+1);
+      let xx1=xy1.x;
+      let xx2=xy1.xX;
+      if (ribbons.revY) {
+        yy1=xy1.yX;
+        yy2=xy1.y;
+      } else {
+        yy1=xy1.y;
+        yy2=xy1.yX;
+      }
       ctx.beginPath();
       if (ribbons.rcTrans=='T') {
         let tz=Math.pow(ribbons.tFrac,5);
-	let x1=(xy1.x)*(1-tz)+tz*ribbons.XT1;
-	let y1=(xy1.y)*(1-tz)+tz*ribbons.YT1;
-	let x2=(xy1.xX)*(1-tz)+tz*(-ribbons.XT1);
-	let y2=(xy1.yX)*(1-tz)+tz*(-ribbons.YT1);
+	let x1=(xx1)*(1-tz)+tz*ribbons.XT1;
+	let y1=(yy1)*(1-tz)+tz*ribbons.YT1;
+	let x2=(xx2)*(1-tz)+tz*(-ribbons.XT1);
+	let y2=(yy2)*(1-tz)+tz*(-ribbons.YT1);
 	ctx.moveTo(x1,y1);
 	ctx.lineTo(x2,y2);
       } else if (ribbons.rcTrans=='R') {
         let tz=Math.pow(1-ribbons.tFrac,5);
-	let x1=(xy1.x)*(1-tz)+(tz)*ribbons.XT1;
-	let y1=(xy1.y)*(1-tz)+(tz)*ribbons.YT1;
-	let x2=(xy1.xX)*(1-tz)+(tz)*(-ribbons.XT1);
-	let y2=(xy1.yX)*(1-tz)+(tz)*(-ribbons.YT1);
+	let x1=(xx1)*(1-tz)+(tz)*ribbons.XT1;
+	let y1=(yy1)*(1-tz)+(tz)*ribbons.YT1;
+	let x2=(xx2)*(1-tz)+(tz)*(-ribbons.XT1);
+	let y2=(yy2)*(1-tz)+(tz)*(-ribbons.YT1);
 	ctx.moveTo(x1,y1);
 	ctx.lineTo(x2,y2);
       } else {
-	ctx.moveTo(xy1.x,xy1.y);
-	ctx.lineTo(xy1.xX,xy1.yX);
+	ctx.moveTo(xx1,yy1);
+	ctx.lineTo(xx2,yy2);
       }
       let hue=ribbons.getHue(i);
       ctx.strokeStyle='hsl('+hue+',100%,60%)';
@@ -840,9 +847,7 @@ var SR=function(obj) {
     //}
   }
 }
-*/
 
-/*
 var srs=[
   new SR({
     label:'rib',
@@ -856,6 +861,12 @@ var srs=[
     oc:function(ft,tt) {
       ft.textContent=ribbons.colorCount;
       //tt.textContent=path.toRo.getSP();
+    }
+  }),
+  new SR({
+    label:'revy',
+    oc:function(ft,tt) {
+      ft.textContent=ribbons.revY;
     }
   }),
   new SR({
@@ -1012,9 +1023,7 @@ var srs=[
     }
   }),
 ];
-*/
 
-/*
 function setTable() {
   for (let sr of srs) {
     sr.report();
