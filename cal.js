@@ -13,9 +13,9 @@ var styleSheet=Array.from(document.styleSheets).find((ss)=>{ return ss.title=="s
 //const CELLHEIGHT=32;
 
 [
-  "body { margin:0; font-family:sans-serif; font-size:8pt; }",
-  "div.title { text-align:center; width:98%; position:absolute; top:0; left:0; font-weight:bold; font-size:20px; color:navy; padding:8px; }",
-  "#sent { display:flex; flex-wrap:wrap; padding:40px 16px 30px 16px; background:#F6F6FF; }",
+  "body { margin:0; font-family:sans-serif; font-size:8pt; background:#F6F6FF; }",
+  "div.title { text-align:center; width:98%; position:absolute; top:0; left:0; font-weight:bold; font-size:20px; z-index:-1; color:navy; padding:8px; }",
+  "#sent { display:flex; flex-wrap:wrap; padding:50px 16px 30px 16px; }",
   "#sent div { margin:4px 2px; font-size:18px; }",
   "#sent > div.words { border:1px solid transparent; white-space:nowrap; }",
   "#sent > div.optword { margin:4px; border:1px solid blue; border-radius:6px; white-space:nowrap; text-align:center; background:#EBEBFF; }",
@@ -41,7 +41,8 @@ var styleSheet=Array.from(document.styleSheets).find((ss)=>{ return ss.title=="s
   "#cal div.monc1 { color:hsl(120,20%,50%); }",
   "#cal div.monc2 { color:hsl(240,20%,50%); }",
   "#cal div.sc { font-size:14px; color:#777; text-align:center; }",
-  //"#sd:hover { color:#777; }",
+  "#sd::before { content:'\u25B2'; }",
+  "#su::before { content:'\u25BC'; }",
 ].forEach((rule)=>{ styleSheet.insertRule(rule,0); });
 
 body.append((()=>{
@@ -87,8 +88,8 @@ var options=(opts,sel,selCall)=>{
   }
 
   w.setOffset=()=>{
-    // will need to set 'left' for shifting words
     s.style.top=w.offsetTop-1-w.dataIdx*s.children[0].offsetHeight+"px";
+    s.style.left=w.offsetLeft+"px";
   }
 
   w.setSelection=(idx)=>{
@@ -157,7 +158,7 @@ var sentence=(()=>{
     ),
     words("with",true),
     words("0",true),
-    words("iterations",true),
+    words("trials",true),
     words("for estimation.")
   );
   s.iCount=s.children[1];
@@ -176,6 +177,7 @@ var hideOptions=()=>{
 
 sentence.onmouseover=(event)=>{
   if (event.target.classList.contains("optword")) {
+    event.target.setOffset();
     event.target.ops.classList.add("unmask");
   } else {
     hideOptions();
@@ -192,15 +194,16 @@ var nDay=date.getDay();
 var nTime=date.getTime();
 var PROBABILITY=0.01;
 
-var getCalc=(dt,p,ic)=>{
+var getCalc=(dt,prob,ic)=>{
+  // dt=1,2,....
   if (ic==0) {
-    var p=Math.pow(1-p,dt).toFixed(3);
+    var p=Math.pow(1-prob,dt).toFixed(3);
   } else if (ic==2) {
     // just one
-    var p=(dt*mcar.p*Math.pow(1-p,dt-1)).toFixed(3);
+    var p=(dt*prob*Math.pow(1-prob,dt-1)).toFixed(3);
     //var p=(dt*(dt-1)/2*Math.pow(PROBABILITY,2)*Math.pow(1-PROBABILITY,dt-2)).toFixed(3);
   } else {
-    var p=(1-Math.pow(1-p,dt)).toFixed(3);
+    var p=(1-Math.pow(1-prob,dt)).toFixed(3);
   }
   if (p=="0.000") {
     return "<0.001";
@@ -335,7 +338,7 @@ cal.append((()=>{
     s.classList.add("sc");
     s.style.borderBottom="1px solid #D0D0DD";
     s.style.minHeight="initial";
-    s.innerHTML="&#9650;";
+    //s.textContent="\u25B2";
     return s;
   })());
   d.append((()=>{ 
@@ -352,7 +355,7 @@ cal.append((()=>{
     s.id="su";
     s.classList.add("sc");
     s.style.borderTop="1px solid #D0D0DD";
-    s.innerHTML="&#9660;";
+    //s.textContent="\u25BC";
     return s;
   })());
   cal.scrollbar=d;
@@ -644,7 +647,27 @@ var mcar={
   type:0,
   bkt:new Array(WEEKS*7-nDay).fill(0),
   bkt2:new Array(WEEKS*7-nDay).fill(0),
+
   runTrials:()=>{
+    for (let t=0; t<50; t++) {
+      let ct=0;
+      for (let i=0; i<mcar.days; i++) {
+	if (Math.random()<mcar.p) {
+          ct++;
+          if (ct==1) { // one or more
+            mcar.bkt[i]++;
+          }
+          if (ct==2) { // two or more
+            mcar.bkt2[i]++;
+            break;
+          }
+        }
+      }
+      mcar.count++;
+    }
+  },
+
+  runTrialsO:()=>{
     for (let t=0; t<50; t++) {
       let ct=0;
       for (let i=0; i<mcar.days; i++) {
@@ -659,6 +682,7 @@ var mcar={
       mcar.count++;
     }
   },
+
   step:Infinity,
   calculate:(ts)=>{
     if (ts>mcar.step) {
@@ -700,6 +724,28 @@ var setCalc=()=>{
 }
 
 var setMonteCarlo=()=>{
+  mcar.runTrials();
+  let accum1=0;
+  let accum2=0;
+  cal.weeks.forEach((w)=>{
+    w.cells.forEach((c,i)=>{
+      if (c.dcount>0) {
+        if (mcar.type==0) {
+          c.children[1].textContent=(1-accum/mcar.count).toFixed(3);
+        } else if (mcar.type==1) {
+          c.children[1].textContent=(accum1/mcar.count).toFixed(3);
+        } else {
+          c.children[1].textContent=((accum1-accum2)/mcar.count).toFixed(3);
+        }
+      }
+      accum2+=mcar.bkt2[c.dcount];
+      accum1+=mcar.bkt[c.dcount];
+    });
+  });
+  sentence.trials.setText(mcar.count);
+}
+
+var setMonteCarloO=()=>{
   //if (mcar.count<1) { return; }
   mcar.runTrials();
   let accum=1;
@@ -714,6 +760,8 @@ var setMonteCarlo=()=>{
           c.children[1].textContent=(1-accum).toFixed(3);
         } else {
           accum2*=(1-mcar.bkt2[c.dcount]/mcar.count);
+          //let z=accum*(1-mcar.bkt2[c.dcount]/mcar.count);
+          //c.children[1].textContent=(z-accum).toFixed(3);
           c.children[1].textContent=(accum2-accum).toFixed(3);
         }
       }
@@ -722,35 +770,11 @@ var setMonteCarlo=()=>{
   sentence.trials.setText(mcar.count);
 }
 
-/*
-function setJustMonteCarlo() {
-  mcar.runTrials();
-  let accum=1;
-  let accum2=1;
-  cal.weeks.forEach((w)=>{ w.cells.forEach((c,i)=>{
-    if (c.dcount>0) {
-      accum*=(1-mcar.bkt[c.dcount]/mcar.count);
-      accum2*=(1-mcar.bkt2[c.dcount]/mcar.count);
-      //accum2*=(1-(mcar.bkt[c.dcount]-1)/mcar.count);
-      //c.children[1].textContent=((1-accum)*accum).toFixed(3);
-      //c.children[1].textContent=((1-accum)-(1-accum2)).toFixed(3);
-      //c.children[1].textContent=(1-accum).toFixed(3);
-      //c.children[1].textContent=(1-accum).toFixed(3);
-      c.children[1].textContent=(accum2-accum).toFixed(3);
-//}
-      //c.children[1].textContent=(1-mcar.bkt[c.dcount]/mcar.count).toFixed(3);
-          
-    }
-  }); });
-  sentence.trials.setText(mcar.count);
-}
-*/
-
 var mObserver=new MutationObserver((nodes)=>{ 
   let oss=document.querySelectorAll(".optword");
   oss.forEach((optPlace)=>{ 
     optPlace.setOffset(); 
-    optPlace.ops.style.left=optPlace.offsetLeft+"px";
+    //optPlace.ops.style.left=optPlace.offsetLeft+"px";
     optPlace.style.width=optPlace.ops.offsetWidth-2+"px";  // 2 border
     mObserver.disconnect();
   });
@@ -764,5 +788,4 @@ onresize=()=>{
   scroll.setpMax();
   thumb.set();
 }
-
 onresize();
