@@ -1,7 +1,5 @@
 "use strict";
-
 var body=document.getElementsByTagName("body").item(0);
-
 body.append((()=>{
   let ss=document.createElement("style");
   ss.type="text/css";
@@ -666,7 +664,7 @@ var mcar={
       mcar.count++;
     }
   },
-
+/*
   runTrialsO:()=>{
     for (let t=0; t<50; t++) {
       let ct=0;
@@ -682,7 +680,7 @@ var mcar={
       mcar.count++;
     }
   },
-
+*/
   step:Infinity,
   calculate:(ts)=>{
     if (ts>mcar.step) {
@@ -731,39 +729,16 @@ var setMonteCarlo=()=>{
     w.cells.forEach((c,i)=>{
       if (c.dcount>0) {
         if (mcar.type==0) {
-          c.children[1].textContent=(1-accum/mcar.count).toFixed(3);
+          c.children[1].textContent=(1-accum1/mcar.count).toFixed(3);
         } else if (mcar.type==1) {
           c.children[1].textContent=(accum1/mcar.count).toFixed(3);
         } else {
           c.children[1].textContent=((accum1-accum2)/mcar.count).toFixed(3);
         }
       }
-      accum2+=mcar.bkt2[c.dcount];
-      accum1+=mcar.bkt[c.dcount];
-    });
-  });
-  sentence.trials.setText(mcar.count);
-}
-
-var setMonteCarloO=()=>{
-  //if (mcar.count<1) { return; }
-  mcar.runTrials();
-  let accum=1;
-  let accum2=1;
-  cal.weeks.forEach((w)=>{
-    w.cells.forEach((c,i)=>{
-      if (c.dcount>0) {
-        accum*=(1-mcar.bkt[c.dcount]/mcar.count);
-        if (mcar.type==0) {
-          c.children[1].textContent=accum.toFixed(3);
-        } else if (mcar.type==1) {
-          c.children[1].textContent=(1-accum).toFixed(3);
-        } else {
-          accum2*=(1-mcar.bkt2[c.dcount]/mcar.count);
-          //let z=accum*(1-mcar.bkt2[c.dcount]/mcar.count);
-          //c.children[1].textContent=(z-accum).toFixed(3);
-          c.children[1].textContent=(accum2-accum).toFixed(3);
-        }
+      if (c.dcount>=0) {
+        accum1+=mcar.bkt[c.dcount];
+        accum2+=mcar.bkt2[c.dcount];
       }
     });
   });
@@ -774,7 +749,6 @@ var mObserver=new MutationObserver((nodes)=>{
   let oss=document.querySelectorAll(".optword");
   oss.forEach((optPlace)=>{ 
     optPlace.setOffset(); 
-    //optPlace.ops.style.left=optPlace.offsetLeft+"px";
     optPlace.style.width=optPlace.ops.offsetWidth-2+"px";  // 2 border
     mObserver.disconnect();
   });
