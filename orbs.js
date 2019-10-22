@@ -472,10 +472,12 @@ var pFrac=i/orbs.points;
         orbs.ocTrans='T';
       }
     } else if (orbs.ocTrans=='T') {
-      orbs.points=getRandomInt(12,120,2);
+      if (!orbsRanger.lock) {
+        orbs.points=getRandomInt(12,120,2);
+        orbsRanger.setValue(orbs.points);
+      }
       orbs.ocTrans='R';
 //setTable();
-      orbsRanger.setValue(orbs.points);
       orbs.transit();
       orbs.start=0;
       orbs.frac=0;
