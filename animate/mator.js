@@ -1,11 +1,15 @@
-"use strict";
+"use strict"; // Paul Slaymaker, paul25882@gmail.com
 var body=document.getElementsByTagName("body").item(0);
-body.append((()=>{
-  let ss=document.createElement("style");
-  ss.type="text/css";
-  ss.title="ss";
-    return ss;
-})());
+
+var styleSheet=(()=>{
+  let tag=document.createElement("style");
+  tag.type="text/css";
+  body.append(tag);
+  let ss=document.styleSheets[document.styleSheets.length-1];
+  ss.insertRule(".cicon { border:1px solid silver; background:white; }",0);
+  ss.insertRule(".cicon:hover { border:1px solid blue; }",0);
+  return ss;
+})();
 
 var grid=(()=>{
   let g=document.createElement("div");
@@ -16,108 +20,241 @@ var grid=(()=>{
   return g;
 })();
 
-var aS=true;
+const ANIMATE=1, EXPLORE=2, STOP=0;
+var state=ANIMATE;
 
-var switchState=()=>{
-  if (aS==true) { 
-    aS=false;
-    canvas.parentNode.style.display="block";
+var setShape=(icon)=>{
+  // todo smooth transition
+  repeatCount=0;
+  exploreCount=0;
+  shape=icon.shape;
+  shape.transit();
+  animationIcon.curve.style.fill=shape.stdColor;
+if (!PUBLISH) {
+  animationIcon.curve.style.stroke="#000";
+} else {
+  animationIcon.curve.style.stroke=shape.stdColor;
+}
+  animationIcon.curve.setDuration(shape.dur+"s");
 
-exploreIcon.setSize(true);
+if (shape==rouletteShape) {
+  animationIcon.curve.style.fillRule="evenodd";
+}
+//  if (state==STOP) {
+  if (state!=EXPLORE) {
+    setState(EXPLORE);
+  } 
+  displayCol.clear();
 
-    curveAN.setAnimation(false);
-    //curveAN.setSize(false);
-    animationIcon.setSize(false);
-//    curveAN.show(false);
-    animationIcon.show(false);
-    start(); // canvas exploration
-  } else {
-    aS=true;
-    canvas.parentNode.style.display="none";
-
-exploreIcon.setSize(false);
-
-    curveAN.setAnimation(true);
-    //curveAN.setSize(true);
-    animationIcon.setSize(true);
-//    curveAN.show(true);
-    animationIcon.show(true);
-    draw(1,true);
+  if (!PUBLISH) {
+    sliders.setSliders(shape); 
+    //shape.curve.an.setAnimation(true);
   }
 }
 
-const PUBLISH=false;
-const CSIZE=400;
+/*
+var request={};
+var execute=(req)=>{
+console.log("req "+req[shape]);
+  request={};
+}
+*/
+
+var setState=(st)=>{
+  state=st;
+  repeatCount=0;
+  exploreCount=0;
+  switch (st) {
+    case STOP:
+      curveAN.setAnimation(false);
+      draw(1);
+      break;
+    case ANIMATE: 
+      curveAN.setAnimation(true);
+      draw(1);
+      break;
+    case EXPLORE: 
+      curveAN.setAnimation(false);
+      start(); // exploration
+      break;
+  }
+}
+
+body.onclick=(event)=>{
+  if (event.srcElement.classList.contains("cicon")) {
+
+ let ic=event.srcElement;
+console.log(ic.name+" click ct "+ic.rc);
+  if (ic.rc==0) {
+    ic.shape.transit();
+    ic.set2Value();
+    ic.curve.an.beginElement();
+  } else {
+    //ic.rc=20;
+  }
+  return;
+
+/*
+if(event.srcElement.shape==randomShape) {
+  let ic=event.srcElement;
+console.log("rnd click ct "+ic.rc);
+  if (ic.rc==0) {
+    ic.shape.transit();
+    ic.set2Value();
+    ic.curve.an.beginElement();
+  } else {
+    //ic.rc=20;
+  }
+  return;
+} else if(event.srcElement.shape==rouletteShape) {
+  let ic=event.srcElement;
+console.log("ro click ct "+ic.rc);
+  if (ic.rc==0) {
+    rouletteShape.transit();
+    ic.set2Value();
+    ic.curve.an.beginElement();
+  }
+  return;
+} else if(event.srcElement.shape==starShape) {
+  let ic=event.srcElement;
+console.log("star click ct "+ic.rc);
+  if (ic.rc==0) {
+    starShape.transit();
+    ic.set2Value();
+    ic.curve.an.beginElement();
+  }
+  return;
+}
+*/
+
+
+
+    if (event.srcElement.shape!=shape) {
+if (!PUBLISH) console.log("switch shape");
+      setShape(event.srcElement);
+    } else if (event.srcElement.shape==shape) {
+      if (state==EXPLORE) {
+	exploreCount=1000;
+      } else {
+	repeatCount=100;
+      }
+    } else {
+if (!PUBLISH) debugger;
+    }
+    if (state==STOP) {
+      //setState(ANIMATE);
+      displayCol.clear();
+      setState(EXPLORE);
+    } 
+  } else if (event.srcElement.classList.contains("icon")) {
+    if (state==STOP) {
+      displayCol.clear();
+      setState(EXPLORE);
+    } else {
+      repeatCount=100;
+      exploreCount=1000;
+    }
+  } else {
+if (!PUBLISH) console.log("out click");
+  }
+}
+
+var PUBLISH=false;
 const expos=["?","\u00B9","\u00B2","\u00B3","\u2074","\u2075"];
 const PolarType=[Math.sin,Math.cos];
-const SCALE=280;	// 2 terms, ~CSIZE/2
-const ICONSIZE=60;
-
-var canvas=(()=>{
-  let can=document.createElement("canvas");
-  can.width="800";
-  can.height="800";
-//if (!PUBLISH) { c.style.outline="1px solid silver"; }
-  can.style.gridColumn="1";
-  can.onclick=()=>{ 
-    switchState();
-  }
-  let c=document.createElement("div");
-  c.append(can);
-  grid.append(c);
-  return can;
-})();
-canvas.style.maxHeight="100px";
+const SCALE=300;
+//const ICONSIZE=64;
+const ICONSIZE=80;
+const REPEAT_CYCLE_LIMIT=PUBLISH?12:16;
+//const EXPLORE_CYCLE_LIMIT=PUBLISH?12:16;
+const EXPLORE_CYCLE_LIMIT=1;
 
 var Icon=function(curve) {
   let c=document.createElement("div");
+  c.className="icon";
   c.append((()=>{
     let sd=document.createElementNS("http://www.w3.org/2000/svg", "svg");
     sd.setAttribute("xmlns","http://www.w3.org/2000/svg");
-    sd.setAttribute("width","1");
-    sd.setAttribute("height","1");
+    // export w/h
+    sd.setAttribute("width","100");
+    sd.setAttribute("height","100");
     sd.style.width=ICONSIZE+"px";
     sd.style.height=ICONSIZE+"px";
-//    sd.onclick=()=>{ switchState(); }
+sd.style.pointerEvents="none";
     sd.append((()=>{
       let g=document.createElementNS("http://www.w3.org/2000/svg", "g");
       g.setAttribute("transform", "translate("+ICONSIZE/2+","+ICONSIZE/2+") scale("+ICONSIZE/800+","+ICONSIZE/800+")");
       if (typeof curve == "object") {
         g.append(curve);
       }
-
-
-  c.setSize=(full)=>{
-    let ww2=full?window.innerHeight-20:ICONSIZE;
-    sd.style.width=ww2+"px";
-    sd.style.height=ww2+"px";
-    g.setAttribute("transform", "translate("+ww2/2+","+ww2/2+") scale("+ww2/800+","+ww2/800+")");
-  }
-
+      c.setSize=(full)=>{
+	//let ww2=full?window.innerHeight-24:ICONSIZE;
+	let ww2=full?window.innerHeight-40:ICONSIZE;
+	sd.style.width=ww2+"px";
+	sd.style.height=ww2+"px";
+	g.setAttribute("transform", "translate("+ww2/2+","+ww2/2+") scale("+ww2/800+","+ww2/800+")");
+      }
       return g; 
     })());
     return sd;	// svg element
   })());
-  c.show=(b)=>{ c.style.display=b?"block":"none"; }
-
-  c.onclick=()=>{ switchState(); }
+  c.curve=curve;	// deprecate
+  c.setIconShape=(shpe)=>{
+    c.shape=shpe;
+    c.curve.style.fill=shpe.stdColor;
+    c.curve.style.stroke=shpe.stdColor;
+    curve.an.setAttribute("dur",shpe.dur+"s");
+  }
+  c.showSize=()=>{
+console.log("res:"+RES.toFixed(2)+"  size:"+c.innerHTML.length);
+  }
+  c.set2Value=()=>{
+    c.curve.setValues(c.shape.dString2+" ; "+c.shape.dString1);
+    // need to change keySplines?
+  }
+  c.draw3=()=>{
+    let vals=c.shape.dString1+" ; "+c.shape.dString2+" ; "+c.shape.dString1;
+    c.curve.setValues(vals);
+  }
+  //c.dra2=()=>{ c.setPath(c.shape.dString1); }
+/*
+  c.getDisplayIcon=(shpe)=>{  // take this out
+    let di=new DisplayIcon(shpe);
+    return di;
+  }
+*/
   return c;
 }
 
 var Curve=function() {
   let c=document.createElementNS("http://www.w3.org/2000/svg", "path");
   c.setAttribute("d","");
-  c.style.stroke="#AAD";
-  c.style.fill="#AAD";
+  c.append((()=>{
+    let a=document.createElementNS("http://www.w3.org/2000/svg", "animate");
+    a.setAttribute("attributeName","d");
+    a.setAttribute("dur","1s");
+    a.setAttribute("begin","indefinite");
+    a.setAttribute("repeatCount","10");
+    a.setAttribute("calcMode","spline");
+    a.setAttribute("keySplines","0.2 0 0.8 1; 0.2 0 0.8 1");
+    c.an=a;
+    c.setAnimation=(on)=>{
+      if (on) {
+        a.beginElement();
+      } else {
+        a.endElement();
+      }
+    }
+    c.setValues=(v)=>{ a.setAttribute("values",v); }
+    c.setTF=(t,f)=>{ 
+      a.setAttribute("to",t); 
+      a.setAttribute("from",f); 
+    }
+    c.setDuration=(ds)=>{ a.setAttribute("dur",ds); }
+    return a;
+  })());
   c.setPath=(v)=>{ c.setAttribute("d",v); }
   return c;
-}
-
-if(!PUBLISH) {
-var curveEX=new Curve();
-var exploreIcon=new Icon(curveEX);
-exploreIcon.style.outline="1px solid red"
-grid.append(exploreIcon);
 }
 
 var getStdRange=(min,max,step)=>{
@@ -130,7 +267,8 @@ var getStdRange=(min,max,step)=>{
   return sr;
 }
 
-var control=(name, term)=>{
+var Control=function(name,term) {
+  this.tx=term;
   let c=document.createElement("div");
   c.style.display="grid";
   c.style.gridTemplateColumns="auto auto auto auto";
@@ -149,14 +287,16 @@ var control=(name, term)=>{
       r.style.borderBottom="1px solid silver";
       c.setReport=()=>{
         r.textContent=
-           (term.factor<0?" ":" \u00A0")
-          +term.factor.toFixed(1)
+           (this.tx.factor<0?" ":" \u00A0")
+          +this.tx.factor.toFixed(1)
           +" "
-          +PolarType[term.calc.polType].name 
-          //+term.calc.exp
-          +expos[term.calc.exp]
-          +"("+term.calc.mult+"t)"
+          +PolarType[this.tx.calc.polType].name 
+          //+this.tx.calc.exp
+          //+expos[this.tx.calc.exp]
+          //+"("+this.tx.calc.mult+"t)"
         ;
+        r.append(this.getExp(this.tx));
+        r.append("("+this.tx.calc.mult+"t)");
       }
       return r;
     })(),
@@ -167,54 +307,79 @@ var control=(name, term)=>{
       rs.style.borderBottom="1px solid silver";
       rs.append(
 	(()=>{
-	  let rV=getStdRange(-1,1,0.1);
+	  let rV=getStdRange(-1.2,1.2,0.1);
           rV.title="factor";
 	  rV.oninput=(event)=>{
-	    term.factorCall(rV); 
+	    this.tx.factorCall(rV); 
 	    c.setReport();
 	  }
-	  c.setFactorSlider=()=>{ rV.value=term.factor; }
+	  c.setFactorSlider=()=>{ rV.value=this.tx.factor; }
 	  return rV;
 	})(),
 	(()=>{
-	  let r=getStdRange(1,10,1);
+	  let r=getStdRange(1,12,1);
 	  r.oninput=(event)=>{
-	    term.multCall(r); 
+	    this.tx.multCall(r); 
 	    c.setReport();
 	  }
-	  c.setMultSlider=()=>{ r.value=term.calc.mult; }
+	  c.setMultSlider=()=>{ r.value=this.tx.calc.mult; }
 	  return r;
 	})(),
 	(()=>{
 	  let r=getStdRange(0,1,1);
 	  r.oninput=(event)=>{
-	    term.polTypeCall(r); 
+	    this.tx.polTypeCall(r); 
 	    c.setReport();
 	  }
-	  c.setPolTypeSlider=()=>{ r.value=term.calc.polType; }
+	  c.setPolTypeSlider=()=>{ r.value=this.tx.calc.polType; }
 	  return r;
 	})(),
 	(()=>{
-	  let r=getStdRange(1,5,2); // no entity for 7
+	  let r=getStdRange(1,9,1); // no entity for 7
 	  r.oninput=(event)=>{
-	    term.expCall(r); 
+	    this.tx.expCall(r); 
 	    c.setReport();
 	  }
-	  c.setExpSlider=()=>{ r.value=term.calc.exp; }
+	  c.setExpSlider=()=>{ r.value=this.tx.calc.exp; }
 	  return r;
 	})(),
       );  
       return rs;
     })(),
   );
-  term.setControl=()=>{
+  c.setControlTerm=(tt)=>{
+    if (tt instanceof Term) { 
+      this.tx=tt;
+    } else {
+if (!PUBLISH) debugger;
+    }
+  }
+  c.setControlX=()=>{
     c.setReport();
     c.setFactorSlider();
     c.setMultSlider();
     c.setPolTypeSlider();
     c.setExpSlider();
   }
-  term.control=c;
+  this.tx.setControl=()=>{
+    c.setReport();
+    c.setFactorSlider();
+    c.setMultSlider();
+    c.setPolTypeSlider();
+    c.setExpSlider();
+  }
+  this.getExp=(term)=>{
+    if (term.calc.exp==1) {
+      return "";
+    } else {
+      let sup=document.createElement("sup");
+      sup.style.fontSize="8px";
+      sup.style.fontWeight="bold";
+      sup.textContent=term.calc.exp;
+      return sup;
+    }
+  }
+ 
   return c;
 }
 
@@ -238,24 +403,69 @@ var Calc=function(polType,mult,exp) {
   }
 }
 
-var Shape=function(t1,t2) {
-  this.t1=t1;  // internalize
-  this.pts=[];  // 3 to 8
+var Shape=function(t1,t2,t3,t4) {
+  this.t1=t1;
+  this.t2=t2;
+  this.t3=t3;
+  this.t4=t4;
+  this.t1save=new Term(new Calc(t1.calc.polType,t1.calc.mult,t1.calc.exp));
+  this.t2save=new Term(new Calc(t2.calc.polType,t2.calc.mult,t2.calc.exp));
+  this.t3save=new Term(new Calc(t3.calc.polType,t3.calc.mult,t3.calc.exp));
+  this.t4save=new Term(new Calc(t4.calc.polType,t4.calc.mult,t4.calc.exp));
+  //this.x=[];  // 3 to 8
+  this.dString1="";
+  this.dString2="";
+  this.fillRule="";
+  this.getX=(t)=>{ return this.t1.getValue(t)+this.t2.getValue(t); }
+  this.getY=(t)=>{ return this.t3.getValue(t)+this.t4.getValue(t); }
+  this.getXs=(t)=>{ return this.t1save.getValue(t)+this.t2save.getValue(t); }
+  this.getYs=(t)=>{ return this.t3save.getValue(t)+this.t4save.getValue(t); }
+  this.copyTerms=()=>{
+    this.t1.copyValues(this.t1save);
+    this.t2.copyValues(this.t2save);
+    this.t3.copyValues(this.t3save);
+    this.t4.copyValues(this.t4save);
+  }
+  this.transit=()=>{
+    dString2=dString1;
+    this.t1.copyValues(this.t1save);
+    this.t2.copyValues(this.t2save);
+    this.t3.copyValues(this.t3save);
+    this.t4.copyValues(this.t4save);
+  }
 }
 
-var Term=function(calc) {
+/*
+Shape.prototype.copyTerms=()=>{ 
+  this.t1.copyValues(this.t1save);
+  this.t2.copyValues(this.t2save);
+  this.t3.copyValues(this.t3save);
+  this.t4.copyValues(this.t4save);
+//  [this.t1,this.t2,this.t3,this.t4].forEach((t)=>{ t.copyValues(shpe); });
+}
+*/
+
+var Term=function(calc,factor) {
   // single calc start, move to calc*calc*...
   this.calc=calc;
-  this.factor=0;
+  this.factori=factor;
+  this.factor=factor;
   this.getValue=(t)=>{ return this.factor*this.calc.getCalc(t); }
   this.factorCall=(inp)=>{ 
     this.factor=parseFloat(inp.value); 
 //adjustFactors();
-    draw(1);
+    if (state!=EXPLORE) {
+      repeatCount=0;
+      draw(1);
+    }
   }
   this.multCall=(inp)=>{ 
     this.calc.mult=parseInt(inp.value); 
     draw(1);
+    if (state!=EXPLORE) {
+      repeatCount=0;
+      draw(1);
+    }
   }
   this.polTypeCall=(inp)=>{ 
     //this.calc.polType=[Math.sin,Math.cos][parseInt(inp.value)];
@@ -272,15 +482,29 @@ var Term=function(calc) {
   this.randomizeFactor=()=>{
     this.factor=(10-2*getRandomInt(0,11))/10;
   }
+  this.randomizeCalc=()=>{
+//if (true) { // sscc only, vert symmetry, make shape property
+    this.calc.polType=[0,1][getRandomInt(0,2)];
+//}
+    //this.calc.exp=[1,3,5][getRandomInt(0,3,true)];
+    this.calc.exp=[1,3,5][getRandomInt(0,2,true)]; // 1,3 for low res
+    //this.calc.mult=getRandomInt(1,7,true);
+    this.calc.mult=getRandomInt(1,11,true);
+  }
   this.randomize=()=>{
-    this.factor=(10-2*getRandomInt(0,11))/10;
-if (!PUBLISH) {
+    this.randomizeFactor();
+    this.randomizeCalc();
+    //this.factor=(10-2*getRandomInt(0,11))/10;
+/*
+if (false) { // sscc only, vert symmetry
     this.calc.polType=[0,1][getRandomInt(0,2)];
 }
     //this.calc.exp=[1,3,5][getRandomInt(0,3,true)];
+    this.calc.exp=[1,3,5][getRandomInt(0,2,true)];
     //this.calc.mult=getRandomInt(1,7,true);
-    this.calc.mult=getRandomInt(1,4,true);
-    this.setControl();
+    this.calc.mult=getRandomInt(1,6,true);
+    //this.setControl();
+*/
   }
   this.getId=()=>{
     return ["s","c"][this.calc.polType]+this.calc.mult;
@@ -292,223 +516,238 @@ if (!PUBLISH) {
       term.calc.mult=this.calc.mult;
       term.calc.exp=this.calc.exp;
     } else {
-if (!PUBLISH)  debugger;
+if (!PUBLISH) debugger;
     }
   }
 }
 
-var calculator=(term1,term2,term3,term4)=>{
-  this.getX=(t)=>{ return term1.getValue(t)+term2.getValue(t); }
-  this.getY=(t)=>{ return term3.getValue(t)+term4.getValue(t); }
-}
+var test=()=>{ console.log("tested"); }
 
-let t1=new Term(new Calc(0,1,1));
-let t2=new Term(new Calc(0,2,1));
-let t3=new Term(new Calc(1,1,1));
-let t4=new Term(new Calc(1,3,1));
-//let t5=new Term(new Calc(1,2,1));
-
-var test=()=>{
-  //shift values here?
-console.log("tested");
-}
-
-var rt=false;
+var repeatCount=0;
 var repeat=()=>{
-/*
-  if (rt=!rt) {
-  curveDR.setPath(path1Data);
-  } else {
-  curveDR.setPath(path2Data);
+  repeatCount++;
+if (!PUBLISH) console.log("an loop "+repeatCount);
+
+  if (repeatCount%2==1) {
+    if (displayCol.count()<5) {
+      displayCol.add(animationIcon.getDisplayIcon());
+      setState(EXPLORE);
+    } else {
+      setState(STOP);
+    }
+    return;
   }
-*/
-if (!PUBLISH) console.log("an loop");
+
+  if (repeatCount==REPEAT_CYCLE_LIMIT-1) {  // st to 50
+    setState(STOP);
+  } else if (repeatCount>=REPEAT_CYCLE_LIMIT) {  // st to 50
+    //setState(STOP);
+    setState(EXPLORE);
+  } else if (repeatCount>=1000) {
+    setState(STOP);
+  }
+//if (!PUBLISH) debugger;
 }
 
 var curveAN=(()=>{
   let c=new Curve();
-  c.append((()=>{
-    let a=document.createElementNS("http://www.w3.org/2000/svg", "animate");
-    a.setAttribute("attributeName","d");
-    //a.setAttribute("from","");
-    //a.setAttribute("to","");
-    a.setAttribute("dur","100000000s");
-    a.setAttribute("repeatCount","indefinite");
-//a.setAttribute("calcMode","spline");
-//a.setAttribute("keySplines","0.4 0 0.2 1; 0.4 0 0.2 1");
-if (!PUBLISH) {
-    a.setAttribute("onrepeat","repeat()");
-}
-    c.setValues=(v)=>{ a.setAttribute("values",v); }
-    c.setAnimation=(on)=>{
-      if (on) {
-        a.setAttribute("dur","4s");
-      } else {
-        a.setAttribute("dur","100000000s");
-        a.setAttribute("values","");
-      }
-    }
-    return a;
-  })());
+/////////////////////
+//  c.an.setAttribute("onrepeat","repeat()");
+//  c.an.setAttribute("fill","remove");
+//////////////////
+c.an.setAttribute("fill","freeze");
+c.an.setAttribute("repeatCount",0);
+c.an.setAttribute("dur",0);
   return c;
 })();
 
 var animationIcon=new Icon(curveAN);
-animationIcon.style.display="none";
+if (!PUBLISH) animationIcon.style.border="1px solid silver";
+animationIcon.getDisplayIcon=()=>{
+  let ancop=animationIcon.cloneNode(true);
+  ancop.setAttribute("style","");
+  let svg=ancop.firstElementChild;
+  svg.setAttribute("style","");
+  svg.style.width=ICONSIZE+"px";
+  svg.style.height=ICONSIZE+"px";
+  svg.firstElementChild.setAttribute("transform", "translate("+ICONSIZE/2+","+ICONSIZE/2+") scale("+ICONSIZE/800+","+ICONSIZE/800+")");
+  return ancop;
+}
 grid.append(animationIcon);
+curveAN.setAnimation(false);
 
-// dr curve, static
-var curveDR=new Curve();
-var drawIcon=new Icon(curveDR);
-drawIcon.firstElementChild.style.border="1px solid silver";
-grid.append(drawIcon);
+var DisplayIcon=function(shpe) {
+  let di=new Icon(new Curve());
+  di.setIconShape(shpe);
+  di.style.border="1px solid transparent";
+  di.curve.style.fill=shpe.color;
+  di.curve.style.fillRule=shpe.fillRule;
+  di.curve.stroke=shpe.color;
+  di.curve.an.setAttribute("repeatCount", "10");
+  di.curve.an.setAttribute("dur", shpe.dur*(1.5-0.4*Math.random()));
+  di.draw3();
+  di.curve.an.setAttribute("begin","0s");
+  di.astart=0;
+  di.animate=(ts)=>{
+    if (!displayCol.astart) {
+      displayCol.astart=ts;
+    }
+    let progress=ts-displayCol.astart;
+    if (progress<200) {
+      let frac=progress/200;
+      let mt=ICONSIZE*(frac-1);
+      di.style.marginTop=mt+"px";
+/*
+      displayContainer.firstElementChild.style.marginTop=mt+"px";
+*/
+      requestAnimationFrame(displayCol.animate);
+    } else {
+ //     displayContainer.firstElementChild.style.marginTop="0px";
+      di.style.marginTop="0px";
+      di.astart=0;
+    }
+  } 
+  // displayCol animate here
+  return di;
+}
 
+var ControlIcon=function(name) {
+  let ci=new Icon(new Curve());
+  ci.name=name;
+  ci.classList.add("cicon");
+  ci.curve.an.setAttribute("fill","freeze");
+  ci.curve.an.setAttribute("repeatCount","1");
+  ci.curve.an.setAttribute("keySplines","0.2 0 0.8 1");
+  ci.rc=0;
+  ci.cycle=()=>{
+    if (ci.rc++>3) {
+      ci.rc=0;
+      return;
+    }
+    if (displayCol.count()<4) {
+      //displayCol.add(ci.getDisplayIcon(ci.shape));  // use constructor, not get
+      displayCol.add(new DisplayIcon(ci.shape));
+    } else {
+      ci.rc=0;
+      return;
+    }
+    ci.shape.transit();
+    ci.set2Value();
+    ci.curve.an.beginElement();
+  }
+  ci.stopAnimation=()=>{ ci.rc=20; }
+  return ci;
+}
 
-// controls
-if (!PUBLISH) {
+var randomIcon=(()=>{
+  let ri=new ControlIcon("random");
+  ri.curve.an.setAttribute("onend","randomIcon.repeat()");
+  ri.repeat=()=>{
+    console.log("rnd cyc "+ri.rc);
+    ri.cycle();
+  }
+  return ri;
+})();
+
+var heartIcon=(()=>{
+  let hi=new ControlIcon("heart");
+  hi.curve.an.setAttribute("onend","heartIcon.repeat()");
+  hi.repeat=()=>{
+    console.log("ht cyc "+hi.rc);
+    hi.cycle();
+  }
+  return hi;
+})();
+
+var starIcon=(()=>{
+  let si=new ControlIcon("star");
+  si.curve.an.setAttribute("onend","starIcon.repeat()");
+  si.repeat=()=>{
+    console.log("star cyc "+si.rc);
+    si.cycle();
+  }
+  return si;
+})();
+
+var rouletteIcon=(()=>{
+  let ri=new ControlIcon();
+  ri.curve.style.fillRule="evenodd";
+  ri.curve.an.setAttribute("onend","rouletteIcon.repeat()");
+  ri.repeat=()=>{
+    console.log("ro cyc "+ri.rc);
+    ri.cycle();
+  }
+  return ri;
+})();
+
 grid.append((()=>{
-  let c=document.createElement("div");
-  c.append(control("X1",t1));
-  c.append(
-    control("X2",t2),
-    control("Y1",t3),
-    control("Y2",t4),
-  );
-  return c;
+  let icons=document.createElement("div");
+  icons.style.display="grid";
+  icons.style.gridTemplateColumns="auto";
+  icons.style.gridTemplateRows="auto auto auto auto 1fr";
+//  icons.style.background="silver";
+  icons.append(heartIcon);
+  icons.append(starIcon);
+  icons.append(rouletteIcon);
+  icons.append(randomIcon);
+  icons.append((()=>{
+    let space=document.createElement("div");
+    space.style.background="white";
+    return space;
+  })());
+  return icons;
 })());
+
+var displayContainer=(()=>{
+  let c=document.createElement("div");
+  c.style.gridTemplateColumns="auto";
+  c.style.background="white";
+  c.style.padding="0 40px";
+  grid.append(c);
+  return c;
+})();
+
+var displayCol={
+  count:()=>{
+    return displayContainer.children.length;
+  },
+  add:(as)=>{
+    as.id="phs"+new Date().getTime();
+    let an=as.getElementsByTagName("animate")[0];
+    an.setAttribute("onend","displayCol.remove('"+as.id+"')");
+as.style.marginTop=-ICONSIZE+"px";
+    displayContainer.insertBefore(as,displayContainer.firstElementChild);
+requestAnimationFrame(displayCol.animate);
+    //displayContainer.append(as);
+    return true;
+  },
+  remove:(id)=>{ document.getElementById(id).remove(); },
+  clear:()=>{ 
+    document.querySelectorAll("[id^='phs']").forEach((d)=>{ d.remove(); });
+  },
+  astart:0,
+  animate:(ts)=>{
+    if (!displayCol.astart) {
+      displayCol.astart=ts;
+    }
+    let progress=ts-displayCol.astart;
+    if (progress<200) {
+      let frac=progress/200;
+      let mt=ICONSIZE*(frac-1);
+      displayContainer.firstElementChild.style.marginTop=mt+"px";
+      requestAnimationFrame(displayCol.animate);
+    } else {
+      //displayContainer.lastChild.remove();
+      // take out last child.
+      displayContainer.firstElementChild.style.marginTop="0px";
+      displayCol.astart=0;
+    }
+  }
 }
 
 onresize=function() {
-  if (aS==true) { 
-  } else {
-//    canvas.style.maxHeight=window.innerHeight-20+"px";
-  }
+    animationIcon.setSize(true);
 }
-
-var ctx=canvas.getContext("2d");
-ctx.translate(CSIZE,CSIZE);
-//ctx.scale(3,3);
-ctx.lineWidth=3;
-ctx.font="50px monospace";
-ctx.fillStyle="#AAD";
-
-var equation=(()=>{
-  this.div=(()=>{
-    let e=document.createElement("div");
-    e.style.position="absolute";
-    e.style.top="20px";
-    e.style.left="20px";
-    e.style.fontSize="12px";
-    e.style.fontFamily="monospace";
-    e.style.background="white";
-    body.append(e);
-    return e;
-  })();
-  this.clear=()=>{ while (div.firstChild) div.removeChild(div.firstChild); }
-  this.getExp=(term)=>{
-    if (term.calc.exp==1) {
-      return "";
-    } else {
-      let sup=document.createElement("sup");
-      sup.style.fontSize="8px";
-      sup.style.fontWeight="bold";
-      sup.textContent=term.calc.exp;
-      return sup;
-    }
-  }
-  this.getArg=(term)=>{
-    if (term.calc.mult==1) {
-      return "(t)";
-    } else {
-      return "("+term.calc.mult+"t)";
-    }
-  }
-/*
-  this.writeTerm=(term)=>{
-    let f=Math.floor(10*term.factor);
-    if (f!=0) { div.append(f+"\u00B7"); }
-    div.append(
-      PolarType[term.calc.polType].name,
-          //expos[term.calc.exp],
-      getExp(term),
-      getArg(term),
-    );
-  }
-*/
-  this.write=()=>{
-    this.clear();
-    div.append(  // x line
-      (()=>{
-        let xl=document.createElement("div");
-        xl.textContent=("x=");
-        let f=Math.floor(10*t1.factor);
-        if (f!=0) {
-	  if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    PolarType[t1.calc.polType].name,
-	    getExp(t1),
-	    getArg(t1)
-	  );
-	  if (t2.factor>0) { xl.append("+"); }
-        }
-
-        f=Math.floor(10*t2.factor);
-        if (f!=0) {
-	  if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    //Math.floor(10*t2.factor),
-	    PolarType[t2.calc.polType].name,
-	    getExp(t2),
-	    getArg(t2)
-	  );
-        }
-
-        return xl;
-      })()
-    );
-    div.append(  // y line
-      (()=>{
-        let xl=document.createElement("div");
-        xl.textContent=("y=");
-        let f=Math.floor(10*t3.factor);
-        if (f!=0) {
-          if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    PolarType[t3.calc.polType].name,
-	    getExp(t3),
-	    getArg(t3)
-	  );
-	  if (t4.factor>0) { xl.append("+"); }
-        }
-        f=Math.floor(10*t4.factor);
-        if (f!=0) {
-	  if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    PolarType[t4.calc.polType].name,
-	    getExp(t4),
-	    getArg(t4)
-	  );
-        }
-        return xl;
-      })()
-    );
-    //writeTerm(t2);
-  }
-  return this;
-})();
-
-/*
-var drawCH=()=>{
-  ctx.beginPath();
-  ctx.moveTo(-CSIZE,0);
-  ctx.lineTo(CSIZE,0);
-  ctx.moveTo(0,-CSIZE);
-  ctx.lineTo(0,CSIZE);
-  ctx.strokeStyle="#EEE";
-  ctx.stroke();
-  ctx.closePath();
-}
-*/
 
 var cbLoc=(p1,p2,frac)=>{
   var f1=.2;
@@ -522,109 +761,72 @@ var cbLoc=(p1,p2,frac)=>{
 
 var RES300=0.02;
 var RES100=Math.PI/50;
+var RES80=Math.PI/40;
 var RES60=Math.PI/30;
-var RES30=Math.PI/15;
+var RES40=Math.PI/20;
+var RES30=Math.PI/15;  // min for 60x60
 var RES20=Math.PI/10;
 var RES10=Math.PI/5;
+var RES8=Math.PI/4;
 var RES6=Math.PI/3;
 var RES4=Math.PI/2;
 var RES2=Math.PI;
-var RES=RES60;
+var RES=RES30;
 
-/*
-var path1Data="";
-var path2Data="";
-*/
-
-var draw=(frac,createSVG)=>{
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-/*
-if (!PUBLISH) {
-  if (frac==1) {
-    equation.write();
-  }
-  if (frac==0) {
-    equation.clear();
-  }
-}
-*/
-  let path1Data="M";
-  let path2Data="M";
+var getSVGPath=(frac,shp)=>{
+  let data="M";
   let scale=SCALE;
-  let s1x=(t)=>{ return t1save.getValue(t)+t2save.getValue(t) }
-  let s1y=(t)=>{ return t3save.getValue(t)+t4save.getValue(t) }
-  let s2x=(t)=>{ return t1.getValue(t)+t2.getValue(t) }
-  let s2y=(t)=>{ return t3.getValue(t)+t4.getValue(t) }
-
-  ctx.beginPath();
-  let x=scale*cbLoc(s1x(0),s2x(0),frac);
-  let y=scale*cbLoc(s1y(0),s2y(0),frac);
-  ctx.moveTo(x,y);
-
-  path2Data+=(Math.floor(s1x(0)*scale)+" "+Math.floor(s1y(0)*scale));
-
-  //path1Data+=(Math.floor(s2x(0)*scale)+" "+Math.floor(s2y(0)*scale));
-  path1Data+=(Math.floor(x)+" "+Math.floor(y));
-
+  let x=scale*cbLoc(shp.getXs(0),shp.getX(0),frac);
+  let y=scale*cbLoc(shp.getYs(0),shp.getY(0),frac);
+//if (isNaN(x)) { debugger; }
+  data+=(Math.floor(x)+" "+Math.floor(y));
   for (let t=0; t<=Math.PI*2; t+=RES) {
-    let x=cbLoc(s1x(t),s2x(t),frac);
-    let y=cbLoc(s1y(t),s2y(t),frac);
-    ctx.lineTo(scale*x,scale*y);
-if (frac==1) {
-  path1Data+=("L"+Math.floor(scale*s2x(t))+" "+Math.floor(scale*s2y(t)));
-  path2Data+=("L"+Math.floor(scale*s1x(t))+" "+Math.floor(scale*s1y(t)));
-} else {
-  path1Data+=("L"+Math.floor(scale*x)+" "+Math.floor(scale*y));
-}
+    x=scale*cbLoc(shp.getXs(t),shp.getX(t),frac);
+    y=scale*cbLoc(shp.getYs(t),shp.getY(t),frac);
+    data+=("L"+Math.floor(x)+" "+Math.floor(y));
   }
-  ctx.closePath();
+  data+="z";
+  return data;
+}
 
-  path1Data+="z";
-  path2Data+="z";
+var drawTFCurve=(shape,icon)=>{
+// move these calcs to dString
+  let path1Data=getSVGPath(1,shape);
+  let path2Data=getSVGPath(0,shape);
+  icon.curve.setTF(path1Data,path2Data);
+}
 
+var drawValueCurve=(shape,icon)=>{
+// move these calcs to dString
+  let path1Data=getSVGPath(1,shape);
+  let path2Data=getSVGPath(0,shape);
+  let vals=path1Data+" ; "+path2Data+" ; "+path1Data;
+  icon.curve.setValues(vals);
+}
+
+/*
+var draw=(frac)=>{
+  let path1Data=getSVGPath(frac,shape);
+
+// ? move this out
   if (frac==1) {
-    if (aS) {
-if (!PUBLISH) console.log("svg");
-    } else {
-if (!PUBLISH) console.log("canv");
-      curveDR.setPath(path1Data);
-    }
-    let vals=path1Data+" ; "+path2Data+" ; "+path1Data;
-    if (createSVG) {
-if (!PUBLISH) console.log("create svg");
+shape.dString1=path1Data;
+    if (state==ANIMATE) {
+      if (!PUBLISH) console.log("animate");
+      let path2Data=getSVGPath(0,shape);
+      let vals=path1Data+" ; "+path2Data+" ; "+path1Data;
       curveAN.setValues(vals);
+      shape.drawControl(path1Data);
+    } else if (state==STOP) {
+      curveAN.setPath(path1Data);
+    } else {
+//      if (!PUBLISH) console.log("explore");
+      shape.drawControl(path1Data);
     }
   }
-  curveEX.setPath(path1Data);
-
-  ctx.fill();
-if (!PUBLISH) {
-  ctx.strokeStyle="black";
-  ctx.stroke();
-}
-
-}
-
-/*
-var drawMot=(frac)=>{
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  ctx.beginPath();
-  let scale=SCALE;
-  let x0=t1save.getValue(0)+t2save.getValue(0);
-  let x1=t1.getValue(0)+t2.getValue(0);
-  let y0=t3save.getValue(0)+t4save.getValue(0);
-  let y1=t3.getValue(0)+t4.getValue(0);
-  ctx.moveTo(scale*cbLoc(x0,x1,frac),scale*cbLoc(y0,y1,frac));
-  for (let t=0; t<=Math.PI*2; t+=RES) {
-    //let x=(1+0.5*Math.sin(2*Math.PI*3*frac)) * (t1.getValue(t)+t2.getValue(t));
-    let x=(1+a1.getValue(frac*Math.PI*2+1)) * (t1.getValue(t)+t2.getValue(t));
-    let y=(1+0.2*Math.sin(2*Math.PI*2*frac)) * (t3.getValue(t)+t4.getValue(t));
-    ctx.lineTo(scale*x,scale*y);
-  }
-  ctx.closePath();
-  ctx.strokeStyle="black";
-  ctx.stroke();
-  ctx.fill();
+  if (state==EXPLORE) curveAN.setPath(path1Data);
+  //return [path1Data,path2Data];
+  return;
 }
 */
 
@@ -644,7 +846,11 @@ var termsEqual=()=>{
   return ct;
 }
 
-var setShape=()=>{  // beauty filter construction
+var setRandomShape=()=>{  // beauty filter construction
+  let t1=randomShape.t1;
+  let t2=randomShape.t2;
+  let t3=randomShape.t3;
+  let t4=randomShape.t4;
   let bt=0;
   id="";
   if (t1.factor==0 && t2.factor==0) {
@@ -719,8 +925,11 @@ var setShape=()=>{  // beauty filter construction
   return bt;
 }
 
-var adjustFactors=()=>{
-  // need to re-report
+var adjustFactors=(shpe)=>{
+  let t1=shpe.t1;
+  let t2=shpe.t2;
+  let t3=shpe.t3;
+  let t4=shpe.t4;
   let w=Math.abs(t1.factor)+Math.abs(t2.factor);
   if (w>0) {
     let sm=1/w;
@@ -733,86 +942,286 @@ var adjustFactors=()=>{
     t3.factor*=sm;
     t4.factor*=sm;
   }
-[t1,t2,t3,t4].forEach((t)=>{
-  t.setControl();
-});
-
+//  [t1,t2,t3,t4].forEach((t)=>{ t.setControl(); });
 }
 
 var randomize=()=>{
-
   let ctr2=0;
-  do {
+  do {  // unique terms will filter some good shapes
     let ctr=0;
     let termIds={};
-    t1.randomize();
-    termIds[t1.getId()]=true;
+    randomShape.t1.randomize();
+    termIds[randomShape.t1.getId()]=true;
     do {
-      t2.randomize();
+      randomShape.t2.randomize();
       ctr++;
-    } while (termIds[t2.getId()]);
-    termIds[t2.getId()]=true;
+    } while (termIds[randomShape.t2.getId()]);
+    termIds[randomShape.t2.getId()]=true;
     ctr=0;
     do {
-      t3.randomize();
+      randomShape.t3.randomize();
       ctr++;
-    } while (termIds[t3.getId()] && ctr<10);
-    termIds[t3.getId()]=true;
+    } while (termIds[randomShape.t3.getId()] && ctr<10);
+    termIds[randomShape.t3.getId()]=true;
     ctr=0;
     do {
-      t4.randomize();
+      randomShape.t4.randomize();
       ctr++;
-    } while (termIds[t4.getId()] && ctr<10);
+    } while (termIds[randomShape.t4.getId()] && ctr<10);
 if (!PUBLISH && ctr>10) debugger;
-/*
-    do {
-      t5.randomize();
-      ctr++;
-    } while (termIds[t5.getId()]);
-*/
-  } while (setShape()<0 && ctr2<100);
-  //} while (setShape()!=10);
+  } while (setRandomShape()<0 && ctr2<100);
+  //} while (setRandomShape()!=10);
   //} while (false);
-//if (!PUBLISH && ctr2>20) console.log("ctr2 "+ctr2);
 if (!PUBLISH) if (ctr2>20) console.log("ctr2 "+ctr2);
 if (!PUBLISH && ctr2>200) debugger;
 
-  adjustFactors();
+  adjustFactors(randomShape);
 
-if (!PUBLISH) if (id.startsWith("line")) debugger;
+//if (!PUBLISH) if (id.startsWith("line")) debugger;
 }
 
-//var step=PUBLISH?performance.now():Infinity;
+var randomShape=(()=>{
+  let s=new Shape(
+    new Term(new Calc(0,1,1),0.5),
+    new Term(new Calc(0,2,1),0.5),
+    new Term(new Calc(1,1,1),0.5),
+    new Term(new Calc(1,3,1),0.5)
+  );
+  s.stdColor="hsl(240,40%,70%)";
+  s.color=s.stdColor;
+  s.dur=2;
+  s.symmetry=1;  // just going with setRandomShape and bilateral for now
+  s.randomize=()=>{
+//    if (s.symmetry==1) {  // randomize on both
+    if (Math.random()<0.9) {
+      s.randomizeBilateral();
+    } else {
+      randomize();
+    }
+  }
+  s.randomizeBilateral=()=>{
+    s.t1.factor=1;
+    s.t2.factor=0;
+    s.t3.factor=1;
+    s.t4.factor=0;
+    s.t1.calc.exp=[1,3,5][getRandomInt(0,3)];
+    s.t3.calc.exp=[1,3,5][getRandomInt(0,3)];
+    s.t1.calc.mult=getRandomInt(1,6);
+    if (s.t1.calc.mult%2==0) {
+      //s.t3.calc.mult=s.t1.calc.mult+1;
+      s.t3.calc.mult=s.t1.calc.mult+[1,3][getRandomInt(0,2)];
+    } else {
+      //s.t3.calc.mult=s.t1.calc.mult+2;
+      s.t3.calc.mult=s.t1.calc.mult+[2,4][getRandomInt(0,2)];
+    }
+/*
+      s.t1.calc.eq(s.t3.calc)
+      || (s.t1.calc.mult%2==1 && (s.t1.calc.mult-s.t3.calc.mult)%2!=0)
+      || (s.t1.calc.mult%2==0 && (s.t1.calc.mult-s.t3.calc.mult)%2==0)
+*/
+//    [s.t1,s.t2,s.t3,s.t4].forEach((t)=>{ t.setControl(); });
+  }
+  s.transit=()=>{
+    s.copyTerms();
+    if (s.symmetry==1) {
+      s.randomizeBilateral();
+    } else {
+      if (Math.random()<0.8) {
+	s.t1.randomizeFactor();
+	s.t2.randomizeFactor();
+	s.t3.randomizeFactor();
+	s.t4.randomizeFactor();
+	adjustFactors(s);
+      } else {
+	s.randomize();
+      }
+    }
+    s.dString2=s.dString1;
+    s.dString1=getSVGPath(1,s);
+    s.color="hsl("+getRandomInt(0,360)+",70%,60%)";
+  }
+if (!PUBLISH) {
+  s.drawControl=(pData)=>{ 
+    //curveDR.setPath(pData); 
+//drawCurve(s,curveDR);
+    sliders.setSliders(s);
+  }
+}
+  return s;
+})();
+randomShape.transit();
+randomShape.transit(); // wipe out non-random construction
+//randomIcon.shape=randomShape;
+randomIcon.setIconShape(randomShape);
 
-var STEPPER=false;
-var step=STEPPER?0:Infinity;
+//randomShape.icon=randomIcon;
+
+//randomShape.transit();
+
+//need dynamic shape connection
+// controls
+if (!PUBLISH) {
+var sliders;
+grid.append((()=>{
+  let c=document.createElement("div");
+  let cX1=new Control("X1",randomShape.t1);
+  let cX2=new Control("X2",randomShape.t2);
+  let cY1=new Control("Y1",randomShape.t3);
+  let cY2=new Control("Y2",randomShape.t4);
+  c.append(cX1,cX2,cY1,cY2
+    //new Control("X1",randomShape.t1),
+    //new Control("X2",randomShape.t2),
+    //new Control("Y1",randomShape.t3),
+    //new Control("Y2",randomShape.t4),
+  );
+  c.setSliders=(shpe)=> {
+    cX1.setControlTerm(shpe.t1);
+    cX1.setControlX();
+    cX2.setControlTerm(shpe.t2);
+    cX2.setControlX();
+    cY1.setControlTerm(shpe.t3);
+    cY1.setControlX();
+    cY2.setControlTerm(shpe.t4);
+    cY2.setControlX();
+  }
+  sliders=c;
+  return c;
+})());
+}
+
+var heartShape=(()=>{
+  let s=new Shape(
+    new Term(new Calc(0,1,3),1),
+    new Term(new Calc(0,1,1),0),
+    new Term(new Calc(1,1,1),-0.8),
+    new Term(new Calc(1,2,1),0.4),
+  );
+  s.t5=new Term(new Calc(1,3,1),0.1);
+  s.t1save=new Term(new Calc(0,1,3),1);
+  s.t2save=new Term(new Calc(0,1,1),0);
+  s.t3save=new Term(new Calc(1,1,1),-0.8);
+  //s.t4save=new Term(new Calc(1,2,1),0.5);
+  s.t4save=new Term(new Calc(1,2,1),0.4);
+  //s.t5save=new Term(new Calc(1,3,1),0.1);
+  s.stdColor="hsl(0, 60%, 80%)";
+  s.color="#DAA";
+  s.dur=1;
+  s.beat=1;
+  s.getY=(t)=>{ 
+    return s.t3.getValue(t)+s.t4.getValue(t)+s.t5.getValue(t); 
+  }
+  s.getYs=(t)=>{ 
+    return s.t3save.getValue(t)+s.t4save.getValue(t)+s.t5.getValue(t); 
+  }
+  s.randomize=()=>{
+    s.t1.factor=s.t1.factori*(1-0.3*s.beat*Math.random());
+    s.t3.factor=s.t3.factori*(1-0.3*s.beat*Math.random());
+    s.t4.factor=s.t4.factori*(1-0.3*s.beat*Math.random());
+    //s.t5.factor=s.t5.factori*(1-0.4*Math.random());
+    s.color="hsl("+((320+getRandomInt(0,80))%360)+",100%,70%)";
+    s.beat*=-1;
+  }
+  s.transit=(copy)=>{
+    s.copyTerms();
+    //s.t5.copyValues(s.t5save);
+    if (!copy) s.randomize();
+    //[s.t1,s.t2,s.t3,s.t4].forEach((t)=>{ t.setControl(); });
+    s.dString2=s.dString1;
+    s.dString1=getSVGPath(1,s);
+  }
+  s.drawControl=(pData)=>{ /*curveHT.setPath(pData);*/ 
+if (!PUBLISH) { sliders.setSliders(s); }
+  }
+  return s;
+})();
+heartShape.transit();
+heartIcon.setIconShape(heartShape);
+heartIcon.curve.setPath(heartShape.dString1);
+
+var starShape=(()=>{
+  let s=new Shape(
+    new Term(new Calc(0,1,3),1),
+    new Term(new Calc(0,1,1),0),
+    new Term(new Calc(1,1,3),1),
+    new Term(new Calc(1,1,1),0),
+  );
+  s.stdColor="#ADA";
+  s.color="#ADA";
+  s.dur=1;
+  s.transit=()=>{
+    s.copyTerms();
+    s.t1.calc.exp=[3,5,7,9][getRandomInt(0,4)];
+    s.t3.calc.exp=s.t1.calc.exp;
+    s.t1.factor=s.t1.factori*(1-0.5*Math.random());
+    s.t3.factor=s.t3.factori*(1-0.5*Math.random());
+    s.color="hsl("+(getRandomInt(0,360)%360)+",90%,70%)";
+    s.dString2=s.dString1;
+    s.dString1=getSVGPath(1,s);
+  }
+  s.drawControl=(pData)=>{ 
+//    curveST.setPath(pData); 
+if (!PUBLISH) { sliders.setSliders(s); }
+  }
+  return s;
+})();
+starShape.transit();
+starIcon.setIconShape(starShape);
+starIcon.curve.setPath(starShape.dString1);
+
+var rouletteShape=(()=>{
+   // sscc
+   // f1==f3 f2==f4, m1=m3=1, m2=m4>4, all e=1
+  let s=new Shape(
+    new Term(new Calc(0,1,1),0.5),
+    new Term(new Calc(0,7,1),0.5),
+    new Term(new Calc(1,1,1),0.5),
+    new Term(new Calc(1,7,1),0.5),
+  );
+  s.stdColor="#D88";
+  s.color="#D88";
+  s.dur=3;
+  s.fillRule="evenodd";
+  s.transit=()=>{
+    s.copyTerms();
+    s.t2.calc.mult=[5,6,7,8,9,10][getRandomInt(0,6)];
+    s.t4.calc.mult=s.t2.calc.mult;
+
+    s.t1.factor=s.t1.factori*(1.2-0.4*Math.random());
+    s.t3.factor=s.t1.factor;
+    s.t2.factor=1-Math.abs(s.t1.factor);
+    s.t4.factor=s.t2.factor;
+/*
+    s.t1.randomizeFactor();
+    s.t3.factor=s.t1.factor;
+    s.t2.factor=1-Math.abs(s.t1.factor);
+    s.t4.factor=s.t2.factor;
+*/
+    s.dString2=s.dString1;
+    s.dString1=getSVGPath(1,s);
+    s.color="hsl("+(getRandomInt(0,360)%360)+",80%,60%)";
+  }
+  s.drawControl=(pData)=>{ 
+    //curveRO.setPath(pData); 
+    rouletteIcon.curve.setPath(pData); 
+if (!PUBLISH) { sliders.setSliders(s); }
+  }
+  return s;
+})();
+rouletteIcon.setIconShape(rouletteShape);
+rouletteShape.transit();
+rouletteIcon.curve.setPath(rouletteShape.dString1);
+//shape=rouletteShape;
+//draw(1);
+
+
+//randomIcon.shape=randomShape;
+heartIcon.shape=heartShape;
+starIcon.shape=starShape;
+//rouletteIcon.shape=rouletteShape;
+
 var start=()=>{
-if (!STEPPER) {
-  //step=performance.now();
-  step=0;
-}
-  transit();
+  shape.transit();  // should take of this on shape creation
   requestAnimationFrame(animate);
-}
-
-let t1save=new Term(new Calc(0,1,1));
-let t2save=new Term(new Calc(0,2,1));
-let t3save=new Term(new Calc(1,1,1));
-let t4save=new Term(new Calc(1,3,1));
-var transit=()=>{
-  t1.copyValues(t1save);
-  t2.copyValues(t2save);
-  t3.copyValues(t3save);
-  t4.copyValues(t4save);
-if (Math.random()<0.8) {
-  t1.randomizeFactor();
-  t2.randomizeFactor();
-  t3.randomizeFactor();
-  t4.randomizeFactor();
-  adjustFactors();
-} else {
-  randomize();
-}
 }
 
 var pauseTS=10000;
@@ -826,70 +1235,61 @@ var pause=(ts)=>{
   }
 }
 
+// convert to object
+var exploreCount=0;
 var stx=0;
+var exploreDuration=1000;
 var animate=(ts)=>{
   if (!stx) {
     stx=ts;
   }
   let progress=ts-stx;
-  if (progress<2000) {
-    let frac=progress/2000;
+  if (progress<exploreDuration) {
+    let frac=progress/exploreDuration;
     draw(frac);
     requestAnimationFrame(animate);
   } else {
     draw(1);
     stx=0;
-    if (aS==true) return;
-
-/*
-    if (step==Infinity) {
-      step=0;
+//if (!PUBLISH) 
+if (state!=EXPLORE) {
+//debugger;
+return;
+}
+if (!PUBLISH) { console.log("exp loop "+exploreCount); }
+    if (exploreCount++>EXPLORE_CYCLE_LIMIT) {
+      setState(ANIMATE);
       return;
     }
-*/
 
 //    pauseTS=performance.now()+2000;
 //    requestAnimationFrame(pause);
-if (Math.random()<0.1) {
-    //requestAnimationFrame(animate);
-} else {
-    //requestAnimationFrame(animateShape);
-}
-    transit();
+    shape.transit();
     requestAnimationFrame(animate);
   }
 }
 
-randomize();
-//transit();
-draw(1);
-if (PUBLISH) requestAnimationFrame(pause);
+
+var shape=randomShape;
+//shape.transit();
+//if (isNaN(shape.t1save.factor)) { debugger; }
+//draw(1);
+
+randomIcon.set2Value(); 
+randomIcon.curve.an.setAttribute("begin","0s"); // sharts animation
 
 /*
-var a1=new Term(new Calc(0,1,1));
-a1.factor=0.3*Math.random();
-var a2=new Term(new Calc(0,2,1));
-a2.factor=0.3*Math.random();
-var mot=0;
-var motctr=0;
-var animateShape=(ts)=>{
-  if (!mot) {
-    mot=ts;
-  }
-  let progress=ts-mot;
-  if (progress<2000) {
-    let frac=progress/2000;
-    drawMot(frac);
-  } else {
-    draw(1);
-    mot=0;
-    motctr++;
-  }
-  if (motctr<5) requestAnimationFrame(animateShape);
-}
+shape=heartShape;
+draw(1);
+shape.transit();
 */
 
-switchState();
-//requestAnimationFrame(animate);
+curveAN.style.fill=heartShape.stdColor;
+curveAN.style.stroke=heartShape.stdColor;
+
+
+//setState(ANIMATE);	// required initialization, for sync
+repeatCount=100;	// then just explore
 
 onresize();
+
