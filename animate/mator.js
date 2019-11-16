@@ -14,43 +14,11 @@ var styleSheet=(()=>{
 var grid=(()=>{
   let g=document.createElement("div");
   g.style.display="grid";
-  g.style.gridTemplateColumns="auto auto auto 1fr";
+  g.style.gridTemplateColumns="100px auto auto 1fr";
   g.style.textAlign="center";
   body.append(g);
   return g;
 })();
-
-const ANIMATE=1, EXPLORE=2, STOP=0;
-var state=ANIMATE;
-
-var setShape=(icon)=>{
-  // todo smooth transition
-  repeatCount=0;
-  exploreCount=0;
-  shape=icon.shape;
-  shape.transit();
-  animationIcon.curve.style.fill=shape.stdColor;
-if (!PUBLISH) {
-  animationIcon.curve.style.stroke="#000";
-} else {
-  animationIcon.curve.style.stroke=shape.stdColor;
-}
-  animationIcon.curve.setDuration(shape.dur+"s");
-
-if (shape==rouletteShape) {
-  animationIcon.curve.style.fillRule="evenodd";
-}
-//  if (state==STOP) {
-  if (state!=EXPLORE) {
-    setState(EXPLORE);
-  } 
-  displayCol.clear();
-
-  if (!PUBLISH) {
-    sliders.setSliders(shape); 
-    //shape.curve.an.setAnimation(true);
-  }
-}
 
 /*
 var request={};
@@ -60,114 +28,28 @@ console.log("req "+req[shape]);
 }
 */
 
-var setState=(st)=>{
-  state=st;
-  repeatCount=0;
-  exploreCount=0;
-  switch (st) {
-    case STOP:
-      curveAN.setAnimation(false);
-      draw(1);
-      break;
-    case ANIMATE: 
-      curveAN.setAnimation(true);
-      draw(1);
-      break;
-    case EXPLORE: 
-      curveAN.setAnimation(false);
-      start(); // exploration
-      break;
-  }
-}
-
 body.onclick=(event)=>{
   if (event.srcElement.classList.contains("cicon")) {
-
- let ic=event.srcElement;
-console.log(ic.name+" click ct "+ic.rc);
-  if (ic.rc==0) {
-    ic.shape.transit();
-    ic.set2Value();
-    ic.curve.an.beginElement();
-  } else {
-    //ic.rc=20;
-  }
-  return;
-
-/*
-if(event.srcElement.shape==randomShape) {
-  let ic=event.srcElement;
-console.log("rnd click ct "+ic.rc);
-  if (ic.rc==0) {
-    ic.shape.transit();
-    ic.set2Value();
-    ic.curve.an.beginElement();
-  } else {
-    //ic.rc=20;
-  }
-  return;
-} else if(event.srcElement.shape==rouletteShape) {
-  let ic=event.srcElement;
-console.log("ro click ct "+ic.rc);
-  if (ic.rc==0) {
-    rouletteShape.transit();
-    ic.set2Value();
-    ic.curve.an.beginElement();
-  }
-  return;
-} else if(event.srcElement.shape==starShape) {
-  let ic=event.srcElement;
-console.log("star click ct "+ic.rc);
-  if (ic.rc==0) {
-    starShape.transit();
-    ic.set2Value();
-    ic.curve.an.beginElement();
-  }
-  return;
-}
-*/
-
-
-
-    if (event.srcElement.shape!=shape) {
-if (!PUBLISH) console.log("switch shape");
-      setShape(event.srcElement);
-    } else if (event.srcElement.shape==shape) {
-      if (state==EXPLORE) {
-	exploreCount=1000;
-      } else {
-	repeatCount=100;
-      }
+   let ic=event.srcElement;
+if (!PUBLISH)  console.log(ic.name+" click ct "+ic.rc);
+    if (ic.rc==0) {
+      ic.shape.transit();
+      ic.set2Value();
+      ic.curve.an.beginElement();
     } else {
-if (!PUBLISH) debugger;
+      //ic.rc=20;
     }
-    if (state==STOP) {
-      //setState(ANIMATE);
-      displayCol.clear();
-      setState(EXPLORE);
-    } 
-  } else if (event.srcElement.classList.contains("icon")) {
-    if (state==STOP) {
-      displayCol.clear();
-      setState(EXPLORE);
-    } else {
-      repeatCount=100;
-      exploreCount=1000;
-    }
+    return;
   } else {
 if (!PUBLISH) console.log("out click");
   }
 }
 
-var PUBLISH=false;
+var PUBLISH=true;
 const expos=["?","\u00B9","\u00B2","\u00B3","\u2074","\u2075"];
 const PolarType=[Math.sin,Math.cos];
 const SCALE=300;
-//const ICONSIZE=64;
-const ICONSIZE=80;
-const REPEAT_CYCLE_LIMIT=PUBLISH?12:16;
-//const EXPLORE_CYCLE_LIMIT=PUBLISH?12:16;
-const EXPLORE_CYCLE_LIMIT=1;
+var ICONSIZE=80;
 
 var Icon=function(curve) {
   let c=document.createElement("div");
@@ -198,12 +80,12 @@ sd.style.pointerEvents="none";
     })());
     return sd;	// svg element
   })());
-  c.curve=curve;	// deprecate
+  c.curve=curve;
   c.setIconShape=(shpe)=>{
     c.shape=shpe;
     c.curve.style.fill=shpe.stdColor;
     c.curve.style.stroke=shpe.stdColor;
-    curve.an.setAttribute("dur",shpe.dur+"s");
+    //curve.an.setAttribute("dur",shpe.dur+"s");
   }
   c.showSize=()=>{
 console.log("res:"+RES.toFixed(2)+"  size:"+c.innerHTML.length);
@@ -232,9 +114,10 @@ var Curve=function() {
   c.append((()=>{
     let a=document.createElementNS("http://www.w3.org/2000/svg", "animate");
     a.setAttribute("attributeName","d");
-    a.setAttribute("dur","1s");
+    a.setAttribute("dur","0.4s");
     a.setAttribute("begin","indefinite");
     a.setAttribute("repeatCount","10");
+// take next 2 out
     a.setAttribute("calcMode","spline");
     a.setAttribute("keySplines","0.2 0 0.8 1; 0.2 0 0.8 1");
     c.an=a;
@@ -312,6 +195,7 @@ var Control=function(name,term) {
 	  rV.oninput=(event)=>{
 	    this.tx.factorCall(rV); 
 	    c.setReport();
+            this.df();
 	  }
 	  c.setFactorSlider=()=>{ rV.value=this.tx.factor; }
 	  return rV;
@@ -321,6 +205,7 @@ var Control=function(name,term) {
 	  r.oninput=(event)=>{
 	    this.tx.multCall(r); 
 	    c.setReport();
+            this.df();
 	  }
 	  c.setMultSlider=()=>{ r.value=this.tx.calc.mult; }
 	  return r;
@@ -330,6 +215,7 @@ var Control=function(name,term) {
 	  r.oninput=(event)=>{
 	    this.tx.polTypeCall(r); 
 	    c.setReport();
+            this.df();
 	  }
 	  c.setPolTypeSlider=()=>{ r.value=this.tx.calc.polType; }
 	  return r;
@@ -339,6 +225,7 @@ var Control=function(name,term) {
 	  r.oninput=(event)=>{
 	    this.tx.expCall(r); 
 	    c.setReport();
+            this.df();
 	  }
 	  c.setExpSlider=()=>{ r.value=this.tx.calc.exp; }
 	  return r;
@@ -347,21 +234,15 @@ var Control=function(name,term) {
       return rs;
     })(),
   );
-  c.setControlTerm=(tt)=>{
+  c.setControlTerm=(tt,df)=>{
     if (tt instanceof Term) { 
       this.tx=tt;
+      this.df=df;
     } else {
 if (!PUBLISH) debugger;
     }
   }
   c.setControlX=()=>{
-    c.setReport();
-    c.setFactorSlider();
-    c.setMultSlider();
-    c.setPolTypeSlider();
-    c.setExpSlider();
-  }
-  this.tx.setControl=()=>{
     c.setReport();
     c.setFactorSlider();
     c.setMultSlider();
@@ -379,7 +260,6 @@ if (!PUBLISH) debugger;
       return sup;
     }
   }
- 
   return c;
 }
 
@@ -426,6 +306,7 @@ var Shape=function(t1,t2,t3,t4) {
     this.t3.copyValues(this.t3save);
     this.t4.copyValues(this.t4save);
   }
+/*
   this.transit=()=>{
     dString2=dString1;
     this.t1.copyValues(this.t1save);
@@ -433,17 +314,8 @@ var Shape=function(t1,t2,t3,t4) {
     this.t3.copyValues(this.t3save);
     this.t4.copyValues(this.t4save);
   }
-}
-
-/*
-Shape.prototype.copyTerms=()=>{ 
-  this.t1.copyValues(this.t1save);
-  this.t2.copyValues(this.t2save);
-  this.t3.copyValues(this.t3save);
-  this.t4.copyValues(this.t4save);
-//  [this.t1,this.t2,this.t3,this.t4].forEach((t)=>{ t.copyValues(shpe); });
-}
 */
+}
 
 var Term=function(calc,factor) {
   // single calc start, move to calc*calc*...
@@ -454,30 +326,25 @@ var Term=function(calc,factor) {
   this.factorCall=(inp)=>{ 
     this.factor=parseFloat(inp.value); 
 //adjustFactors();
+    // set dStrings 
+/*
     if (state!=EXPLORE) {
       repeatCount=0;
       draw(1);
     }
+*/
   }
   this.multCall=(inp)=>{ 
     this.calc.mult=parseInt(inp.value); 
-    draw(1);
-    if (state!=EXPLORE) {
-      repeatCount=0;
-      draw(1);
-    }
   }
   this.polTypeCall=(inp)=>{ 
     //this.calc.polType=[Math.sin,Math.cos][parseInt(inp.value)];
     this.calc.polType=parseInt(inp.value);
-    draw(1);
+    //draw(1);
   }
   this.expCall=(inp)=>{ 
     this.calc.exp=parseInt(inp.value); 
-    draw(1);
-  }
-  this.setControl=()=>{ 
-//console.log("in pro"); 
+    //draw(1);
   }
   this.randomizeFactor=()=>{
     this.factor=(10-2*getRandomInt(0,11))/10;
@@ -496,14 +363,10 @@ var Term=function(calc,factor) {
     this.randomizeCalc();
     //this.factor=(10-2*getRandomInt(0,11))/10;
 /*
-if (false) { // sscc only, vert symmetry
-    this.calc.polType=[0,1][getRandomInt(0,2)];
-}
     //this.calc.exp=[1,3,5][getRandomInt(0,3,true)];
     this.calc.exp=[1,3,5][getRandomInt(0,2,true)];
     //this.calc.mult=getRandomInt(1,7,true);
     this.calc.mult=getRandomInt(1,6,true);
-    //this.setControl();
 */
   }
   this.getId=()=>{
@@ -521,94 +384,68 @@ if (!PUBLISH) debugger;
   }
 }
 
-var test=()=>{ console.log("tested"); }
-
-var repeatCount=0;
-var repeat=()=>{
-  repeatCount++;
-if (!PUBLISH) console.log("an loop "+repeatCount);
-
-  if (repeatCount%2==1) {
-    if (displayCol.count()<5) {
-      displayCol.add(animationIcon.getDisplayIcon());
-      setState(EXPLORE);
-    } else {
-      setState(STOP);
-    }
-    return;
-  }
-
-  if (repeatCount==REPEAT_CYCLE_LIMIT-1) {  // st to 50
-    setState(STOP);
-  } else if (repeatCount>=REPEAT_CYCLE_LIMIT) {  // st to 50
-    //setState(STOP);
-    setState(EXPLORE);
-  } else if (repeatCount>=1000) {
-    setState(STOP);
-  }
-//if (!PUBLISH) debugger;
-}
-
 var curveAN=(()=>{
   let c=new Curve();
-/////////////////////
-//  c.an.setAttribute("onrepeat","repeat()");
-//  c.an.setAttribute("fill","remove");
-//////////////////
 c.an.setAttribute("fill","freeze");
 c.an.setAttribute("repeatCount",0);
 c.an.setAttribute("dur",0);
   return c;
 })();
 
-var animationIcon=new Icon(curveAN);
-if (!PUBLISH) animationIcon.style.border="1px solid silver";
-animationIcon.getDisplayIcon=()=>{
-  let ancop=animationIcon.cloneNode(true);
-  ancop.setAttribute("style","");
-  let svg=ancop.firstElementChild;
-  svg.setAttribute("style","");
-  svg.style.width=ICONSIZE+"px";
-  svg.style.height=ICONSIZE+"px";
-  svg.firstElementChild.setAttribute("transform", "translate("+ICONSIZE/2+","+ICONSIZE/2+") scale("+ICONSIZE/800+","+ICONSIZE/800+")");
-  return ancop;
+grid.append("\u00A0");
+
+var srep=(s)=>{
+  let sr=document.createElement("span");
+  sr.append(s);
+  return s;
 }
-grid.append(animationIcon);
-curveAN.setAnimation(false);
 
 var DisplayIcon=function(shpe) {
   let di=new Icon(new Curve());
   di.setIconShape(shpe);
+  di.id="phs"+new Date().getTime();
   di.style.border="1px solid transparent";
   di.curve.style.fill=shpe.color;
   di.curve.style.fillRule=shpe.fillRule;
   di.curve.stroke=shpe.color;
-  di.curve.an.setAttribute("repeatCount", "10");
-  di.curve.an.setAttribute("dur", shpe.dur*(1.5-0.4*Math.random()));
+  di.curve.an.setAttribute("fill","freeze");
+  di.curve.an.setAttribute("repeatCount", "6");
+  di.curve.an.setAttribute("dur", shpe.dur*(5-0.5*Math.random()));
+  di.curve.an.setAttribute("onend", "DisplayIcon.prototype.rmv("+di.id+")");
   di.draw3();
   di.curve.an.setAttribute("begin","0s");
+if (!PUBLISH) di.append(srep(shpe.mString1+","+shpe.mString2));
   di.astart=0;
-  di.animate=(ts)=>{
-    if (!displayCol.astart) {
-      displayCol.astart=ts;
-    }
-    let progress=ts-displayCol.astart;
+  di.animateIn=(ts)=>{
+    if (!di.astart) { di.astart=ts; }
+    let progress=ts-di.astart;
     if (progress<200) {
       let frac=progress/200;
       let mt=ICONSIZE*(frac-1);
       di.style.marginTop=mt+"px";
-/*
-      displayContainer.firstElementChild.style.marginTop=mt+"px";
-*/
-      requestAnimationFrame(displayCol.animate);
+      requestAnimationFrame(di.animateIn);
     } else {
- //     displayContainer.firstElementChild.style.marginTop="0px";
       di.style.marginTop="0px";
       di.astart=0;
     }
   } 
-  // displayCol animate here
+  di.animateOut=(ts)=>{
+    if (!di.astart) { di.astart=ts; }
+    let progress=ts-di.astart;
+    if (progress<200) {
+      let frac=progress/200;
+      //let mt=ICONSIZE*(frac);
+      di.style.opacity=1-frac;
+      requestAnimationFrame(di.animateOut);
+    } else {
+      di.remove();
+    }
+  }
   return di;
+}
+
+DisplayIcon.prototype.rmv=function(wd) {
+  requestAnimationFrame(wd.animateOut);
 }
 
 var ControlIcon=function(name) {
@@ -636,14 +473,26 @@ var ControlIcon=function(name) {
     ci.curve.an.beginElement();
   }
   ci.stopAnimation=()=>{ ci.rc=20; }
+  ci.setSliders=()=>{ 
+ci.curve.an.remove();
+    sliders.setSliders(ci); 
+  }
+  ci.draw=()=>{ 
+ci.curve.an.setAttribute("values","");
+    ci.shape.dString1=getSVGPath(1,ci.shape);
+    ci.curve.setPath(ci.shape.dString1);
+    //ci.set2Value(); 
+    //ci.draw3(); 
+  }
   return ci;
 }
 
 var randomIcon=(()=>{
   let ri=new ControlIcon("random");
+  ri.curve.style.fillRule="evenodd";
   ri.curve.an.setAttribute("onend","randomIcon.repeat()");
   ri.repeat=()=>{
-    console.log("rnd cyc "+ri.rc);
+if (!PUBLISH) console.log("rnd cyc "+ri.rc);
     ri.cycle();
   }
   return ri;
@@ -653,7 +502,7 @@ var heartIcon=(()=>{
   let hi=new ControlIcon("heart");
   hi.curve.an.setAttribute("onend","heartIcon.repeat()");
   hi.repeat=()=>{
-    console.log("ht cyc "+hi.rc);
+if (!PUBLISH) console.log("ht cyc "+hi.rc);
     hi.cycle();
   }
   return hi;
@@ -663,7 +512,7 @@ var starIcon=(()=>{
   let si=new ControlIcon("star");
   si.curve.an.setAttribute("onend","starIcon.repeat()");
   si.repeat=()=>{
-    console.log("star cyc "+si.rc);
+if (!PUBLISH) console.log("star cyc "+si.rc);
     si.cycle();
   }
   return si;
@@ -674,7 +523,7 @@ var rouletteIcon=(()=>{
   ri.curve.style.fillRule="evenodd";
   ri.curve.an.setAttribute("onend","rouletteIcon.repeat()");
   ri.repeat=()=>{
-    console.log("ro cyc "+ri.rc);
+if (!PUBLISH) console.log("ro cyc "+ri.rc);
     ri.cycle();
   }
   return ri;
@@ -712,13 +561,16 @@ var displayCol={
     return displayContainer.children.length;
   },
   add:(as)=>{
-    as.id="phs"+new Date().getTime();
+//    as.id="phs"+new Date().getTime();
     let an=as.getElementsByTagName("animate")[0];
-    an.setAttribute("onend","displayCol.remove('"+as.id+"')");
-as.style.marginTop=-ICONSIZE+"px";
+
+//    an.setAttribute("onend","displayCol.remove('"+as.id+"')");
+
+    as.style.marginTop=-ICONSIZE+"px";
     displayContainer.insertBefore(as,displayContainer.firstElementChild);
-requestAnimationFrame(displayCol.animate);
     //displayContainer.append(as);
+    //requestAnimationFrame(displayCol.animate);
+    requestAnimationFrame(as.animateIn);
     return true;
   },
   remove:(id)=>{ document.getElementById(id).remove(); },
@@ -726,7 +578,8 @@ requestAnimationFrame(displayCol.animate);
     document.querySelectorAll("[id^='phs']").forEach((d)=>{ d.remove(); });
   },
   astart:0,
-  animate:(ts)=>{
+/*
+  animateZ:(ts)=>{
     if (!displayCol.astart) {
       displayCol.astart=ts;
     }
@@ -737,16 +590,18 @@ requestAnimationFrame(displayCol.animate);
       displayContainer.firstElementChild.style.marginTop=mt+"px";
       requestAnimationFrame(displayCol.animate);
     } else {
-      //displayContainer.lastChild.remove();
-      // take out last child.
       displayContainer.firstElementChild.style.marginTop="0px";
       displayCol.astart=0;
     }
   }
+*/
 }
 
 onresize=function() {
-    animationIcon.setSize(true);
+  ICONSIZE=Math.trunc((window.innerHeight-40)/32)*8;
+  document.querySelectorAll(".icon").forEach((i)=>{ 
+    i.setSize(false);
+  });
 }
 
 var cbLoc=(p1,p2,frac)=>{
@@ -771,7 +626,7 @@ var RES8=Math.PI/4;
 var RES6=Math.PI/3;
 var RES4=Math.PI/2;
 var RES2=Math.PI;
-var RES=RES30;
+var RES=RES80;
 
 var getSVGPath=(frac,shp)=>{
   let data="M";
@@ -788,47 +643,6 @@ var getSVGPath=(frac,shp)=>{
   data+="z";
   return data;
 }
-
-var drawTFCurve=(shape,icon)=>{
-// move these calcs to dString
-  let path1Data=getSVGPath(1,shape);
-  let path2Data=getSVGPath(0,shape);
-  icon.curve.setTF(path1Data,path2Data);
-}
-
-var drawValueCurve=(shape,icon)=>{
-// move these calcs to dString
-  let path1Data=getSVGPath(1,shape);
-  let path2Data=getSVGPath(0,shape);
-  let vals=path1Data+" ; "+path2Data+" ; "+path1Data;
-  icon.curve.setValues(vals);
-}
-
-/*
-var draw=(frac)=>{
-  let path1Data=getSVGPath(frac,shape);
-
-// ? move this out
-  if (frac==1) {
-shape.dString1=path1Data;
-    if (state==ANIMATE) {
-      if (!PUBLISH) console.log("animate");
-      let path2Data=getSVGPath(0,shape);
-      let vals=path1Data+" ; "+path2Data+" ; "+path1Data;
-      curveAN.setValues(vals);
-      shape.drawControl(path1Data);
-    } else if (state==STOP) {
-      curveAN.setPath(path1Data);
-    } else {
-//      if (!PUBLISH) console.log("explore");
-      shape.drawControl(path1Data);
-    }
-  }
-  if (state==EXPLORE) curveAN.setPath(path1Data);
-  //return [path1Data,path2Data];
-  return;
-}
-*/
 
 var id="text";
 
@@ -942,7 +756,6 @@ var adjustFactors=(shpe)=>{
     t3.factor*=sm;
     t4.factor*=sm;
   }
-//  [t1,t2,t3,t4].forEach((t)=>{ t.setControl(); });
 }
 
 var randomize=()=>{
@@ -989,16 +802,11 @@ var randomShape=(()=>{
   );
   s.stdColor="hsl(240,40%,70%)";
   s.color=s.stdColor;
-  s.dur=2;
+  s.dur=1;
+s.fillRule="evenodd";
   s.symmetry=1;  // just going with setRandomShape and bilateral for now
-  s.randomize=()=>{
-//    if (s.symmetry==1) {  // randomize on both
-    if (Math.random()<0.9) {
-      s.randomizeBilateral();
-    } else {
-      randomize();
-    }
-  }
+//  s.randomize=()=>{ randomize(); }
+  s.biset=false;
   s.randomizeBilateral=()=>{
     s.t1.factor=1;
     s.t2.factor=0;
@@ -1006,25 +814,33 @@ var randomShape=(()=>{
     s.t4.factor=0;
     s.t1.calc.exp=[1,3,5][getRandomInt(0,3)];
     s.t3.calc.exp=[1,3,5][getRandomInt(0,3)];
-    s.t1.calc.mult=getRandomInt(1,6);
-    if (s.t1.calc.mult%2==0) {
-      //s.t3.calc.mult=s.t1.calc.mult+1;
+    //s.t1.calc.mult=getRandomInt(1,7);
+    //s.t1.calc.mult=[1,3,5][getRandomInt(0,3)];
+    if (Math.random()<0.1) s.biset=!s.biset;
+    if (s.biset) {
+      s.t1.calc.mult=[2,4,6,8][getRandomInt(0,4)];
       s.t3.calc.mult=s.t1.calc.mult+[1,3][getRandomInt(0,2)];
     } else {
-      //s.t3.calc.mult=s.t1.calc.mult+2;
+      s.t1.calc.mult=[1,3,5,7][getRandomInt(0,4)];
       s.t3.calc.mult=s.t1.calc.mult+[2,4][getRandomInt(0,2)];
     }
+//    if (s.t1.calc.mult%2==0) { } else { }
 /*
       s.t1.calc.eq(s.t3.calc)
       || (s.t1.calc.mult%2==1 && (s.t1.calc.mult-s.t3.calc.mult)%2!=0)
       || (s.t1.calc.mult%2==0 && (s.t1.calc.mult-s.t3.calc.mult)%2==0)
 */
-//    [s.t1,s.t2,s.t3,s.t4].forEach((t)=>{ t.setControl(); });
   }
   s.transit=()=>{
+if (!PUBLISH) s.mString2=s.mString1;
     s.copyTerms();
-    if (s.symmetry==1) {
+    //if (s.symmetry==1) {
+    if (Math.random()<0.9) {
       s.randomizeBilateral();
+if (!PUBLISH) {
+s.mString1="B";
+s.mString1+=s.t1.calc.mult+" "+s.t3.calc.mult;
+}
     } else {
       if (Math.random()<0.8) {
 	s.t1.randomizeFactor();
@@ -1033,60 +849,51 @@ var randomShape=(()=>{
 	s.t4.randomizeFactor();
 	adjustFactors(s);
       } else {
-	s.randomize();
+	randomize();
       }
+if (!PUBLISH) {
+s.mString1="R";
+s.mString1+=s.t1.calc.mult+" "+s.t2.calc.mult+" "+s.t3.calc.mult+" "+s.t4.calc.mult;
+}
     }
     s.dString2=s.dString1;
     s.dString1=getSVGPath(1,s);
     s.color="hsl("+getRandomInt(0,360)+",70%,60%)";
   }
-if (!PUBLISH) {
-  s.drawControl=(pData)=>{ 
-    //curveDR.setPath(pData); 
-//drawCurve(s,curveDR);
-    sliders.setSliders(s);
-  }
-}
   return s;
 })();
 randomShape.transit();
 randomShape.transit(); // wipe out non-random construction
 //randomIcon.shape=randomShape;
 randomIcon.setIconShape(randomShape);
-
-//randomShape.icon=randomIcon;
-
-//randomShape.transit();
+randomIcon.curve.setPath(randomShape.dString1);
 
 //need dynamic shape connection
 // controls
 if (!PUBLISH) {
-var sliders;
-grid.append((()=>{
+//grid.append((()=>{
+var sliders=(()=>{
   let c=document.createElement("div");
   let cX1=new Control("X1",randomShape.t1);
   let cX2=new Control("X2",randomShape.t2);
   let cY1=new Control("Y1",randomShape.t3);
   let cY2=new Control("Y2",randomShape.t4);
-  c.append(cX1,cX2,cY1,cY2
-    //new Control("X1",randomShape.t1),
-    //new Control("X2",randomShape.t2),
-    //new Control("Y1",randomShape.t3),
-    //new Control("Y2",randomShape.t4),
-  );
-  c.setSliders=(shpe)=> {
-    cX1.setControlTerm(shpe.t1);
+  c.append(cX1,cX2,cY1,cY2);
+  c.setSliders=(icon)=> {
+    cX1.setControlTerm(icon.shape.t1,icon.draw);
     cX1.setControlX();
-    cX2.setControlTerm(shpe.t2);
+    cX2.setControlTerm(icon.shape.t2,icon.draw);
     cX2.setControlX();
-    cY1.setControlTerm(shpe.t3);
+    cY1.setControlTerm(icon.shape.t3,icon.draw);
     cY1.setControlX();
-    cY2.setControlTerm(shpe.t4);
+    cY2.setControlTerm(icon.shape.t4,icon.draw);
     cY2.setControlX();
+//    c.shape=shpe;
   }
-  sliders=c;
+  grid.append(c);
   return c;
-})());
+})();
+
 }
 
 var heartShape=(()=>{
@@ -1103,9 +910,9 @@ var heartShape=(()=>{
   //s.t4save=new Term(new Calc(1,2,1),0.5);
   s.t4save=new Term(new Calc(1,2,1),0.4);
   //s.t5save=new Term(new Calc(1,3,1),0.1);
-  s.stdColor="hsl(0, 60%, 80%)";
-  s.color="#DAA";
-  s.dur=1;
+  s.stdColor="hsl(0,70%,80%)";
+  s.color=s.stdColor;
+  s.dur=0.4;
   s.beat=1;
   s.getY=(t)=>{ 
     return s.t3.getValue(t)+s.t4.getValue(t)+s.t5.getValue(t); 
@@ -1125,18 +932,15 @@ var heartShape=(()=>{
     s.copyTerms();
     //s.t5.copyValues(s.t5save);
     if (!copy) s.randomize();
-    //[s.t1,s.t2,s.t3,s.t4].forEach((t)=>{ t.setControl(); });
     s.dString2=s.dString1;
     s.dString1=getSVGPath(1,s);
   }
-  s.drawControl=(pData)=>{ /*curveHT.setPath(pData);*/ 
-if (!PUBLISH) { sliders.setSliders(s); }
-  }
+  s.transit(true);
   return s;
 })();
-heartShape.transit();
 heartIcon.setIconShape(heartShape);
 heartIcon.curve.setPath(heartShape.dString1);
+heartShape.transit();
 
 var starShape=(()=>{
   let s=new Shape(
@@ -1145,28 +949,29 @@ var starShape=(()=>{
     new Term(new Calc(1,1,3),1),
     new Term(new Calc(1,1,1),0),
   );
-  s.stdColor="#ADA";
-  s.color="#ADA";
+  s.stdColor=s.color="hsl(51,80%,70%)";
+  //s.color=s.stdColor;
   s.dur=1;
-  s.transit=()=>{
-    s.copyTerms();
-    s.t1.calc.exp=[3,5,7,9][getRandomInt(0,4)];
-    s.t3.calc.exp=s.t1.calc.exp;
+  s.randomize=()=>{
+    s.t1.calc.exp=[5,7,9,3][getRandomInt(0,4,true)];
+    s.t3.calc.exp=[7,5,3,9][getRandomInt(0,4,true)];
+    //s.t3.calc.exp=s.t1.calc.exp;
     s.t1.factor=s.t1.factori*(1-0.5*Math.random());
     s.t3.factor=s.t3.factori*(1-0.5*Math.random());
     s.color="hsl("+(getRandomInt(0,360)%360)+",90%,70%)";
+  }
+  s.transit=(copy)=>{
+    s.copyTerms();
+    if (!copy) s.randomize();
     s.dString2=s.dString1;
     s.dString1=getSVGPath(1,s);
   }
-  s.drawControl=(pData)=>{ 
-//    curveST.setPath(pData); 
-if (!PUBLISH) { sliders.setSliders(s); }
-  }
+  s.transit(true);
   return s;
 })();
-starShape.transit();
 starIcon.setIconShape(starShape);
 starIcon.curve.setPath(starShape.dString1);
+starShape.transit();
 
 var rouletteShape=(()=>{
    // sscc
@@ -1179,14 +984,45 @@ var rouletteShape=(()=>{
   );
   s.stdColor="#D88";
   s.color="#D88";
-  s.dur=3;
+  s.dur=1;
   s.fillRule="evenodd";
+/*
+  s.rp={
+    "3":[[1,4],[1,7],[1,10],[2,5],[4,7],[5,8],[5,11],[8,11]],
+    "4":[[1,5],[1,9],[3,7],[3,11],[5,9],[7,11]],
+    "5":[[1,6],[1,11],[2,7],[2,12],[3,8],[4,9],[6,11],[7,12]]
+  };
+*/
+  s.rp={
+    "3a":[[1,4],[1,7],[1,10],[4,7]],
+    "3b":[[2,5],[5,8],[5,11],[8,11]],
+    "4" :[[1,5],[1,9],[3,7],[3,11],[5,9],[7,11]],
+    "5a":[[1,6],[1,11],[6,11]],
+    "5b":[[2,7],[2,12],[7,12]]
+  };
+  s.cset="4";
+  //s.pairs=[[1,8],[2,9],[3,10],[4,11],[5,12]]; // 7 set -5
   s.transit=()=>{
     s.copyTerms();
-    s.t2.calc.mult=[5,6,7,8,9,10][getRandomInt(0,6)];
-    s.t4.calc.mult=s.t2.calc.mult;
-
-    s.t1.factor=s.t1.factori*(1.2-0.4*Math.random());
+//if (Math.random()<0.8) {
+    if (Math.random()<0.1) {
+      s.cset=["3a","3b","4","5a","5b"][getRandomInt(0,5)];
+    }
+    //let pair=s.pairs[getRandomInt(0,s.pairs.length)];
+    let pair=s.rp[s.cset][getRandomInt(0,s.rp[s.cset].length)];
+    if (Math.random()<0.5) {
+      s.t1.calc.mult=pair[0];
+      s.t3.calc.mult=pair[0];
+      s.t2.calc.mult=pair[1];
+      s.t4.calc.mult=pair[1];
+    } else {
+      s.t1.calc.mult=pair[1];
+      s.t3.calc.mult=pair[1];
+      s.t2.calc.mult=pair[0];
+      s.t4.calc.mult=pair[0];
+    }
+//}
+    s.t1.factor=s.t1.factori*(1.2-0.6*Math.random());
     s.t3.factor=s.t1.factor;
     s.t2.factor=1-Math.abs(s.t1.factor);
     s.t4.factor=s.t2.factor;
@@ -1199,97 +1035,25 @@ var rouletteShape=(()=>{
     s.dString2=s.dString1;
     s.dString1=getSVGPath(1,s);
     s.color="hsl("+(getRandomInt(0,360)%360)+",80%,60%)";
+if (!PUBLISH) {
+s.mString2=s.mString1;
+s.mString1=""+s.t1.calc.mult+s.t2.calc.mult+s.t3.calc.mult+s.t4.calc.mult;
+}
   }
-  s.drawControl=(pData)=>{ 
-    //curveRO.setPath(pData); 
-    rouletteIcon.curve.setPath(pData); 
-if (!PUBLISH) { sliders.setSliders(s); }
+  s.transit();
+  s.getId=()=>{
+    return ""+s.t1.calc.mult+s.t2.calc.mult+s.t3.calc.mult+s.t4.calc.mult;
   }
   return s;
 })();
 rouletteIcon.setIconShape(rouletteShape);
 rouletteShape.transit();
 rouletteIcon.curve.setPath(rouletteShape.dString1);
-//shape=rouletteShape;
-//draw(1);
 
-
-//randomIcon.shape=randomShape;
-heartIcon.shape=heartShape;
-starIcon.shape=starShape;
-//rouletteIcon.shape=rouletteShape;
-
-var start=()=>{
-  shape.transit();  // should take of this on shape creation
-  requestAnimationFrame(animate);
-}
-
-var pauseTS=10000;
-var pause=(ts)=>{
-  if (step==Infinity) return;
-  if (ts<pauseTS) {
-    requestAnimationFrame(pause);
-  } else {
-    transit();
-    requestAnimationFrame(animate);
-  }
-}
-
-// convert to object
-var exploreCount=0;
-var stx=0;
-var exploreDuration=1000;
-var animate=(ts)=>{
-  if (!stx) {
-    stx=ts;
-  }
-  let progress=ts-stx;
-  if (progress<exploreDuration) {
-    let frac=progress/exploreDuration;
-    draw(frac);
-    requestAnimationFrame(animate);
-  } else {
-    draw(1);
-    stx=0;
-//if (!PUBLISH) 
-if (state!=EXPLORE) {
-//debugger;
-return;
-}
-if (!PUBLISH) { console.log("exp loop "+exploreCount); }
-    if (exploreCount++>EXPLORE_CYCLE_LIMIT) {
-      setState(ANIMATE);
-      return;
-    }
-
-//    pauseTS=performance.now()+2000;
-//    requestAnimationFrame(pause);
-    shape.transit();
-    requestAnimationFrame(animate);
-  }
-}
-
-
-var shape=randomShape;
-//shape.transit();
-//if (isNaN(shape.t1save.factor)) { debugger; }
-//draw(1);
-
-randomIcon.set2Value(); 
-randomIcon.curve.an.setAttribute("begin","0s"); // sharts animation
-
-/*
-shape=heartShape;
-draw(1);
-shape.transit();
-*/
-
-curveAN.style.fill=heartShape.stdColor;
-curveAN.style.stroke=heartShape.stdColor;
-
-
-//setState(ANIMATE);	// required initialization, for sync
-repeatCount=100;	// then just explore
+let i=[heartIcon,starIcon,rouletteIcon,randomIcon][getRandomInt(0,4)];
+//let i=rouletteIcon;
+i.set2Value(); 
+i.curve.an.setAttribute("begin","0s"); // sharts animation
 
 onresize();
 
