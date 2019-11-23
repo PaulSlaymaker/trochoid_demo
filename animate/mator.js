@@ -1115,7 +1115,6 @@ var rouletteShape=(()=>{
     let setkeys=Object.keys(s.rp);
 //    s.cset=["3a","3b","4","5a","5b","7a","7b","7c","7d","7e","7f","11a","11b"][getRandomInt(0,12)];
 s.cset=setkeys[getRandomInt(0,setkeys.length,true)];
-s.cset="4";
     if (s.cset.startsWith("13")) {
       s.res=Math.PI/(13*getRandomInt(1,2,true));
     } else if (s.cset.startsWith("11")) {
