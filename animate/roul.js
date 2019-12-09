@@ -9,8 +9,17 @@ var styleSheet=(()=>{
   ss.insertRule(".cicon { border:1px solid silver; background:white; }",0);
   ss.insertRule(".cicon:hover { border:1px solid blue; }",0);
   ss.insertRule(".dicon { border:1px solid transparent; }",0);
+  //ss.dispRule=ss.cssRules[0];
   ss.insertRule(".dicon:hover { border:1px dotted #DDD; }",0);
-  ss.insertRule("svg { transform:rotate(180deg); }",0);
+  ss.dispRuleH=ss.cssRules[0];
+  ss.setFinal=(b)=>{
+    if (b) {
+      //ss.dispRuleH.style="border:1px solid #B99";
+      ss.dispRuleH.style="border:1px solid transparent";
+    } else {
+      ss.dispRuleH.style="border:1px dotted #DDD";
+    }
+  }
   return ss;
 })();
 
@@ -36,6 +45,7 @@ body.onclick=(event)=>{
    let ic=event.srcElement;
 if (!PUBLISH)  console.log(ic.name+" click ct "+ic.rc);
     if (ic.rc==0) {
+      styleSheet.setFinal(false);        
       displayCol.clear();      
       ic.shape.resetSel();
       ic.shape.transit();
@@ -48,20 +58,18 @@ if (!PUBLISH)  console.log(ic.name+" click ct "+ic.rc);
     return;
   } else {
     if (event.srcElement.id.startsWith("phs")) {
+      styleSheet.setFinal(true);        
       let di=event.srcElement;
       if (di.cIcon.shape.hueSel==undefined) {
         di.selectControl();
-
-/*
-var displays=document.querySelectorAll("[id^='phs']");
-console.log(displays);
-*/
-
+        displayCol.ids=displayCol.ids.filter((idd)=>{ return idd!=di.id; });
         di.cIcon.shape.transit();
-        displayCol.clear();      
+//        displayCol.clear();      
         di.cIcon.curve.an.beginElement();
       } else {
         di.curve.an.beginElement();
+// toggle
+//di.style.border="1px solid #B99";
       }
     } else {
 if (!PUBLISH) console.log("out click");
@@ -173,6 +181,9 @@ var getRandomInt=(min,max,low)=>{
   }
 }
 
+var getRandomIntCentral=(cent,range,foc)=>{
+}
+
 var Calc=function(polType,mult,exp) {
   this.polType=polType;
   this.mult=mult;
@@ -208,7 +219,6 @@ var Shape=function() {
   }
   this.getY=(t)=>{ 
 //if (isNaN((this.ty1.getValue(t)+this.ty2.getValue(t)+this.ty3.getValue(t)))) debugger; 
-    //return this.ty1.getValue(t)+this.ty2.getValue(t); 
     return this.ty1.getValue(t)+this.ty2.getValue(t)+this.ty3.getValue(t); 
   }
   this.getSVGPath=()=>{
@@ -270,12 +280,6 @@ var Term=function(calc,factor) {
     this.randomizeFactor();
     this.randomizeCalc();
     //this.factor=(10-2*getRandomInt(0,11))/10;
-/*
-    //this.calc.exp=[1,3,5][getRandomInt(0,3,true)];
-    this.calc.exp=[1,3,5][getRandomInt(0,2,true)];
-    //this.calc.mult=getRandomInt(1,7,true);
-    this.calc.mult=getRandomInt(1,6,true);
-*/
   }
   this.getId=()=>{
     return ["s","c"][this.calc.polType]+this.calc.mult;
@@ -292,6 +296,57 @@ if (!PUBLISH) debugger;
   }
 }
 
+var coprime=(a,b)=>{
+  const primes=[2,3,5,7,9,11,13,17,19,23,29,31,37,41,43,47,53,59];
+  if (a==1 || b==1) return true;
+  let mm=Math.max(a,b)/2;
+  for (var h=0; primes[h]<mm; h++) {
+    if (a%primes[h]==0 && b%primes[h]==0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+var generateMultipliers=(K,V)=>{
+  let FMAX=60;
+  let m=[];
+  let END=FMAX-2*V;
+  for (var i=K; i<END; i+=V) {
+    for (var j=i+V; j<END+V; j+=V) {
+if (coprime(i,j)) {
+      for (var k=j+V; k<END+2*V; k+=V) {
+	//if (coprime(i,j) && coprime(i,k) && coprime(j,k)) {
+	if (coprime(i,k) && coprime(j,k)) {
+          m.push([i,j,k]);
+	}
+      }
+}
+    }
+  }
+  return m;
+}
+
+var generateMultipliers2=(K,V)=>{
+  let FMAX=36
+  let m1=[];
+  let m2=[];
+  let END=FMAX-2*V;
+  for (var i=K; i<END; i+=V) {
+    for (var j=i+V; j<END+V; j+=V) {
+      for (var k=j+V; k<END+2*V; k+=V) {
+	if (coprime(i,j) && coprime(i,k) && coprime(j,k)) {
+          m1.push([i,j,k]);
+	}
+	if ((j-i)%(2*V)==0 && (k-i)%(2*V)==0 && (k-j)%(2*V)==0) {
+          m2.push([i,j,k]);
+        }
+      }
+    }
+  }
+  return m2.concat(m1);
+}
+
 var RouletteShape=function() {
   // sscc
   // f1==f3 f2==f4, m1=m3=1, m2=m4>4, all e=1
@@ -305,30 +360,30 @@ var RouletteShape=function() {
   s.fp2={
     "p":[
       [ 0,+1,+1, 0,+1,+1],
-      [+1,+1,+1,+1,+1,+1],
       [ 0,-1,-1, 0,-1,-1],
-      [-1,-1,-1,-1,-1,-1],
       [+1, 0,+1,+1, 0,+1],
-      [+1,-1,+1,+1,-1,+1],
       [-1, 0,-1,-1, 0,-1],
-      [-1,+1,-1,-1,+1,-1],
       [+1,+1, 0,+1,+1, 0],
-      [+1,+1,-1,+1,+1,-1],
       [-1,-1, 0,-1,-1, 0],
+      [+1,+1,+1,+1,+1,+1],
+      [-1,-1,-1,-1,-1,-1],
+      [+1,-1,+1,+1,-1,+1],
+      [-1,+1,-1,-1,+1,-1],
+      [+1,+1,-1,+1,+1,-1],
       [-1,-1,+1,-1,-1,+1],
     ],
     "n":[
       [+1, 0,+1,-1, 0,-1],
-      [+1,-1,+1,-1,+1,-1],
       [-1, 0,-1,+1, 0,+1],
-      [-1,+1,-1,+1,-1,+1],
       [ 0,+1,+1, 0,-1,-1],
-      [+1,+1,+1,-1,-1,-1],
-      [ 0,-1,-1, 0,+1,+1],  // *
-      [-1,-1,-1,+1,+1,+1],
+      [ 0,-1,-1, 0,+1,+1],
       [+1,-1, 0,-1,+1, 0],
-      [+1,-1,+1,-1,+1,-1],
       [-1,+1, 0,+1,-1, 0],
+      [+1,-1,+1,-1,+1,-1],
+      [-1,+1,-1,+1,-1,+1],
+      [+1,+1,+1,-1,-1,-1],
+      [-1,-1,-1,+1,+1,+1],
+      [+1,-1,+1,-1,+1,-1],
       [-1,+1,-1,+1,-1,+1],
     ]
   }
@@ -336,149 +391,121 @@ var RouletteShape=function() {
     "p":[[+1,+1,+1,+1],[-1,-1,-1,-1],[+1,-1,+1,-1],[-1,+1,-1,+1]],
     "n":[[+1,+1,-1,-1],[-1,-1,+1,+1],[+1,-1,-1,+1],[-1,+1,+1,-1]]
   }
-  s.fset=s.fp[["p","n"][getRandomInt(0,2)]];
   s.rp={}
+/*
+  s.eqDiff=(ma)=>{
+    if (ma.length!=3) debugger;
+    return ma[1]-ma[0]==ma[2]-ma[1],ma[2]-ma[1]));
+  }
+  s.maxDiff=(ma)=>{
+    if (ma.length!=3) debugger;
+    //return Math.max(ma[1]-ma[0],Math.max(ma[2]-ma[0],ma[2]-ma[1]));
+    return Math.max(ma[1]-ma[0]);
+  }
+*/
   s.transit=()=>{
-/*
-s.t1.calc.exp=
-s.t2.calc.exp=
-s.t3.calc.exp=
-s.t4.calc.exp=9; //[1,3,5][getRandomInt(0,2)]; // 1,3 for low res
-*/
-    let setkeys=Object.keys(s.rp);
-    //s.cset=setkeys[getRandomInt(0,setkeys.length)];
-/*
-s.cset="5d";
-if (!setkeys.includes(s.cset)) return;
-*/
     if (typeof s.csetSel=="string") {
       s.cset=s.csetSel;
     } else {
+      let setkeys=Object.keys(s.rp);
       s.cset=setkeys[getRandomInt(0,setkeys.length)];
     }
+    var vc;
     var sk=0;
     var sz=s.rp[s.cset].length;
     if (s.cset.startsWith("7")) {
-      let vc=7*getRandomInt(3,9,true);
-      if (vc<=28 && s.cset=="7a") {
-        sk=2
-      }
-      if (vc==21 && RegExp("7[b-e]").test(s.cset)) {
-        sk=1;
-      }
-      s.res=2*Math.PI/vc;
-    } else if (s.cset==("5a")) {
-      let vc=5*getRandomInt(3,13,true);
-      if (vc==25) {
-        sk=1;
-      } else if (vc==20) {
-        sk=2;
-      } else if (vc==15) {
-        sk=4;
+      vc=7*getRandomInt(3,11,true);
+      if (vc==28) {
+        if (s.cset=="7[ace]") {
+          sk=1;
+        }
+      } else if (vc==21) {
+        if (RegExp("7[ace]").test(s.cset)) {
+          sk=2
+        } else if (RegExp("7[bd]").test(s.cset)) {
+          sk=1;
+        }
       }
       s.res=2*Math.PI/vc;
-    } else if (s.cset==("5b")) {
-      let vc=5*getRandomInt(3,13,true);
-      if (vc==25) {
-        sk=1;
-      } else if (vc==20) {
-        sk=2;
-      } else if (vc==15) {
-        sk=4;
-      }
-      s.res=2*Math.PI/vc;
-    } else if (s.cset==("5c")) {
-      let vc=5*getRandomInt(3,13,true);
-      if (vc==25) {
-        sk=1;
-      } else if (vc==20) {
-        sk=2;
-      } else if (vc==15) {
-        sk=4;
-      }
-      s.res=2*Math.PI/vc;
-    } else if (s.cset==("5d")) {
-      let vc=5*getRandomInt(4,13,true);
+    } else if (s.cset.startsWith("5")) {
+      vc=5*getRandomInt(3,14,true);
       s.res=2*Math.PI/vc;
     } else if (s.cset=="4a") {
       if (s.duoSel || Math.random()<0.5) {
-        let vc=8*getRandomInt(2,7,true);
+        vc=8*getRandomInt(3,9,true);
         s.res=2*Math.PI/vc;
         s.duo=true;
-        sz=6;
+        sz=s.sz["4a"]; // temp
       } else {
-        let vc=4*getRandomInt(4,16,true);
+        vc=4*getRandomInt(4,17,true);
         s.res=2*Math.PI/vc;
         s.duo=false;
       }
     } else if (s.cset=="4b") {
       if (s.duoSel || Math.random()<0.5) {
-        let vc=8*getRandomInt(2,7,true);
+        vc=8*getRandomInt(2,9,true);
         s.res=2*Math.PI/vc;
         s.duo=true;
-        sz=2;
+        sz=s.sz["4b"]; // temp
       } else {
-        let vc=4*getRandomInt(4,16,true);
+        vc=4*getRandomInt(4,17,true);
         s.res=2*Math.PI/vc;
         s.duo=false;
       }
     } else if (s.cset=="3a") {
       if (s.duoSel || Math.random()<0.5) {
-        let vc=6*getRandomInt(3,10,true);
+        vc=6*getRandomInt(3,12,true);
         s.res=2*Math.PI/vc;
         s.duo=true;
-        sz=10;
+        sz=s.sz["3a"]; // temp
       } else {
-        let vc=3*getRandomInt(5,20,true);
+        vc=3*getRandomInt(5,23,true);
         s.res=2*Math.PI/vc;
         s.duo=false;
       }
     } else if (s.cset=="3b") {
       if (s.duoSel || Math.random()<0.5) {
-        let vc=6*getRandomInt(3,10,true);
+        vc=6*getRandomInt(3,12,true);
         s.res=2*Math.PI/vc;
         s.duo=true;
-        sz=8;
+        sz=s.sz["3b"]; // temp
+        //sz=15;
       } else {
-        let vc=3*getRandomInt(5,20,true);
+        vc=3*getRandomInt(5,23,true);
         s.res=2*Math.PI/vc;
         s.duo=false;
       }
     } else if (s.cset=="11a") {
-      s.res=Math.PI/(11*getRandomInt(1,3,true));
+      s.res=Math.PI/(11*getRandomInt(1,7,true));
     } else if (s.cset.startsWith("11")) {
-      let vc=11*getRandomInt(2,5,true);
+      vc=11*getRandomInt(4,7,true);
       s.res=2*Math.PI/vc;
     } else if (s.cset.startsWith("13")) {
-      s.res=Math.PI/(13*getRandomInt(1,2,true));
+      s.res=2*Math.PI/(13*getRandomInt(2,6,true));
     } else if (s.cset.startsWith("17")) {
-      s.res=Math.PI/(17*getRandomInt(1,2,true));
+      s.res=2*Math.PI/(17*getRandomInt(2,5,true));
     } else if (s.cset.startsWith("19")) {
-      s.res=Math.PI/(19*getRandomInt(1,2,true));
+      s.res=2*Math.PI/(19*getRandomInt(2,4,true));
     } else {
 if (!PUBLISH) debugger;
     }
-if (s.cset.startsWith("3") || s.cset.startsWith("4"))  {
-//if (false) {
-    s.fset=s.fp2[["p","n"][getRandomInt(0,2)]];
-} else {
+    s.np=["p","n"][getRandomInt(0,2)];
+    if (RegExp("^[345]").test(s.cset)) {
+    //if (s.cset.startsWith("3") || s.cset.startsWith("4"))  {
+      s.fset=s.fp2[s.np];
 
-
-if (Math.random()<0.5) {
-    s.fset=s.fp[["p","n"][getRandomInt(0,2)]];
-}
-
-
-
-}
+    } else {
+      s.fset=s.fp[s.np];
+    }
+    s.fMult=[];
     s.rMult=[];
     for (let i=0; i<3; i++) {  // 3 shape animation
-      if (s.cset.startsWith("3") || s.cset.startsWith("4"))  {
-      //if (false) {
+      if (RegExp("^[345]").test(s.cset)) {
 	var sp=getRandomInt(0,sz,true);
-	s.rMult.push(sp);
+        //if  res == vc, sp++%length
 	let trip=s.rp[s.cset][sp];
-	//let trip=s.rp[s.cset][getRandomInt(0,s.rp[s.cset].length)];
+//if (s.maxDiff(trip)==vc) { console.log(vc+" "+s.cset); }
+	s.rMult.push(sp);
 	s.tx1.calc.mult=trip[0];
 	s.ty1.calc.mult=trip[0];
 	s.tx2.calc.mult=trip[1];
@@ -491,7 +518,9 @@ if (Math.random()<0.5) {
 	s.ty2.factor=s.tx2.factor;
 	s.tx3.factor=1-Math.abs(s.tx1.factor+s.tx2.factor);
 	s.ty3.factor=s.tx3.factor;
-	let ff=s.fset[getRandomInt(0,12)];
+	let fsetIdx=getRandomInt(0,12);
+	s.fMult.push(fsetIdx);
+	let ff=s.fset[fsetIdx];
 	s.tx1.factor*=ff[0];
 	s.tx2.factor*=ff[1];
 	s.tx3.factor*=ff[2];
@@ -502,7 +531,6 @@ if (Math.random()<0.5) {
 	var sp=getRandomInt(sk,s.rp[s.cset].length,true)
 	s.rMult.push(sp);
 	let pair=s.rp[s.cset][sp];
-	//let pair=s.rp[s.cset][getRandomInt(0,s.rp[s.cset].length)];
 	if (Math.random()<0.5) {
 	  s.tx1.calc.mult=pair[0];
 	  s.ty1.calc.mult=pair[0];
@@ -518,7 +546,9 @@ if (Math.random()<0.5) {
 	s.ty1.factor=s.tx1.factor;
 	s.tx2.factor=1-Math.abs(s.tx1.factor);
 	s.ty2.factor=s.tx2.factor;
-	let ff=s.fset[getRandomInt(0,4)];
+	let fsetIdx=getRandomInt(0,4);
+	s.fMult.push(fsetIdx);
+	let ff=s.fset[fsetIdx];
 	s.tx1.factor*=ff[0];
 	s.tx2.factor*=ff[1];
 	s.ty1.factor*=ff[2];
@@ -562,7 +592,7 @@ if (s.cset.startsWith("3") || s.cset.startsWith("4"))  {
   }
   s.report=()=>{ 
     //return (Math.PI*2/s.res).toFixed(0)+" "+s.cset+" "+s.mString1+" "+s.mString2+" "+s.mString3; 
-    return (Math.PI*2/s.res).toFixed(0)+" "+s.cset+" "+s.rMult+" "+s.duo;
+    return (Math.PI*2/s.res).toFixed(0)+" "+s.cset+" "+s.rMult+" "+(s.duo==undefined?"":s.duo)+" "+s.np+s.fMult;
   }
   return s;
 }
@@ -586,31 +616,30 @@ var DisplayIcon=function(cIcon) {
   let di=new Icon(new Path());
   di.cIcon=cIcon;
   di.id="phs"+new Date().getTime();
-  if (cIcon.shape.hueSel==undefined) {
-    di.classList.add("dicon");
-  } else {
-    di.style.border="1px solid transparent";
-  }
+  di.classList.add("dicon");
   di.style.position="relative"; // for report child
   di.curve.style.fill="hsl("+cIcon.shape.hue+",80%,40%)";
   di.curve.style.stroke=di.curve.style.fill;
   di.curve.an.setAttribute("fill","freeze");
   di.curve.an.setAttribute("repeatCount", "3");
   di.curve.an.setAttribute("dur", (cIcon.shape.dur*(1+0.2*Math.random())).toFixed(1));
+
+/*
+di.firstElementChild.style.pointerEvents="auto";
+di.firstElementChild.setAttribute("onmouseover","this.firstElementChild.firstElementChild.firstElementChild.beginElement()");
+*/
+
   di.dString1=cIcon.shape.dString1;
   di.dString2=cIcon.shape.dString2;
   di.dString3=cIcon.shape.dString3;
   di.cset=cIcon.shape.cset;
   di.hue=cIcon.shape.hue;
   di.duo=cIcon.shape.duo;
-  di.rMult=cIcon.shape.rMult;
   //di.curve.an.setAttribute("onend", "DisplayIcon.prototype.rmv("+di.id+")");
   di.curve.an.setAttribute("onend", "DisplayIcon.prototype.setS("+di.id+")");
   di.set4Value();
   di.curve.an.setAttribute("begin","0s");
-  di.onmouseover=()=>{
-    di.curve.an.beginElement();
-  }
+  di.onmouseover=()=>{ di.curve.an.beginElement(); }
 if (!PUBLISH) {
   di.append(srep(cIcon.shape.report()));
 }
@@ -688,19 +717,16 @@ var ControlIcon=function(shpe) {
       ci.rc=0;
       return;
     }
+if (ci.shape.hueSel==undefined) {
     if (displayCol.count()<DCOUNT) {
       displayCol.add(new DisplayIcon(ci));
-/*
-if (ci.shape.hueSel==undefined) {
-      displayCol.add(new DisplayIcon(ci));
-} else {
-      displayCol.replace(new DisplayIcon(ci));
-}
-*/
     } else {
       ci.rc=0;
       return;
     }
+} else {
+  displayCol.replace(new DisplayIcon(ci));
+}
     ci.shape.transit();
     ci.set2Value();
     ci.curve.an.beginElement();
@@ -722,10 +748,7 @@ var rouletteIcon=(()=>{
   let ri=new ControlIcon();
   ri.curve.an.setAttribute("dur","100ms");
   ri.curve.an.setAttribute("onend","rouletteIcon.repeat()");
-  ri.repeat=()=>{
-//if (!PUBLISH) console.log("ro cyc "+ri.rc);
-    ri.cycle();
-  }
+  ri.repeat=()=>{ ri.cycle(); }
   return ri;
 })();
 
@@ -733,10 +756,7 @@ var rouletteIcon3=(()=>{
   let ri=new ControlIcon();
   ri.curve.an.setAttribute("dur","100ms");
   ri.curve.an.setAttribute("onend","rouletteIcon3.repeat()");
-  ri.repeat=()=>{
-//if (!PUBLISH) console.log("ro cyc "+ri.rc);
-    ri.cycle();
-  }
+  ri.repeat=()=>{ ri.cycle(); }
   return ri;
 })();
 
@@ -744,10 +764,7 @@ var rouletteIcon4=(()=>{
   let ri=new ControlIcon();
   ri.curve.an.setAttribute("dur","100ms");
   ri.curve.an.setAttribute("onend","rouletteIcon4.repeat()");
-  ri.repeat=()=>{
-//if (!PUBLISH) console.log("ro cyc "+ri.rc);
-    ri.cycle();
-  }
+  ri.repeat=()=>{ ri.cycle(); }
   return ri;
 })();
 
@@ -755,10 +772,7 @@ var rouletteIcon5=(()=>{
   let ri=new ControlIcon();
   ri.curve.an.setAttribute("dur","100ms");
   ri.curve.an.setAttribute("onend","rouletteIcon5.repeat()");
-  ri.repeat=()=>{
-//if (!PUBLISH) console.log("ro cyc "+ri.rc);
-    ri.cycle();
-  }
+  ri.repeat=()=>{ ri.cycle(); }
   return ri;
 })();
 
@@ -766,10 +780,7 @@ var rouletteIcon7=(()=>{
   let ri=new ControlIcon(rouletteShape7);
   ri.curve.an.setAttribute("dur","100ms");
   ri.curve.an.setAttribute("onend","rouletteIcon7.repeat()");
-  ri.repeat=()=>{
-//if (!PUBLISH) console.log("ro cyc "+ri.rc);
-    ri.cycle();
-  }
+  ri.repeat=()=>{ ri.cycle(); }
   return ri;
 })();
 
@@ -830,9 +841,9 @@ var displayCol={
     return true;
   },
   replace:(dispIcon)=>{ 
-    let dcid=displayCol.ids.pop();
+    let dcid=displayCol.ids.shift();
     if (dcid==undefined) return false;
-    displayContainer.replaceChild(displayIcon, document.getElementById(dcid));
+    displayContainer.replaceChild(dispIcon, document.getElementById(dcid));
   },
   remove:(id)=>{ document.getElementById(id).remove(); },
   clear:()=>{ 
@@ -925,24 +936,24 @@ var rouletteShape=(()=>{
 s.tx3.factori=s.tx3.factor=0;
 s.ty3.factori=s.ty3.factor=0;
   s.rp={
-    "11a":[[12,23],[1,23],[1,12]],
+    "11a":[[1,34],[23,34],[12,23],[1,23],[1,12]],
     "11b":[[2,13],[13,24]],
     "11c":[[3,25],[14,25],[3,14]],
     "11d":[[4,15],[15,26]],
     "11e":[[5,16],[5,27],[16,27]],
     "11f":[[6,17],[17,28]],
     "11g":[[7,18],[7,29],[18,29]],
-    "11h":[[8,19]],
-    "11i":[[9,20]],
-    "11j":[[10,21]],
+    "11h":[[8,19],[19,30]],
+    "11i":[[9,20],[9,31],[20,31]],
+    "11j":[[10,21],[21,32]],
     "13a":[[1,14],[1,27],[14,27]],
     "13b":[[2,15],[15,28]],
     "13c":[[3,16],[3,29],[16,29]],
-    "13d":[[4,17]],
-    "13e":[[5,18]],
-    "13f":[[6,19]],
-    "13g":[[7,20]],
-    "13h":[[8,21]],
+    "13d":[[4,17],[17,30]],
+    "13e":[[5,18],[5,31],[18,31]],
+    "13f":[[6,19],[19,32]],
+    "13g":[[7,20],[7,33],[20,33]],
+    "13h":[[8,21],[21,34]],
     "13i":[[9,22]],
     "13j":[[10,23]],
     "13k":[[11,24]],
@@ -953,11 +964,13 @@ s.ty3.factori=s.ty3.factor=0;
     "17d":[[4,21]],
     "17e":[[5,22]],
     "17f":[[6,23]],
+    "17g":[[7,24]],
     "19a":[[1,20]],
     "19b":[[2,21]],
     "19c":[[3,22]],
-    "19d":[[4,23]]
   };
+  s.fset=s.fp[["p","n"][getRandomInt(0,2)]];
+  s.ff=s.fset[0];
   return s;
 })();
 rouletteIcon.setIconShape(rouletteShape);
@@ -967,12 +980,17 @@ rouletteIcon.curve.setPath(rouletteShape.dString1);
 
 var rouletteShape3=(()=>{
   let s=new RouletteShape();
+  s.sz={};
+  let a6=generateMultipliers(1,6);
+  s.sz["3a"]=a6.length;
+  let b6=generateMultipliers(5,6);
+  s.sz["3b"]=b6.length;
   s.rp={
-    "3a":[[1,7,13],[1,7,19],[1,7,25],[1,13,19],[1,13,25],[1,19,25],[7,13,19],[7,13,25],[7,19,25],[13,19,25],[1,4,7],[1,4,13],[1,4,19],[1,4,25],[1,7,10],[1,7,16],[1,7,22],[1,10,13],[1,10,19],[1,13,16],[1,13,22],[1,16,19],[1,16,25],[1,19,22],[1,19,28],[1,22,25],[1,25,28],[4,7,13],[4,7,19],[4,7,25],[4,13,19],[4,13,25],[4,19,25],[7,10,13],[7,10,19],[7,13,16],[7,13,22],[7,16,19],[7,16,25],[7,19,22],[10,13,19],[13,16,19],[13,16,25],[13,19,22],[13,19,28],[13,25,28],[16,19,25],[19,22,25],[19,25,28]],
-    "3b":[[5,11,17],[5,11,23],[5,11,29],[5,17,23],[5,17,29],[11,17,23],[11,17,29],[17,23,29],[2,5,11],[2,5,17],[2,5,23],[2,5,29],[2,11,17],[2,11,23],[2,11,29],[2,17,23],[2,17,29],[5,8,11],[5,8,17],[5,8,23],[5,8,29],[5,11,14],[5,11,26],[5,14,17],[5,14,23],[5,14,29],[5,17,26],[8,11,17],[8,11,23],[8,11,29],[8,17,23],[8,17,29],[11,14,17],[11,14,29],[11,17,20],[11,17,26],[11,20,23],[11,20,29],[14,17,23],[14,17,29],[17,20,23],[17,20,29],[17,23,26],[17,26,29],[20,23,29]],
+    "3a":a6.concat(generateMultipliers(1,3)),
+    "3b":b6.concat(generateMultipliers(2,3)),
   }
+  s.fset=s.fp2[["p","n"][getRandomInt(0,2)]];
   s.duo=false;
-  s.duoIdx={ "3a":10, "3b":4 }
   return s;
 })();
 rouletteIcon3.setIconShape(rouletteShape3);
@@ -982,10 +1000,16 @@ rouletteIcon3.curve.setPath(rouletteShape3.dString1);
 
 var rouletteShape4=(()=>{
   let s=new RouletteShape();
+  s.sz={};
+  let a8=generateMultipliers(1,8);
+  s.sz["4a"]=a8.length;
+  let b8=generateMultipliers(3,8);
+  s.sz["4b"]=b8.length;
   s.rp={
-    "4a":[[1,9,17],[1,9,25],[1,17,25],[5,13,21],[5,13,29],[9,17,25],[1,5,9],[1,5,13],[1,5,17],[1,5,21],[1,5,29],[1,9,13],[1,9,29],[1,13,17],[1,13,21],[1,13,25],[1,13,29],[1,17,21],[1,17,29],[1,21,25],[1,21,29],[5,9,13],[5,9,17],[5,9,29],[5,13,17],[5,17,21],[5,17,29],[9,13,17],[9,13,25],[9,13,29],[9,17,29],[13,17,21],[13,17,25],[13,17,29],[17,21,25],[17,21,29],[21,25,29]],
-    "4b":[[3,11,19],[7,15,23],[3,7,11],[3,7,19],[3,7,23],[3,11,23],[3,19,23],[7,11,15],[7,11,19],[7,11,23],[7,15,19],[7,15,27],[7,19,23],[7,19,27],[11,15,19],[11,15,23],[15,19,23]],
+    "4a":a8.concat(generateMultipliers(1,4)),
+    "4b":b8.concat(generateMultipliers(3,4)),
   };
+  s.fset=s.fp2[["p","n"][getRandomInt(0,2)]];
   return s;
 })();
 rouletteIcon4.setIconShape(rouletteShape4);
@@ -995,14 +1019,13 @@ rouletteIcon4.curve.setPath(rouletteShape4.dString1);
 
 var rouletteShape5=(()=>{
   let s=new RouletteShape();
-s.tx3.factori=s.tx3.factor=0;
-s.ty3.factori=s.ty3.factor=0;
   s.rp={
-    "5a":[[1,26],[1,21],[1,16],[11,26],[11,21],[1,11],[16,21],[11,16],[6,11],[1,6]],
-    "5b":[[2,27],[7,27],[7,22],[2,17],[17,27],[7,17],[22,27],[12,17],[7,12],[2,7]],
-    "5c":[[3,28],[3,23],[13,28],[8,23],[13,23],[3,13],[23,28],[18,23],[13,18],[8,13],[3,8]],
-    "5d":[[9,19],[19,24],[14,19],[9,14],[4,9]],
+    "5a":generateMultipliers(1,5),
+    "5b":generateMultipliers(2,5),
+    "5c":generateMultipliers(3,5),
+    "5d":generateMultipliers(4,5),
   };
+  s.fset=s.fp2[["p","n"][getRandomInt(0,2)]];
   return s;
 })();
 rouletteIcon5.setIconShape(rouletteShape5);
@@ -1016,12 +1039,13 @@ s.tx3.factori=s.tx3.factor=0;
 s.ty3.factori=s.ty3.factor=0;
   s.rp={
     "7a":[[1,29],[1,22],[15,29],[1,15],[22,29],[15,22],[8,15],[1,8]],
-    "7b":[[2,23],[9,23],[16,23],[9,16],[2,9]],
-    "7c":[[3,17],[17,24],[10,17],[3,10]],
-    "7d":[[4,25],[11,25],[18,25],[11,18],[4,11]],
-    "7e":[[5,26],[5,19],[19,26],[12,19],[5,12]],
-    "7f":[[13,20],[13,27],[6,13]],
+    "7b":[[2,23],[9,23],[23,30],[16,23],[9,16],[2,9]],
+    "7c":[[3,31],[10,31],[17,31],[3,17],[24,31],[17,24],[10,17],[3,10]],
+    "7d":[[4,25],[11,32],[11,25],[25,32],[18,25],[11,18],[4,11]],
+    "7e":[[5,33],[5,26],[19,33],[26,33],[5,19],[19,26],[12,19],[5,12]],
+    "7f":[[13,34],[13,27],[20,27],[13,20],[13,27],[6,13]],
   };
+  s.fset=s.fp[["p","n"][getRandomInt(0,2)]];
   return s;
 })();
 rouletteIcon7.setIconShape(rouletteShape7);
