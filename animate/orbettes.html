@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="author" content="Paul Slaymaker">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+<title>Orbettes</title>
+<style type="text/css">
+  * { box-sizing:border-box; }
+  canvas { max-width:100%; border-radius:400px; }
+  #pmenu { border:none; cursor:pointer; padding:none; font-weight:bold; background:none; line-height:1; font-size:26pt; }
+  div.mb { position:relative; margin:0; padding:0; text-align:center; font-weight:bold; border-top:1px dotted #BBB; border-right:1px solid transparent; border-bottom:1px solid transparent; border-left:1px solid transparent; }
+  div.pholder { width:188px; padding:4px; height:25px; }
+  div.slider { position:absolute; top:0px; left:0px; height:26px; opacity:0; background:hsl(240, 30%, 86%); display:block; width:70px; padding:4px 0; border-right:4px solid hsl(240,30%,74%); }
+  div.rtext { position:absolute; top:0px; left:0px; }
+  div.rlabel { display:inline-block; float:left; white-space:nowrap; padding:4px 0; width:120px; }
+  div.rep { display:inline-block; float:left; width:32px;margin-right:2px; border-left:1px dotted #EEE; padding:4px 4px 4px 0; text-align:right; }
+  div.inputdiv { position:absolute; top:0px; left:0px; height:26px; border:1px solid transparent; }
+  input.range { height:24px; opacity:0.01; cursor:pointer; margin:0; width:152px; }
+  input.cb { position:absolute; top:0; left:0; opacity:0.01; width:100%; height:24px; cursor:pointer; margin:0; }
+  div.infoc { border:1px dotted #99F; }
+  div.locksym { text-align:center; font-size:14px; padding:2px 0; color:black; }
+  div.lockdiv { position:relative; padding:0; float:right; height:24px; height:26px; margin-top:-1px; }
+</style>
+</head>
+<body>
+<div style="text-align:center;">
+  <canvas id="cta" width="600" height="600"></canvas>
+</div>
+<div class="bgfade" style="position:absolute; top:8px; right:8px;"> 
+  <div style="text-align:right;">
+    <button id="pmenu"> 
+      <span id="xmrep" style="opacity:0;">&#215;</span>
+      <span id="pmrep" style="position:absolute; top:3px; right:5px; color:white; opacity:.8;">&#8801;</span>
+    </button>
+  </div>
+
+  <div id="ctl" style="opacity:0;">
+    <div class="mb" style="width:100%; height:24px;">
+      <div class="pholder">&#160;</div>
+
+    </div>
+  </div>
+
+<table id="reptable" style="background:white; width:100%;">
+  <tr><td></td><td>from</td><td>to</td></tr>
+</table>
+</div>
+</body>
+<script type="text/javascript" src="orbettes.js"></script>
+</html>
