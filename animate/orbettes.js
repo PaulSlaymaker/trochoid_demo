@@ -18,7 +18,7 @@ ctx.rotate(-Math.PI/2);
 ctx.fillStyle="hsla(0,0%,0%,0.05)";
 onresize=()=>{ canvas.style.maxHeight=window.innerHeight-20+"px"; }
 var stopped=true;
-const PUBLISH=false;
+const PUBLISH=true;
 
 function powerRandom(p) {
   function rec(p,r) {
@@ -282,7 +282,7 @@ if (!PUBLISH) console.log("found first "+JSON.stringify(trip));
     //this.ro3.randomizeCycles(this.cset);
     this.randomizeCycles(this.ro3);
     this.ro3.randomizeRadii();
-    if (!no_report) { setTable(); }
+//    if (!no_report) { setTable(); }
   },
   this.animate=(ts)=>{
     if (stopped) return;
@@ -531,6 +531,7 @@ start();
 
 // ZZZZ
 
+/*
 var menu=new function() {
   this.fdr=document.querySelectorAll('.bgfade');
   this.mbut=document.querySelector('#pmenu');
@@ -757,15 +758,6 @@ var srs=[
       tt.textContent=path.ro2.m3;
     }
   }),
-/*
-  new SR({
-    label:'oRadius',
-    oc:function(ft,tt) {
-      ft.textContent=orbs.fromOrb.radius.toFixed(0);
-      tt.textContent=orbs.toOrb.radius.toFixed(0);
-    }
-  }),
-*/
 ];
 
 function setTable() {
@@ -774,3 +766,4 @@ function setTable() {
   }
 }
 setTable();
+*/
