@@ -9,7 +9,7 @@ var styleSheet=(()=>{
   return ss;
 })();
 
-const CSIZE=300;
+const CSIZE=400;
 
 const canvas=document.querySelector("#cta");
 const ctx=canvas.getContext("2d");
@@ -42,7 +42,7 @@ function getRandomInt(min, max, low) {
 }
 
 var coprime=(a,b)=>{
-  const primes=[2,3,5,7,9,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79];
+  const primes=[2,3,5,7,9,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,107]; 
   if (a==1 || b==1) return true;
   let mm=Math.max(a,b)/2;
   for (var h=0; primes[h]<mm; h++) {
@@ -54,7 +54,7 @@ var coprime=(a,b)=>{
 }
 
 var generateMultipliers=(K,V)=>{
-  let FMAX=80;
+  let FMAX=108;
   let m=[];
   let END=FMAX-2*V;
   for (var i=K; i<END; i+=V) {
@@ -73,8 +73,12 @@ var generateMultipliers=(K,V)=>{
 }
 
 var generatePoints=()=>{
-  let p=getRandomInt(40,220);
+  let pts=()=>{ return getRandomInt(18,224,getRandomInt(1,3)); }
+  let p=pts();
   while (true) {
+    if (p==19 || p==22 || p==23 || p==29 || p==31 || p==34 || p==38 || p==39) { 
+      p=pts();
+    } 
     if (
 	p%4==0 ||
 	p%5==0 ||
@@ -83,11 +87,13 @@ var generatePoints=()=>{
 	p%9==0 ||
 	p%11==0 ||
         p%13==0 ||
-        p%15==0 ||
         p%17==0 ||
-        p%19==0
+        p%19==0 ||
+        p%23==0 ||
+        p%29==0 ||
+        p%31==0
     ) return p;
-    p=getRandomInt(40,220);
+    p=pts();
   } 
   return p;
 }
@@ -133,14 +139,28 @@ var fSets={
 }
 var fSet=fSets[["p","n"][getRandomInt(0,2)]][getRandomInt(0,6)];
 
+/*
+var getRandomVList=()=>{
+  let vos=[4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+  let rvos=[];
+  do {
+    let i=getRandomInt(0,vos.length);
+    rvos.push(vos.splice(i,1)[0]);
+  } while (vos.length>0);
+  return rvos;
+}
+*/
+
 var isPortalMult=(trip)=>{
   let v=cSet[0][1]-cSet[0][0];
-  for (let f of [10,9,11,8,12,7,13,6,14,15,5,16,4,17,18,19]) {
-    if (POINTS%f>0) continue;
-    if (f==v) continue;
+  vertexArray.push(vertexArray.shift());
+  for (let f of vertexArray) {
+  //for (let f of getRandomVList()) {
+    if (POINTS%f>0) continue;  // vertex f not usable
+    if (f==v) continue;	// vertex not different from current
     if ((trip[1]-trip[0])%f==0 && (trip[1]-trip[0])/f>0
      && (trip[2]-trip[1])%f==0 && (trip[2]-trip[1])/f>0) {
-if (!PUBLISH) console.log("f="+f+" k="+trip[0]%f);
+//if (!PUBLISH) console.log("f="+f+" k="+trip[0]%f);
       cSet2=generateMultipliers(trip[0]%f,f);
 if (!PUBLISH) console.log("next cset "+cSet2[0]);
       return true;
@@ -178,28 +198,19 @@ var Roulette=function(ro) {
   }
   this.randomizeCycles=(cset2)=>{
 if (!PUBLISH) if (cset2==null) { debugger; }
-      let trip=cset2[getRandomInt(0,cset2.length)];
-      rself.m1=trip[0];
-      rself.m2=trip[1];
-      rself.m3=trip[2];
+      let multiplierSet=cset2[getRandomInt(0,cset2.length)];
+      rself.m1=multiplierSet[0];
+      rself.m2=multiplierSet[1];
+      rself.m3=multiplierSet[2];
   }
   this.randomizeRadii=()=>{
-    rself.r1=120-40*Math.random();
-    rself.r2=120-40*Math.random();
-    rself.r3=120-40*Math.random();
+    rself.r1=150-60*Math.random();
+    rself.r2=150-60*Math.random();
+    rself.r3=150-60*Math.random();
   }
 }
 
-function cbLoc(p1,p2,frac) {
-  //return p1*(1-frac)+p2*frac;
-  var f1=.2;
-  var f2=.8;
-  var e1=Math.pow(1-frac,3)*p1;
-  var e2=3*frac*Math.pow(1-frac,2)*(p1+(p2-p1)*f1);
-  var e3=3*(1-frac)*Math.pow(frac,2)*(p1+(p2-p1)*f2);
-  var e4=Math.pow(frac,3)*p2;
-  return e1+e2+e3+e4;
-}
+var vertexArray=[4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37];
 
 var portal=[];
 
@@ -220,66 +231,118 @@ var Path=function(durOffset) {
       y:0.5*(this.frac*ro3Met.y+ro2Met.y+(1-this.frac)*ro1Met.y),
       oFrac:this.frac*ro2Met.oFrac+(1-this.frac)*ro1Met.oFrac
     }
-  },
+  }
   this.setCSet=()=>{ 
-    let cs=null;
-    if (POINTS%10==0) {
-      cs=generateMultipliers([1,3,7,9][getRandomInt(0,4)],10);
-    } else if (POINTS%9==0) {
-      cs=generateMultipliers([1,2,4,5,7,8][getRandomInt(0,6)],9);
-    } else if (POINTS%11==0) {
-      cs=generateMultipliers([1,2,3,4,5,6,7,8,9,10][getRandomInt(0,10)],11);
-    } else if (POINTS%8==0) {
-      cs=generateMultipliers([1,3,5,7][getRandomInt(0,4)],8);
-    } else if (POINTS%12==0) {
-      cs=generateMultipliers([1,5,7,11][getRandomInt(0,4)],12);
-    } else if (POINTS%7==0) {
-      cs=generateMultipliers([1,2,3,4,5,6][getRandomInt(0,6)],7);
-    } else if (POINTS%13==0) {
-      cs=generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12][getRandomInt(0,12)],13);
-    } else if (POINTS%6==0) {
-      cs=generateMultipliers([1,5][getRandomInt(0,2)],6);
-    } else if (POINTS%17==0) {
-      cs=generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16][getRandomInt(0,16)],17);
-    } else if (POINTS%5==0) {
-      cs=generateMultipliers([1,2,3,4][getRandomInt(0,4)],5);
-    } else if (POINTS%4==0) {
-      cs=generateMultipliers([1,3][getRandomInt(0,2)],4);
-    } else if (POINTS%19==0) {
-      cs=generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18][getRandomInt(0,18)],19);
-    } else if (POINTS%3==0) {
-      return generateMultipliers([1,2][getRandomInt(0,2)],3);
-    } else {
+    vertexArray.push(vertexArray.shift());
+    for (let f of vertexArray) {
+      if (POINTS%f==0) {
+        if (f==4) {
+          return generateMultipliers([1,3][getRandomInt(0,2)],4);
+        } else if (f==5) {
+          return generateMultipliers([1,2,3,4][getRandomInt(0,4)],5);
+        } else if (f==6) {
+          return generateMultipliers([1,5][getRandomInt(0,2)],6);
+        } else if (f==7) {
+          return generateMultipliers([1,2,3,4,5,6][getRandomInt(0,6)],7);
+        } else if (f==8) {
+          return generateMultipliers([1,3,5,7][getRandomInt(0,4)],8);
+        } else if (f==9) {
+          return generateMultipliers([1,2,4,5,7,8][getRandomInt(0,6)],9);
+        } else if (f==10) {
+          return generateMultipliers([1,3,7,9][getRandomInt(0,4)],10);
+        } else if (f==11) {
+          return generateMultipliers([1,2,3,4,5,6,7,8,9,10][getRandomInt(0,10)],11);
+        } else if (f==12) {
+          return generateMultipliers([1,5,7,11][getRandomInt(0,4)],12);
+        } else if (f==13) {
+          return generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12][getRandomInt(0,12)],13);
+        } else if (f==14) {
+          return generateMultipliers([1,3,5,9,11,13][getRandomInt(0,6)],14);
+        } else if (f==15) {
+          return generateMultipliers([1,2,4,7,8,11,13,14][getRandomInt(0,8)],15);
+        } else if (f==16) {
+          return generateMultipliers([1,3,5,7,9,11,13,16][getRandomInt(0,8)],16);
+        } else if (f==17) {
+          return generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16][getRandomInt(0,16)],17);
+        } else if (f==18) {
+          return generateMultipliers([1,5,7,11,13,17][getRandomInt(0,6)],18);
+        } else if (f==19) {
+          return generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18][getRandomInt(0,18)],19);
+        } else if (f==20) {
+          return generateMultipliers([1,3,7,9,11,13,17,19][getRandomInt(0,8)],20);
+        } else if (f==21) {
+          return generateMultipliers([1,2,4,5,8,10,11,13,16,17,19,20][getRandomInt(0,12)],21);
+        } else if (f==22) {
+          return generateMultipliers([1,3,5,7,9,13,15,17,19,21][getRandomInt(0,10)],22);
+        } else if (f==23) {
+          return generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22][getRandomInt(0,22)],23);
+        } else if (f==24) {
+          return generateMultipliers([1,5,7,11,13,17,19,23][getRandomInt(0,8)],24);
+        } else if (f==25) {
+          return generateMultipliers([1,2,3,4,6,7,8,9,11,12,13,14,16,17,18,19,21,22,23,24][getRandomInt(0,20)],25);
+        } else if (f==26) {
+          return generateMultipliers([1,3,5,7,9,11,15,17,19,21,23,25][getRandomInt(0,12)],26);
+        } else if (f==27) {
+          return generateMultipliers([1,2,4,5,7,8,10,11,13,14,16,17,19,20,22,23,25,26][getRandomInt(0,18)],27);
+        } else if (f==28) {
+          return generateMultipliers([1,3,5,9,11,13,15,17,19,23,25,27][getRandomInt(0,12)],28);
+        } else if (f==29) {
+          return generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28][getRandomInt(0,28)],29);
+        } else if (f==30) {
+          return generateMultipliers([1,7,11,13,17,19,23,29][getRandomInt(0,8)],30);
+        } else if (f==31) {
+          return generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30][getRandomInt(0,30)],31);
+        } else if (f==32) {
+          return generateMultipliers([1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31][getRandomInt(0,16)],32);
+        } else if (f==33) {
+          return generateMultipliers([1,2,4,5,7,8,10,13,14,16,17,19,20,23,25,26,28,29,31,32][getRandomInt(0,20)],33);
+        } else if (f==34) {
+          return generateMultipliers([1,3,5,7,9,11,13,15,19,21,23,25,27,29,31,33][getRandomInt(0,16)],34);
+        } else if (f==35) {
+          return generateMultipliers([1,2,3,4,6,8,9,11,12,13,16,17,18,19,22,23,24,26,27,29,31,32,33,34][getRandomInt(0,24)],35);
+        } else if (f==36) {
+          return generateMultipliers([1,5,7,11,13,17,19,23,25,29,31,35][getRandomInt(0,12)],36);
+        } else if (f==37) {
+          return generateMultipliers([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36][getRandomInt(0,36)],37);
+        } else {
 if (!PUBLISH) debugger;
+          return this.setCSet();
+        }
+      }
     }
-    return cs;
+if (!PUBLISH) debugger;
   }
   this.randomizeCycles=(ro)=>{
 if (!PUBLISH) if (cSet==null) { debugger; }
     let trip=cSet[getRandomInt(0,cSet.length)];
-    if (portal==null) {
-      if (isPortalMult(trip)) { 
-if (!PUBLISH) console.log("found first "+JSON.stringify(trip)); 
-        portal=trip;
-      }
-      ro.m1=trip[0];
-      ro.m2=trip[1];
-      ro.m3=trip[2];
-    } else if (portal.length==0) {
+    if (orbs.state=="contract") {
       ro.m1=trip[0];
       ro.m2=trip[1];
       ro.m3=trip[2];
     } else {
-      ro.m1=portal[0];
-      ro.m2=portal[1];
-      ro.m3=portal[2];
+      if (portal==null) {
+	if (isPortalMult(trip)) { 
+if (!PUBLISH) console.log("found first "+JSON.stringify(trip)); 
+	  portal=trip;
+	}
+	ro.m1=trip[0];
+	ro.m2=trip[1];
+	ro.m3=trip[2];
+      } else if (portal.length==0) {
+	ro.m1=trip[0];
+	ro.m2=trip[1];
+	ro.m3=trip[2];
+      } else {
+	ro.m1=portal[0];
+	ro.m2=portal[1];
+	ro.m3=portal[2];
+      }
     }
   }
   this.transit=(no_report)=>{
     Object.assign(this.ro1, this.ro2);
     Object.assign(this.ro2, this.ro3);
     this.ro3=new Roulette(this.ro2);
-    //this.ro3.randomizeCycles(this.cset);
     this.randomizeCycles(this.ro3);
     this.ro3.randomizeRadii();
 //    if (!no_report) { setTable(); }
@@ -302,14 +365,14 @@ if (!PUBLISH) console.log("found first "+JSON.stringify(trip));
 }
 
 var path=new Path(0);
-var path2=new Path(150);
-var paths=[path,path2];
+//var paths=[path,new Path(300)];
+var paths=[new Path(0), new Path(300), new Path(600)];
 
 var Orb=function(or) {
   if (or instanceof Orb) {
     Object.assign(this, or);
   } else {
-    this.radius=3+4*Math.random();
+    this.radius=2+4*Math.random();
     this.radiusMode='CON';
     this.hue=getRandomInt(0,360);
     this.huediff=getRandomInt(0,180);
@@ -358,33 +421,44 @@ var orbs={
     // both orbital and transitional
     return orbs.frac*orbs.toOrb.getOpacity(oFrac)+(1-orbs.frac)*orbs.fromOrb.getOpacity(oFrac);
   },
-  draw:function(rotFrac) {
+  draw:(rotFrac)=>{
     //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
     for (let i=0; i<POINTS; i++) {
       ctx.beginPath();
       var pFrac=i/POINTS;
-      let metrics=path.getMetrics(pFrac);
       let rf=(()=>{
 	switch(orbs.state) {
 	  case "steady": return 1; break;
-	  case "contract": return 1-Math.pow(orbs.frac,9); break;
-	  case "expand": return 1-Math.pow(1-orbs.frac,9); break;
+	  case "contract": return 1-Math.pow(orbs.frac,6); break;
+	  case "expand": return 1-Math.pow(1-orbs.frac,6); break;
 	}
 	return 1;
       })();
-      ctx.arc(metrics.x,metrics.y, 
-          rf*orbs.getRadius(metrics.oFrac, orbs.frac),0,2*Math.PI);
 
-let metrics2=path2.getMetrics(pFrac);
-ctx.arc(metrics2.x,metrics2.y, 
-    rf*orbs.getRadius(metrics2.oFrac, orbs.frac),0,2*Math.PI);
-
+      let metrics=paths[0].getMetrics(pFrac);
       ctx.fillStyle='hsla('+
         orbs.getHue(metrics.oFrac, orbs.frac)+',90%,'+
         orbs.getLum(metrics.oFrac)+'%,'+
         (stopped?1:rf*orbs.getOpacity(metrics.oFrac, orbs.frac))+')';
+
+      ctx.arc(metrics.x,metrics.y, 
+          rf*orbs.getRadius(metrics.oFrac, orbs.frac),0,2*Math.PI);
+
+      let metrics2=paths[1].getMetrics(pFrac);
+      ctx.arc(metrics2.x,metrics2.y, 
+	  rf*orbs.getRadius(metrics2.oFrac, orbs.frac),0,2*Math.PI);
       ctx.fill();
       ctx.closePath();
+
+      ctx.beginPath();
+      let metrics3=paths[2].getMetrics(pFrac);
+      ctx.arc(metrics3.x,metrics3.y, 
+	  rf*orbs.getRadius(metrics3.oFrac, orbs.frac),0,2*Math.PI);
+      ctx.fill();
+      ctx.closePath();
+
+//      ctx.fill();
+//      ctx.closePath();
     }
   },
   transit:function() {
@@ -399,16 +473,16 @@ ctx.arc(metrics2.x,metrics2.y,
     } else if (orbs.state=="expand") {
       orbs.state="steady";
     }
-if (!PUBLISH) console.log("state "+orbs.state);
+//if (!PUBLISH) console.log("state "+orbs.state);
 
     Object.assign(this.fromOrb, this.toOrb);
     this.toOrb=new Orb(this.fromOrb);
     let f=9/8-POINTS/320;
+    //let f=9/8-POINTS/420;
     this.toOrb.radius=f*(3+4*Math.random());
     this.toOrb.hue=getRandomInt(0,360);
     this.toOrb.huediff=getRandomInt(0,180);
   },
-  //transitVertices:function() {
   transitVertices:()=>{
     if (portal!=null && portal.length==0) {
       orbs.transitCount++;
@@ -418,14 +492,14 @@ if (!PUBLISH) console.log("state "+orbs.state);
     } else {
       orbs.transitCount=0;
       if (portal!=null) {
-	if (path.ro2.m1==portal[0] && path2.ro2.m1==portal[0]) {
-if (!PUBLISH) console.log("resetting..");    
+	//if (paths[0].ro2.m1==portal[0] && paths[1].ro2.m1==portal[0]) {
+	if (paths[0].ro2.m1==portal[0]) {  // only slightly less asymmetric
+if (!PUBLISH) console.log("portal reset");    
 	  cSet=cSet2;
 	  portal=[];
 	}
       }
     }
-//console.log("check portal sync "+this.transitCount);
   },
   animate:(ts)=>{
     if (stopped) { return; }
@@ -468,6 +542,7 @@ var fade={
       ctx.fillStyle="hsla(0,0%,0%,0.03)";
       ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
       fade.start=0;
+//ctx.putImageData(ctx.getImageData(0,0,2*CSIZE,2*CSIZE),-1,0);
     }
     requestAnimationFrame(fade.animate);
   }
@@ -489,19 +564,11 @@ var rndPath=()=>{
 }
 */
 
-var reportMult=()=>{
-  for (let p of paths) {
-    console.log(cSet[0]);
-    console.log([p.ro1.m1,p.ro1.m2,p.ro1.m3]);
-    console.log([p.ro2.m1,p.ro2.m2,p.ro2.m3]);
-    console.log([p.ro3.m1,p.ro3.m2,p.ro3.m3]);
-  }
-  console.log("--");
-}
-
 var reset=()=>{
-  POINTS=generatePoints();
-  cSet=path.setCSet();
+  do {
+    POINTS=generatePoints();
+    cSet=paths[0].setCSet();
+  } while(cSet.length<6);
   for (let p of paths) {
     p.transit(true);
     p.transit(true);
@@ -516,10 +583,11 @@ var reset=()=>{
 onresize();
 function start() {
   if (stopped) {
-    reset();
+//    reset();
     requestAnimationFrame(orbs.animate);
-    requestAnimationFrame(path.animate);
-    requestAnimationFrame(path2.animate);
+    for (let p of paths) {
+      requestAnimationFrame(p.animate);
+    }
     requestAnimationFrame(fade.animate);
     stopped=false;
   } else {
@@ -527,243 +595,131 @@ function start() {
   }
 }
 canvas.addEventListener("click", start, false);
+reset();
 start();
 
-// ZZZZ
-
 /*
-var menu=new function() {
-  this.fdr=document.querySelectorAll('.bgfade');
-  this.mbut=document.querySelector('#pmenu');
-  this.mrep=document.querySelector('#pmrep');
-  this.xrep=this.mbut.children[0];
-  this.open=true;
-  this.cdiv=document.querySelector('#ctl');
-  let ms=this;
-  this.mbut.onclick=function() {
-    if (ms.open) {
-      ms.open=false;
-      ms.cdiv.style.display='block';
-      //speedRanger.report();
-      //orbsRanger.report();
-    } else {
-      ms.open=true;
-    }
-    requestAnimationFrame(ms.animate);
-  }
-  this.animate=function(ts) {
-    if (!ms.start) ms.start=ts;
-    let progress=ts-ms.start;
-    if (progress<400) {
-      let frac=progress/400;
-      if (ms.open) {
-	for (let x of ms.fdr) {
-	  x.style.background='hsl(0,0%,'+(1-frac)*96+'%)';
-	}
-	ms.mrep.style.opacity=frac*0.8+(1-frac)*0.001;
-	ms.xrep.style.opacity=(1-frac)*0.8+frac*0.001;
-	ms.cdiv.style.opacity=(1-frac)*0.8+frac*0.001;
-      } else {
-        for (let x of ms.fdr) {
-          x.style.background='hsl(0,0%,'+frac*96+'%)';
-        }
-        ms.mrep.style.opacity=0.001;
-        ms.xrep.style.opacity=0.8;
-        ms.cdiv.style.opacity=0.8;
-      }
-      requestAnimationFrame(ms.animate);
-    } else {
-      if (ms.open) {
-        ms.cdiv.style.display='none';
-      } else {
-        ms.cdiv.style.opacity=1;
-      }
-      ms.start=0;
-    }
-  }
-}();
-
-function bmov(btn) {
-  btn.parentNode.parentNode.style.color='blue';
-}
-
-function bmou(btn) {
-  btn.parentNode.parentNode.style.color='black';
-}
-
-function btnFocus(ctl) {
-  ctl.parentNode.parentNode.className='mb infoc';
-}
-
-function btnBlur(ctl) {
-  ctl.parentNode.parentNode.className='mb';
-}
-
-var Ranger=function(obj) {
-  this.box=document.createElement('div');
-  this.box.className='mb';
-  document.querySelector('#ctl').appendChild(this.box);
-  let spacer=document.createElement('div');
-  spacer.className='pholder';
-  this.box.appendChild(spacer);
-  this.slider=document.createElement('div');
-  this.slider.className='slider';
-  this.box.appendChild(this.slider);
-  this.displayDiv=document.createElement('div');
-  this.displayDiv.className='rtext';
-  this.box.appendChild(this.displayDiv);
-  let labeldiv=document.createElement('div');
-  labeldiv.className='rlabel';
-  labeldiv.textContent=obj.label;
-  this.displayDiv.appendChild(labeldiv);
-  this.valueDiv=document.createElement('div');
-  this.valueDiv.className='rep';
-  this.displayDiv.appendChild(this.valueDiv);
-  this.units=' ';
-  this.input=document.createElement('input');
-  this.input.type='range';
-  this.input.className='range';
-  //if (obj.hasOwnProperty('value')) { }
-  this.input.min=obj.min;
-  this.input.max=obj.max;
-  this.input.step=obj.step;
-  this.input.value=obj.value;
-  let inputdiv=document.createElement('div');
-  inputdiv.className='inputdiv';
-  inputdiv.appendChild(this.input);
-  this.box.appendChild(inputdiv);
-  this.max=parseFloat(this.input.max);
-  this.min=parseFloat(this.input.min);
-  let rself=this;
-  if (obj.hasOwnProperty('lockInput')) {
-    let lockdiv=document.createElement('div');
-    lockdiv.className='rep lockdiv';
-    inputdiv.appendChild(lockdiv);
-    this.lockRep=document.createElement('div');
-    this.lockRep.className='locksym';
-    this.lockRep.innerHTML='&#128275';
-    lockdiv.appendChild(this.lockRep);
-    this.lockCB=document.createElement('input');
-    this.lockCB.type='checkbox';
-    this.lockCB.className='cb';
-    this.lockCB.onmouseover=function() {
-      rself.lockRep.style.color='blue';
-    }
-    this.lockCB.onmouseout=function() {
-      rself.lockRep.style.color='black';
-    }
-    this.lockCB.onfocus=function() {
-      lockdiv.classList.add('infoc');
-    }
-    this.lockCB.onblur=function() {
-      lockdiv.classList.remove('infoc');
-    }
-    this.lockCB.onclick=function() {
-      rself.lock=rself.lockCB.checked;
-      rself.lockRep.innerHTML=rself.lock?'&#128274':'&#128275';
-      obj.lockInput(rself.lock);
-    }
-    lockdiv.appendChild(this.lockCB);
-  }
-  this.setValue=function(v) {
-    rself.input.value=v;
-    rself.report();
-  }
-  this.report=function() {
-    if (!menu.open) {
-      rself.slider.style.width=8+148*(rself.input.value-rself.min)/(rself.max-rself.min)+'px';
-      rself.valueDiv.textContent=rself.input.value+rself.units;
-    }
-  }
-  this.input.onmouseover=function() {
-    rself.slider.style.opacity=1;
-    rself.displayDiv.style.color='blue';
-  }
-  this.input.onmouseout=function() {
-    if (document.activeElement!=rself.input) {
-      rself.slider.style.opacity=0;
-    }
-    rself.displayDiv.style.color='black';
-  }
-  this.input.onfocus=function() {
-    inputdiv.classList.add('infoc');
-    rself.slider.style.opacity=1;
-  }
-  this.input.onblur=function() {
-    inputdiv.classList.remove('infoc');
-    rself.slider.style.opacity=0;
-  }
-  this.input.oninput=function() {
-    rself.report();
-    if (obj.hasOwnProperty('oninput')) {
-      obj.oninput(rself.input.value);
-    }
-    if (stopped) {
-      orbs.draw();
-    }
+var reptable=document.querySelector('#reptable');
+var GR=function(obj) {
+  let row=(()=>{ 
+    return document.createElement('tr');
+  })();
+  row.append((()=>{
+    let label=document.createElement('td');
+    label.textContent=obj.label;
+    return label;
+  })());
+  this.td=document.createElement('td');
+  this.td.setAttribute("colspan","4");
+  this.td.style.textAlign="center";
+  row.append(this.td);
+  reptable.append(row);
+  this.oc=obj.oc;
+  let gself=this;
+  this.report=()=>{
+    obj.oc(gself.td);
   }
 }
-
 var SR=function(obj) {
-  let row=document.createElement('tr');
+  let row=(()=>{ 
+    return document.createElement('tr');
+  })();
+  reptable.append(row);
   let label=document.createElement('td');
   label.textContent=obj.label;
-  row.appendChild(label);
-  this.fromTD=document.createElement('td');
-  row.appendChild(this.fromTD);
-  this.toTD=document.createElement('td');
-  row.appendChild(this.toTD);
-  document.querySelector('#reptable').appendChild(row);
-  this.oc=obj.oc;
+  row.append(label);
+  this.tds=[];
+  for (let i=0; i<4; i++) {
+    this.tds[i]=document.createElement('td');
+    row.append(this.tds[i]);
+  }
   let sself=this;
-  this.report=function(s) {
-    //if (!menu.open) {
-      obj.oc(sself.fromTD,sself.toTD);
-    //}
+  this.report=()=>{
+    obj.oc(sself.tds);
   }
 }
+var grs=[
+  new GR({
+    label:'points',
+    oc:(td)=>{
+      td.textContent=POINTS;
+    }
+  }),
+  new GR({
+    label:'cset',
+    oc:(td)=>{
+      td.textContent=cSet[0];
+    }
+  }),
+  new GR({
+    label:'cset count',
+    oc:(td)=>{
+      td.textContent=cSet.length;
+    }
+  }),
+  new GR({
+    label:'state',
+    oc:(td)=>{
+      td.textContent=orbs.state;
+    }
+  })
+];
+reptable.append((()=>{ 
+  let tdl=(s)=>{ 
+    let td=document.createElement('td');
+    td.textContent=s;
+    return td;
+  }
+  let tr=document.createElement('tr');
+  tr.append(
+    document.createElement('td'),
+    tdl("from"),
+    tdl("to"),
+    tdl("from"),
+    tdl("to")
+  );
+  return tr;
+})());
 var srs=[
   new SR({
-    label:'points',
-    oc:function(ft,tt) {
-      ft.textContent=POINTS;
-      tt.textContent=POINTS;
-    }
-  }),
-  new SR({
-    label:'cset',
-    oc:function(ft,tt) {
-      ft.textContent=cSet[0];
-      tt.textContent=cSet[0];
-    }
-  }),
-  new SR({
     label:'m1',
-    oc:function(ft,tt) {
-      ft.textContent=path.ro1.m1;
-      tt.textContent=path.ro2.m1;
+    oc:function(tds) {
+      tds[0].textContent=paths[0].ro1.m1;
+      tds[1].textContent=paths[0].ro2.m1;
+      tds[2].textContent=paths[1].ro1.m1;
+      tds[3].textContent=paths[1].ro2.m1;
     }
   }),
   new SR({
     label:'m2',
-    oc:function(ft,tt) {
-      ft.textContent=path.ro1.m2;
-      tt.textContent=path.ro2.m2;
+    oc:function(tds) {
+      tds[0].textContent=paths[0].ro1.m2;
+      tds[1].textContent=paths[0].ro2.m2;
+      tds[2].textContent=paths[1].ro1.m2;
+      tds[3].textContent=paths[1].ro2.m2;
     }
   }),
   new SR({
     label:'m3',
+    oc:(tds)=>{
+      tds[0].textContent=paths[0].ro1.m3;
+      tds[1].textContent=paths[0].ro2.m3;
+      tds[2].textContent=paths[1].ro1.m3;
+      tds[3].textContent=paths[1].ro2.m3;
+    }
+  }),
+  new SR({
+    label:'oRadius',
     oc:function(ft,tt) {
-      ft.textContent=path.ro1.m3;
-      tt.textContent=path.ro2.m3;
+      ft.textContent=orbs.fromOrb.radius.toFixed(0);
+      tt.textContent=orbs.toOrb.radius.toFixed(0);
     }
   }),
 ];
 
 function setTable() {
-  for (let sr of srs) {
-    sr.report();
-  }
+  for (let gr of grs) gr.report();
+  for (let sr of srs) sr.report();
 }
 setTable();
 */
