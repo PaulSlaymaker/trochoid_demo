@@ -18,7 +18,7 @@ ctx.rotate(-Math.PI/2);
 ctx.fillStyle="hsla(0,0%,0%,0.05)";
 onresize=()=>{ canvas.style.maxHeight=window.innerHeight-20+"px"; }
 var stopped=true;
-const PUBLISH=false;
+const PUBLISH=true;
 
 function powerRandom(p) {
   function rec(p,r) {
@@ -77,7 +77,6 @@ var generatePoints=()=>{
   let pts=()=>{ return getRandomInt(60,320); }
   let p=pts();
   while (true) {
-    //if (p==33 || p==34 || p==38 || p==39) { p=pts(); } 
     if (
 	p%3==0 ||
 	p%4==0 ||
@@ -143,7 +142,6 @@ var isPortalMult=(trip)=>{
   let v=cSet[0][1]-cSet[0][0];
   vertexArray.push(vertexArray.shift());
   for (let f of vertexArray) {
-  //for (let f of getRandomVList()) {
     if (POINTS%f>0) continue;  // vertex f not usable
     if (f==v) continue;	// vertex not different from current
     if ((trip[1]-trip[0])%f==0 && (trip[1]-trip[0])/f>0
@@ -348,7 +346,7 @@ if (!PUBLISH) console.log("found first "+JSON.stringify(trip));
     this.randomizeCycles(this.ro3);
     this.ro3.randomizeRadii();
 */
-    if (!no_report) { setTable(); }
+//    if (!no_report) { setTable(); }
   },
   this.animate=(ts)=>{
     if (stopped) return;
@@ -367,7 +365,6 @@ if (!PUBLISH) console.log("found first "+JSON.stringify(trip));
   }
 }
 
-//var path=new Path(0);
 var paths=[new Path(0), new Path(-800), new Path(800)];
 
 var Orb=function(or) {
@@ -445,9 +442,6 @@ var orbs={
 	  rf*orbs.getRadius(metrics3.oFrac, paths[2].frac),0,2*Math.PI);
       ctx.fill();
       ctx.closePath();
-
-//      ctx.fill();
-//      ctx.closePath();
     }
   },
   transit:function() {
@@ -468,7 +462,6 @@ var orbs={
     this.toOrb=new Orb(this.fromOrb);
     this.toOrb.hue=getRandomInt(0,360);
     this.toOrb.huediff=getRandomInt(0,180);
-if (!PUBLISH) console.log("orb transit");
   },
   transitVertices:()=>{
     if (portal!=null && portal.length==0) {
@@ -517,6 +510,7 @@ if (!PUBLISH) console.log("portal reset");
   },
 }
 
+/*
 var fade={
   start:0,
   animate:(ts)=>{
@@ -531,11 +525,11 @@ var fade={
       ctx.fillStyle="hsla(0,0%,0%,0.1)";
       ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
       fade.start=0;
-//ctx.putImageData(ctx.getImageData(0,0,2*CSIZE,2*CSIZE),-1,0);
     }
     requestAnimationFrame(fade.animate);
   }
 }
+*/
 
 var reset=()=>{
   do {
@@ -574,6 +568,7 @@ canvas.addEventListener("click", start, false);
 reset();
 start();
 
+/*
 var reptable=document.querySelector('#reptable');
 var GR=function(obj) {
   let row=(()=>{ 
@@ -656,21 +651,6 @@ reptable.append((()=>{
   return tr;
 })());
 var srs=[
-/*
-  new SR({
-    label:'points',
-    oc:(tds)=>{
-      tds[2].textContent=POINTS;
-    }
-  }),
-  new SR({
-    label:'cset',
-    oc:function(tds) {
-      tds[0].textContent=cSet[0];
-      tds[2].textContent=cSet.length;
-    }
-  }),
-*/
   new SR({
     label:'m1',
     oc:function(tds) {
@@ -707,15 +687,6 @@ var srs=[
       tds[3].textContent=paths[1].ro2.r1.toFixed(0);
     }
   }),
-/*
-  new SR({
-    label:'oRadius',
-    oc:function(ft,tt) {
-      ft.textContent=orbs.fromOrb.radius.toFixed(0);
-      tt.textContent=orbs.toOrb.radius.toFixed(0);
-    }
-  }),
-*/
 ];
 
 function setTable() {
@@ -723,3 +694,4 @@ function setTable() {
   for (let sr of srs) sr.report();
 }
 setTable();
+*/
