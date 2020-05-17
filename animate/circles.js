@@ -74,7 +74,7 @@ var generateMultipliers=(K,V)=>{
 
 var generatePoints=()=>{
   //let pts=()=>{ return getRandomInt(18,224,getRandomInt(1,3)); }
-  let pts=()=>{ return getRandomInt(60,320); }
+  let pts=()=>{ return getRandomInt(64,330); }
   let p=pts();
   while (true) {
     if (
