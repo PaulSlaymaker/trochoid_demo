@@ -1,6 +1,6 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
-const PUBLISH=true;
+const PUBLISH=false;
 const C2=true;
 
 if (PUBLISH) {
@@ -112,35 +112,44 @@ var Curve2=function(c) {
   this.ty9=new Term(1,9,9);
   this.ty11=new Term(1,11,0);
   this.xTerms=[this.tx1,this.tx3,this.tx5,this.tx7,this.tx9,this.tx11];
+  this.yTerms=[this.ty1,this.ty3,this.ty5,this.ty7,this.ty9,this.ty11];
   this.terms=[this.tx1,this.tx3,this.tx5,this.tx7,this.tx9,this.tx11,
               this.ty1,this.ty3,this.ty5,this.ty7,this.ty9,this.ty11];
   this.randomize=()=>{ 
-    for (let te of this.terms) {
-      if (Math.random()<0.7) {
-	te.factor=0;
+    for (let i in this.xTerms) {
+if (Math.random()<0.4) {
+      if (Math.random()<0.3+i/10) {
+	this.xTerms[i].factor=0;
       } else {
-	te.factor=[1,2,3,4,5][getRandomInt(0,5)]; 
+	this.xTerms[i].factor=[1,2,3,4,5][getRandomInt(0,5)]; 
       }
+      if (Math.random()<0.07) { this.xTerms[i].sign*=-1; }
+}
     }
-    this.terms.forEach((te)=>{ 
-      if (Math.random()<0.07) {
-        te.sign*=-1;
+    for (let i in this.yTerms) {
+if (Math.random()<0.4) {
+      if (Math.random()<0.3+i/10) {
+	this.yTerms[i].factor=0;
+      } else {
+	this.yTerms[i].factor=[1,2,3,4,5][getRandomInt(0,5)]; 
       }
-    });
+      if (Math.random()<0.07) { this.yTerms[i].sign*=-1; }
+}
+    }
     let ex=this.tx1.factor+this.tx3.factor+this.tx5.factor+this.tx7.factor
            +this.tx9.factor+this.tx11.factor;
     if (ex<1) {
-      this.terms[getRandomInt(0,6)].factor=9;
+      this.xTerms[getRandomInt(0,6)].factor=9;
     } else if (ex<2) {
-      for (let i=0; i<6; i++) { this.terms[i].factor*=8; }
+      this.xTerms.forEach((te)=>{ te.factor*=8; });
     } else if (ex<3) {
-      for (let i=0; i<6; i++) { this.terms[i].factor*=4; }
+      this.xTerms.forEach((te)=>{ te.factor*=4; });
     } else if (ex<4) {
-      for (let i=0; i<6; i++) { this.terms[i].factor*=2; }
-    } else if (ex>12) {
-      for (let i=0; i<6; i++) { if (this.terms[i].factor>0) this.terms[i].factor-=1; }
+      this.xTerms.forEach((te)=>{ te.factor*=2; });
     } else if (ex>16) {
       for (let i=0; i<6; i++) { if (this.terms[i].factor>1) this.terms[i].factor-=2; }
+    } else if (ex>12) {
+      for (let i=0; i<6; i++) { if (this.terms[i].factor>0) this.terms[i].factor-=1; }
     }
     let ey=this.ty1.factor+this.ty3.factor+this.ty5.factor+this.ty7.factor
           +this.ty9.factor+this.ty11.factor;
@@ -152,10 +161,10 @@ var Curve2=function(c) {
       for (let i=6; i<12; i++) { this.terms[i].factor*=4; }
     } else if (ey<4) {
       for (let i=6; i<12; i++) { this.terms[i].factor*=2; }
-    } else if (ey>12) {
-      for (let i=6; i<12; i++) { if (this.terms[i].factor>0) this.terms[i].factor-=1; }
     } else if (ey>16) {
       for (let i=6; i<12; i++) { if (this.terms[i].factor>1) this.terms[i].factor-=2; }
+    } else if (ey>12) {
+      for (let i=6; i<12; i++) { if (this.terms[i].factor>0) this.terms[i].factor-=1; }
     }
 console.log(ex+"\t"+ey);
   }
@@ -227,7 +236,12 @@ var equation=(()=>{
     e.style.fontSize="24px";
     e.style.fontFamily="monospace";
     e.style.fontWeight="bold";
+if (PUBLISH) {
+    e.style.background="#444";
+    e.style.color="white";
+} else {
     e.style.background="white";
+}
     body.append(e);
     return e;
   })();
@@ -412,30 +426,6 @@ var cbLoc=(p1,p2,frac)=>{
   return e1+e2+e3+e4;
 }
 
-var RES300=0.02;
-var RES1000=Math.PI/500;
-var RES300=Math.PI/150;
-var RES100=Math.PI/50;
-var RES30=Math.PI/15;
-var RES20=Math.PI/10;
-var RES10=Math.PI/5;
-var RES6=Math.PI/3;
-var RES4=Math.PI/2;
-var RES2=Math.PI;
-var RES=RES1000;
-
-var drawP=(frac)=>{
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  ctx.beginPath();
-  for (let t=0; t<=Math.PI*2; t+=Math.PI/15) {
-    let x=cbLoc(curve2.getX(t),curve1.getX(t),frac);
-    let y=cbLoc(curve2.getY(t),curve1.getY(t),frac);
-    ctx.arc(SCALE*x,SCALE*y,4,0,2*Math.PI);
-    ctx.fill();
-    ctx.closePath();
-  }
-}
-
 var draw=(frac, fin)=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   if (fin) {
@@ -451,7 +441,7 @@ if (C2) {
   let x=cbLoc(curve2.getX(0),curve1.getX(0),frac);
   let y=cbLoc(curve2.getY(0),curve1.getY(0),frac);
   ctx.moveTo(scale*x,scale*y);
-  for (let t=0; t<=Math.PI*2; t+=RES) {
+  for (let t=0; t<=Math.PI*2; t+=Math.PI/500) {
     x=cbLoc(curve2.getX(t),curve1.getX(t),frac);
     y=cbLoc(curve2.getY(t),curve1.getY(t),frac);
     ctx.lineTo(scale*x,scale*y);
@@ -539,15 +529,15 @@ var animate=(ts)=>{
     draw(frac);
     requestAnimationFrame(animate);
   } else {
-    //draw(1);
-    draw(1,true);
+    draw(1);
+    //draw(1,true);
     stx=0;
     if (step==Infinity) {
       draw(1,true);
       return;
     }
-    //pauseTS=performance.now()+60;
-    pauseTS=performance.now()+2000;
+    pauseTS=performance.now()+60;
+    //pauseTS=performance.now()+1800;
     requestAnimationFrame(pause);
     //transit();
     //requestAnimationFrame(animate);
