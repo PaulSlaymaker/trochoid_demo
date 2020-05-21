@@ -1,7 +1,6 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 const PUBLISH=false;
-const C2=true;
 
 if (PUBLISH) {
 var styleSheet=(()=>{
@@ -42,7 +41,7 @@ onresize=function() {
 
 const CSIZE=400;
 const PolarType=[Math.sin,Math.cos];
-const SCALE=C2?30:300;	// 2 terms, ~CSIZE/2
+const SCALE=30;
 
 var getRandomInt=(min,max,low)=>{
   if (low) {
@@ -186,46 +185,8 @@ console.log(ex+"\t"+ey);
   }
 }
 
-var Curve=function(c) {
-  if (c instanceof Curve) {
-    Object.assign(this, c);
-  } else {
-    this.tx1=new Term(0,7,0.3);
-    this.tx2=new Term(0,7,0.3);
-    this.tx3=new Term(0,7,0.3);
-    this.ty1=new Term(1,5,0.3);
-    this.ty2=new Term(1,5,0.3);
-    this.ty3=new Term(1,5,0.3);
-  }
-  this.terms=[this.tx1,this.tx2,this.tx3,this.ty1,this.ty2,this.ty3];
-  this.randomizeFactors=()=>{ 
-    this.terms.forEach((te)=>{ te.randomizeFactor(); });
-  }
-  this.randomizeSign=()=>{ 
-    this.terms.forEach((te)=>{ 
-      if (Math.random()<0.07) {
-        te.sign*=-1;
-      }
-    });
-  }
-  this.randomizeMultipliers=()=>{ 
-    this.terms.forEach((te)=>{ 
-      if (Math.random()<0.4) {
-        te.randomizeMultiplier(); 
-      }
-    });
-  }
-  this.getX=(t)=>{ return this.tx1.getValue(t)+this.tx2.getValue(t)+this.tx3.getValue(t); }
-  this.getY=(t)=>{ return this.ty1.getValue(t)+this.ty2.getValue(t)+this.ty3.getValue(t); }
-}
-
-if (C2) {
 var curve1=new Curve2();
 var curve2=new Curve2();
-} else {
-var curve1=new Curve();
-var curve2=new Curve();
-}
 
 var equation=(()=>{
   this.div=(()=>{
@@ -300,93 +261,6 @@ if (PUBLISH) {
       })()
     );
   }
-  this.write=()=>{
-    this.clear();
-    this.div.append(  // x line
-      (()=>{
-        let xl=document.createElement("div");
-        xl.textContent=("x=");
-        let f=Math.floor(10*curve1.tx1.factor);
-        if (f!=0) {
-          if (curve1.tx1.sign<0) xl.append("-");
-	  if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    PolarType[curve1.tx1.polType].name,
-	    getArg(curve1.tx1)
-	  );
-        }
-	if (curve1.tx2.factor>0) { 
-          if (curve1.tx2.sign<0) {
-            xl.append("-");
-          } else {
-            xl.append("+"); 
-          }
-          let f=Math.floor(10*curve1.tx2.factor);
-	  if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    PolarType[curve1.tx2.polType].name,
-	    getArg(curve1.tx2)
-	  );
-        }
-	if (curve1.tx3.factor>0) { 
-          if (curve1.tx3.sign<0) {
-            xl.append("-");
-          } else {
-            xl.append("+"); 
-          }
-          let f=Math.floor(10*curve1.tx3.factor);
-	  if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    PolarType[curve1.tx3.polType].name,
-	    getArg(curve1.tx3)
-	  );
-        }
-        return xl;
-      })()
-    );
-    div.append(  // y line
-      (()=>{
-        let xl=document.createElement("div");
-        xl.textContent=("y=");
-        let f=Math.floor(10*curve1.ty1.factor);
-        if (f!=0) {
-          if (curve1.ty1.sign<0) xl.append("-");
-          if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    PolarType[curve1.ty1.polType].name,
-	    getArg(curve1.ty1)
-	  );
-        }
-	if (curve1.ty2.factor>0) { 
-          if (curve1.ty2.sign<0) {
-            xl.append("-");
-          } else {
-            xl.append("+"); 
-          }
-          f=Math.floor(10*curve1.ty2.factor);
-	  if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    PolarType[curve1.ty2.polType].name,
-	    getArg(curve1.ty2)
-	  );
-        }
-	if (curve1.ty3.factor>0) { 
-          if (curve1.ty3.sign<0) {
-            xl.append("-");
-          } else {
-            xl.append("+"); 
-          }
-          f=Math.floor(10*curve1.ty3.factor);
-	  if (f!=1) { xl.append(f+"\u00B7"); }
-	  xl.append(
-	    PolarType[curve1.ty3.polType].name,
-	    getArg(curve1.ty3)
-	  );
-        }
-        return xl;
-      })()
-    );
-  }
   return this;
 })();
 
@@ -430,11 +304,7 @@ var draw=(frac, fin)=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   if (fin) {
     drawCH();
-if (C2) {
     equation.write2();
-} else {
-    equation.write();
-}
   }
   ctx.beginPath();
   let scale=SCALE;
@@ -475,20 +345,10 @@ var randomize=()=>{
 }
 
 var transit=()=>{
-if (C2) {
   for (let i in curve1.terms) {
     curve1.terms[i].copyValues(curve2.terms[i]);
   }
   curve1.randomize();
-} else {
-  curve1.tx1.copyValues(curve2.tx1);
-  curve1.tx2.copyValues(curve2.tx2);
-  curve1.tx3.copyValues(curve2.tx3);
-  curve1.ty1.copyValues(curve2.ty1);
-  curve1.ty2.copyValues(curve2.ty2);
-  curve1.ty3.copyValues(curve2.ty3);
-  randomize();
-}
 if (!PUBLISH) { setControls(); }
 }
 
@@ -588,7 +448,7 @@ var control=(term)=>{
       rs.style.borderBottom="1px solid silver";
       rs.append(
 	(()=>{
-	  let rV=getStdRange(-1,1,0.1);
+	  let rV=getStdRange(-10,10,1);
           rV.title="factor";
 	  rV.oninput=(event)=>{
 	    term.factorCall(rV); 
@@ -630,7 +490,6 @@ var control=(term)=>{
 }
 grid.append((()=>{
   let c=document.createElement("div");
-if (C2) {
   c.append(
     control(curve1.tx1),
     control(curve1.tx3),
@@ -645,16 +504,6 @@ if (C2) {
     control(curve1.ty9),
     control(curve1.ty11),
   );
-} else {
-  c.append(
-    control(curve1.tx1),
-    control(curve1.tx2),
-    control(curve1.tx3),
-    control(curve1.ty1),
-    control(curve1.ty2),
-    control(curve1.ty3),
-  );
-}
   return c;
 })());
 var setControls=()=>{
