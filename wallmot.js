@@ -57,8 +57,8 @@ pts.push([x,y]); }
 }
 
 var randomizeColor=()=>{
-  let light="hsl("+getRandomInt(0,360)+",70%,70%)";
-  let dark="hsl("+getRandomInt(0,360)+",30%,30%)";
+  var light="hsl("+getRandomInt(0,360)+",70%,70%)";
+  var dark="hsl("+getRandomInt(0,360)+",30%,30%)";
   if (Math.random()<0.5) {
     ctx.fillStyle=light;
     body.style.background=dark;
@@ -226,6 +226,7 @@ var time=0;
 var stopped=true;
 var duration=8000;
 var frac=1;
+var AF=0;
 var animate=(ts)=>{
   if (stopped) return;
   if (!time) {
@@ -248,7 +249,7 @@ var animate=(ts)=>{
     time=0;
     frac=0;
   }
-  requestAnimationFrame(animate);
+  AF=requestAnimationFrame(animate);
 }
 
 var start=()=>{
@@ -265,6 +266,4 @@ var start=()=>{
 }
 canvas.addEventListener("click", start, false);
 
-setPoints();
-draw(1);
 start();
