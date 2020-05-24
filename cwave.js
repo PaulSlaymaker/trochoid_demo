@@ -72,7 +72,7 @@ var animate=(ts)=>{
     O+=7;
     R=36-12*Math.cos(O/800);
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    draw(frac,0);
+    draw();
 /*
   if (!time) { time=ts; }
   let progress=ts-time;
