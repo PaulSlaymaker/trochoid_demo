@@ -53,7 +53,7 @@ var draw=(frac)=>{
   }
   ctx.closePath();
   ctx.stroke();
-  ctx.fill("evenodd");
+//  ctx.fill("evenodd");
 }
 
 var drawP=(frac)=>{
@@ -81,7 +81,7 @@ onresize=function() {
 //  ctx.globalCompositeOperation="xor";
   ctx.fillStyle="hsl("+getRandomInt(0,360)+",80%,70%)";
   ctx.strokeStyle="hsl("+getRandomInt(0,360)+",90%,20%)";
-  ctx.lineWidth="4";
+  ctx.lineWidth="6";
   cancelAnimationFrame(AF);
   setPoints();
   stopped=true;
@@ -147,7 +147,7 @@ var stopped=true;
 var start=()=>{
   if (stopped) {
     ctx.fillStyle="hsl("+getRandomInt(0,360)+",80%,70%)";
-    ctx.strokeStyle="hsl("+getRandomInt(0,360)+",90%,20%)";
+    ctx.strokeStyle="hsl("+getRandomInt(0,360)+",80%,70%)";
     FX=21;
     FXS=5;
     FY=13;
