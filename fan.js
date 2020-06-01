@@ -22,16 +22,20 @@ var getRandomInt=(min,max,low)=>{
   }
 }
 
+var randomColor=()=>{
+  let hue=getRandomInt(0,360);
+  let sat=getRandomInt(70,90);
+  let lum=getRandomInt(50,70);
+  return "hsl("+getRandomInt(0,360)+","+sat+"%,"+lum+"%)";
+}
+
 var fillContext=(()=>{
   var osc=document.createElement("canvas");
   osc.width=800;
   osc.height=800;
   let fctx=osc.getContext("2d");
-  fctx.randColor=()=>{ 
-    return "hsl("+getRandomInt(0,360)+",70%,50%)";
-  }
   fctx.setBackground=()=>{ 
-    fctx.fillStyle="hsl("+getRandomInt(0,360)+",70%,50%)";
+    fctx.fillStyle=randomColor();
     fctx.fillRect(0,0,2*P,2*P);
   }
   fctx.setCircle=(tx)=>{ 
@@ -39,14 +43,13 @@ var fillContext=(()=>{
     fctx.beginPath();
     fctx.arc(P,P,RZ,0,2*Math.PI);
     fctx.closePath();
-    fctx.fillStyle="hsl("+getRandomInt(0,360)+",70%,50%)";
+    fctx.fillStyle=randomColor();
     fctx.fill();
   }
   return fctx;
 })();
 
 onresize=function() { 
-  let ss=ctx.strokeStyle;
   let D=0.9*Math.min(window.innerWidth,window.innerHeight); 
   ctx.canvas.width=D;
   ctx.canvas.height=D;
@@ -54,7 +57,6 @@ onresize=function() {
   fillContext.canvas.height=D;
   P=D/2;
   ctx.translate(P,P);
-  ctx.strokeStyle=ss;
 }
 
 var O=0;
@@ -73,53 +75,11 @@ var C=2;
 
 var getPattern=function() {
   fillContext.setBackground();
-  //let t=4/W*Math.PI;
   let tx=1/W*Math.PI;
   fillContext.setCircle(tx);
-  if (W>5) {
-    fillContext.setCircle(2*tx);
-  }
-  if (W>7) {
-    fillContext.setCircle(3*tx);
-  }
-  if (W>9) {
-    fillContext.setCircle(4*tx);
-  }
-/*
-  let RZ=Math.abs(P*Math.cos(tx)*Math.cos(Math.sin(W*tx)));    
-  fillContext.beginPath();
-  fillContext.arc(P,P,RZ,0,2*Math.PI);
-  fillContext.closePath();
-  fillContext.fillStyle="hsl("+getRandomInt(0,360)+",70%,50%)";
-  fillContext.fill();
-  if (W>5) {
-    let t=2*tx;
-    let RZ=Math.abs(P*Math.cos(t)*Math.cos(Math.sin(W*t)));    
-    fillContext.beginPath();
-    fillContext.arc(P,P,RZ,0,2*Math.PI);
-    fillContext.closePath();
-    fillContext.fillStyle="hsl("+getRandomInt(0,360)+",70%,50%)";
-    fillContext.fill();
-  }
-  if (W>7) {
-    let t=3*tx;
-    let RZ=Math.abs(P*Math.cos(t)*Math.cos(Math.sin(W*t)));    
-    fillContext.beginPath();
-    fillContext.arc(P,P,RZ,0,2*Math.PI);
-    fillContext.closePath();
-    fillContext.fillStyle="hsl("+getRandomInt(0,360)+",70%,50%)";
-    fillContext.fill();
-  }
-  if (W>9) {
-    let t=4*tx;
-    let RZ=Math.abs(P*Math.cos(t)*Math.cos(Math.sin(W*t)));    
-    fillContext.beginPath();
-    fillContext.arc(P,P,RZ,0,2*Math.PI);
-    fillContext.closePath();
-    fillContext.fillStyle="hsl("+getRandomInt(0,360)+",70%,50%)";
-    fillContext.fill();
-  }
-*/
+  if (W>5) fillContext.setCircle(2*tx);
+  if (W>7) fillContext.setCircle(3*tx);
+  if (W>9) fillContext.setCircle(4*tx);
   return ctx.createPattern(fillContext.canvas,"no-repeat");
 }
 
@@ -129,18 +89,13 @@ var fanFill={
   type:"bin",
   randColors:(count)=>{
     let c=[];
-    for (let i=0; i<count; i++) c.push("hsl("+getRandomInt(0,360)+",90%,70%)");
+    for (let i=0; i<count; i++) c.push(randomColor());
     return c;
   },
   randomize:()=>{
     if (C%2==1) {
-      if (W>3) {
         fanFill.type="rad";
         fanFill.fs=[getPattern(),"black"];
-      } else {
-        fanFill.type="bin";
-        fanFill.fs=fanFill.randColors(1);
-      }
     } else {
       if (C==12) {
         fanFill.type="ter";
@@ -150,7 +105,6 @@ var fanFill={
         fanFill.fs=fanFill.randColors(2);
       }
     }
-    fanFill.ss="hsl("+getRandomInt(0,360)+",90%,70%)";
   },
   getFill:(i)=>{
     if (fanFill.type=="rad") {
@@ -165,26 +119,11 @@ var fanFill={
       }
     }
   },
-  getStroke:()=>{
-    if (W==2) {
-      return "#777";
-    } else {
-      //if (W==3 && C%2==0) {
-      //if (W==3) {
-      //if (W==3 || W==5 || W==7) {
-      if (W%2==1 && C>2) {
-	return "#777";
-      } else {
-	return fanFill.ss;
-      }
-    }
-  }
 }
 var fanColor=fanFill;
 
-//ctx.lineWidth=0;
-let fsx1="hsl("+getRandomInt(0,360)+",90%,50%)";
-let fsx2="hsl("+getRandomInt(0,360)+",90%,70%)";
+let fsx1=randomColor();
+//let fsx2=randomColor();
 var draw=()=>{
   ctx.clearRect(-P,-P,ctx.canvas.width,ctx.canvas.height);
   for (let c=1; c<=C; c++) {
@@ -198,21 +137,17 @@ var draw=()=>{
       let r2=Math.cos(2*r*Math.PI/S);
       pts.push([r2*P*Math.sin(Z*2*Math.PI+o),r2*P*Math.cos(Z*2*Math.PI+o)]);
     }
-
-//if (W==3 || W==5 || W==7) {
-//if (W%2==1) {
-if (W%2==1 && C>2) {
-  ctx.fillStyle=fsx1;
-  ctx.strokeStyle=fsx1;
-
-    ctx.beginPath();
-    ctx.moveTo(pts[2][0],pts[2][1]);
-    ctx.lineTo(pts[S/2][0],pts[S/2][1]);
-    ctx.lineTo(pts[S/2+2][0],pts[S/2+2][1]);
-    ctx.lineTo(pts[S][0],pts[S][1]);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fill();
+    if (W%2==1) {
+      ctx.fillStyle=fsx1;
+      ctx.strokeStyle=fsx1;
+      ctx.beginPath();
+      ctx.moveTo(pts[2][0],pts[2][1]);
+      ctx.lineTo(pts[S/2][0],pts[S/2][1]);
+      ctx.lineTo(pts[S/2+2][0],pts[S/2+2][1]);
+      ctx.lineTo(pts[S][0],pts[S][1]);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fill();
 
 /*
 if (c%2==0) {
@@ -224,27 +159,7 @@ if (c%2==0) {
 }
 */
 //  S=12; //S=4*W;
-/*
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(pts[S][0],pts[S][1]);
-    ctx.lineTo(pts[S-1][0],pts[S-1][1]);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(pts[S/2][0],pts[S/2][1]);
-    ctx.lineTo(pts[S/2+1][0],pts[S/2+1][1]);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(pts[1][0],pts[1][1]);
-    ctx.lineTo(pts[2][0],pts[2][1]);
-    ctx.closePath();
-*/
+
 /*
 if (c%2==0) {
   ctx.fillStyle=fsx2;
@@ -254,56 +169,31 @@ if (c%2==0) {
   ctx.strokeStyle=fsx1;
 }
 */
-    ctx.stroke(); 
-    ctx.fill();
-}
-//if (W==3 && C%2==0) { ctx.strokeStyle="#777"; }
 
+  } else {
+    ctx.fillStyle=fsx1;
+    ctx.strokeStyle=fsx1;
+    ctx.beginPath();
+    ctx.moveTo(pts[2][0],pts[2][1]);
+    ctx.lineTo(pts[S/2+2][0],pts[S/2+2][1]);
+    ctx.lineTo(pts[S/2][0],pts[S/2][1]);
+    ctx.lineTo(pts[S][0],pts[S][1]);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+//ctx.arc(pts[S][0],pts[S/2+2][1],20,0,2*Math.PI);
+//ctx.fill();
+
+  }
     ctx.beginPath();
     ctx.moveTo(pts[0][0],pts[0][1]);
     for (let i=1; i<pts.length; i++) {
       ctx.lineTo(pts[i][0],pts[i][1]);
     }
     ctx.closePath();
-    ctx.strokeStyle=fanFill.getStroke();
+    ctx.strokeStyle="#555";
     ctx.stroke();
     ctx.fillStyle=fanFill.getFill(c);
-    //if (C%2==1 && W>3) {
-    if (fanFill.type=="rad") {
-      ctx.save();
-      ctx.translate(-P,-P);
-      ctx.fill("evenodd");
-      ctx.restore();
-    } else {
-      ctx.fill("evenodd");
-    }
-  }
-}
-
-var draw1=()=>{
-  ctx.clearRect(-P,-P,ctx.canvas.width,ctx.canvas.height);
-  for (let c=1; c<=C; c++) {
-//let pts=[];
-    ctx.fillStyle=fanFill.getFill(c);
-    ctx.beginPath();
-    //let o=0;
-    //let o=c*Math.PI/C; // tiler
-    let o=Math.cos(O%Math.PI)*c*Math.PI/C; 
-    //let o=O*c*Math.PI/C; 
-    //let q=1/(4*C);
-    let q=o/(c*4*Math.PI);
-//pts.push([P*Math.sin(o),P*Math.cos(o)]);
-    ctx.moveTo(P*Math.sin(o),P*Math.cos(o));
-    S=4*W;
-    for (let r=0; r<=S; r++) {
-      let Z=q*Math.sin(W*r*2*Math.PI/S);
-      let r2=Math.cos(2*r*Math.PI/S);
-//pts.push([r2*P*Math.sin(Z*2*Math.PI+o),r2*P*Math.cos(Z*2*Math.PI+o));
-      ctx.lineTo(r2*P*Math.sin(Z*2*Math.PI+o),r2*P*Math.cos(Z*2*Math.PI+o));
-    }
-    ctx.closePath();
-    ctx.stroke();
-    //if (C%2==1 && W>2) {
     if (fanFill.type=="rad") {
       ctx.save();
       ctx.translate(-P,-P);
@@ -332,16 +222,16 @@ var stopped=true;
 var frac=1;
 var animate=(ts)=>{
   if (stopped) return;
-  O+=0.008;
+  O+=0.01;
   if (Math.abs(Math.cos(O%Math.PI))<0.01) {
     C=getRandomInt(2,20);
-    W=getRandomInt(2,11);
+    W=getRandomInt(2,Math.min(11,2*C));
     fanFill.randomize();
-    fsx1="hsl("+getRandomInt(0,360)+",90%,50%)";
+    fsx1=randomColor();
   }
   draw();
   if (Math.abs(Math.sin(O%Math.PI))<0.01) {
-    pauseTS=performance.now()+800;
+    pauseTS=performance.now()+400;
     requestAnimationFrame(pause);
   } else {
     requestAnimationFrame(animate);
@@ -350,7 +240,6 @@ var animate=(ts)=>{
 
 var start=()=>{
   if (stopped) {
-    ctx.strokeStyle="hsl("+getRandomInt(0,360)+",90%,70%)";
     requestAnimationFrame(animate);
     stopped=false;
   } else {
@@ -387,6 +276,7 @@ body.append((()=>{
       w.value=W;
       w.oninput=()=>{
 	W=parseFloat(w.value);
+fanFill.randomize();
 	draw();
       }
       return w;
@@ -434,9 +324,6 @@ body.append((()=>{
   })()
 );
 
-//);
-
-//draw(1);
 onresize();
 fanFill.randomize();
 start();
