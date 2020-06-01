@@ -248,6 +248,7 @@ var start=()=>{
 }
 ctx.canvas.addEventListener("click", start, false);
 
+/*
 body.style.display="grid";
 body.append((()=>{
   let d=document.createElement("div");
@@ -319,10 +320,12 @@ fanFill.randomize();
       return r;
     })(),
   */
+/*
     );
     return d;
   })()
 );
+*/
 
 onresize();
 fanFill.randomize();
