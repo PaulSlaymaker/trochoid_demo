@@ -8,7 +8,6 @@ const canvas=(()=>{
   let c=document.createElement("canvas");
   c.width="800";
   c.height="800";
-  //c.style.border="1px solid silver";
   body.append(c);
   return c;
 })();
@@ -37,38 +36,26 @@ var Ball=function(os,color) {
       this.o+=TP;
     }
   }
-  this.setRadians=()=>{
-    if (this.o>TP) {
-      this.o-=TP;
-    } else if (this.o<0) {
-      this.o+=TP;
-    }
-  }
 }
 
 onresize=function() { 
   let D=0.9*Math.min(window.innerWidth,window.innerHeight); 
   canvas.width=D;
   canvas.height=D;
-  //RR=D/12;
-  //RR=D/(2*Count);
-  RR=D/(1.7*Count);
-  R=D/2-RR;
+  R=canvas.width/(2*(1+Math.sin(TP/(4*(Count+1)))));
+  RR=canvas.width/2-R;
   rad=Math.asin(RR/R);
   ctx.translate(D/2,D/2);
-  ctx.fillStyle="hsl("+getRandomInt(0,360)+",90%,70%)";
-  //ctx.strokeStyle="hsl("+getRandomInt(0,360)+",90%,70%)";
   ctx.lineWidth=2;
 }
 
 var R=260;
 var Z=2;
 var RR=0;  // max
-//var r=R-RR;
 var r=R;
 var rad=Math.asin(RR/r);
-var Count=getRandomInt(5,18);
-var tsStyle="black";
+var Count=getRandomInt(5,25);
+var tsStyle="white";
 var B=[];
 
 var generateB=()=>{
@@ -76,32 +63,39 @@ var generateB=()=>{
   let hue=getRandomInt(0,360);
   let c=["hsl("+hue+",90%,70%)"];
   c.push("hsl("+(hue+getRandomInt(90,180))+",90%,70%)");
+  let offset=TP*Math.random();
   for (let i=0; i<Count; i++) {
     let desync=(1-2*Math.random())/50;
     //b.push(new Ball(i*TP/Count+desync,c[i%2])); // dispersed
-    //b.push(new Ball(i*2.05*rad+desync,c[i%2])); // inline
-    b.push(new Ball(i*2.05*rad,c[i%2])); // inline
+    //b.push(new Ball(i*TP/Count,c[i%2])); // dispersed
+    b.push(new Ball((offset+i*2.05*rad)%TP,c[i%2])); // inline
   }
   return b;
 }
 
-var VMAX=0.00014;
+var VMAX=0.00012;
+//var VMAX=0.005;
 var vr2=[-VMAX,-VMAX/2,0,VMAX/2,VMAX];
 var vr3=[-VMAX,-2*VMAX/3,VMAX/3,0,VMAX/3,2*VMAX/3,VMAX];
+var vr4=[-VMAX,-3*VMAX/4,-VMAX/2,-VMAX/4,0,VMAX/4,VMAX/2,3*VMAX/4,VMAX];
 var randomize=()=>{
   let vs=(()=>{ 
     let a=[];
-    for (let i in B) { a.push(vr3[getRandomInt(0,7)]); }
-    a.sort();
-    //a.reverse();
+    //for (let i in B) { a.push(vr3[getRandomInt(0,7)]); }
+    for (let i in B) { a.push(vr4[getRandomInt(0,9)]); }
+    a.sort((a,b)=>{ 
+      if (a>b) return -1;
+      if (b>a) return 1;
+      return 0;
+    });
     return a;
   })();
+//debugger;
   //let vi=VMAX/Count;
   for (let i in B) { 
     //B[i].v=i*vi;
     B[i].v=vs[i];
-    //B[i].v=vs[B.length-i];
-    //B[i].v=vr3[getRandomInt(0,7)]/2;
+//console.log(i+" "+B[i].v);
   }
 }
 
@@ -133,11 +127,9 @@ var draw=()=> {
   }
 }
 
-var reset=()=>{
+var reset=(m)=>{
+  console.log("reset "+m);
   cancelAnimationFrame(AF);
-  maxdel=0;
-//  B=generateB();
-//  randomize();
   stopped=true;
   start();
 }
@@ -154,15 +146,25 @@ var colCheck=(b1,b2)=>{
   return del;
 }
 
-var detect=()=>{
-  for (let i=0; i<B.length; i++) {
-    let j=(i+1)%B.length;
-    let del=colCheck(B[i],B[j]);
-    if (del>=0) {
-      return true;
-    }
+var contact=(b1,b2)=>{
+  let d=Math.abs(b1.o-b2.o);
+  if (d<2.01*rad) {
+    return true;
+  } else if (TP-d<2.01*rad) {
+    return true;
   }
   return false;
+}
+
+var detect=(b1,b2)=>{
+  let d=Math.abs(b1.o-b2.o);
+  let collided=false;
+  if (d<2.04*rad) {
+    return [d<2*rad,true];
+  } else if (TP-d<2.04*rad) {
+    return [TP-d<2*rad,true];
+  }
+  return [false,false];
 }
 
 var maxdel=0;
@@ -177,7 +179,7 @@ if (del>maxdel) {
   if (maxdel>rad/4) {
 console.log("restarted");
 //debugger;
-    reset();
+    reset("del");
     return false;
   }
 }
@@ -210,18 +212,20 @@ var adjust=()=>{
         B[j].move(-del/2+desync);
       }
       adj=true;
-console.log("adjusted");
     }
   }
   return adj;
 }
 
-var time=0;
+var ratchet=performance.now()+60000;
 var stopped=true;
 var AF=0;
 var animate=(ts)=>{
   if (stopped) return;
-  for (let s=0; s<100; s++) {
+  if (ts>ratchet) {
+    reset("time");
+  }
+  for (let s=0; s<80; s++) {
     //let cdel=[];
     for (let i in B) {
       B[i].move(B[i].v);
@@ -230,19 +234,16 @@ var animate=(ts)=>{
 let counter=0;
 do {
   if (counter>20) {
-    //debugger;
-    console.log("reset");
-    reset();
+    reset("adj");
     return;
   }
     //if (counter%2==1) console.log("adj "+counter);
   counter++; 
 } while (adjust());
+if (counter>1) console.log("adjusted "+counter);
   }
-
   ctx.clearRect(-canvas.width/2,-canvas.height/2,canvas.width,canvas.height);
   draw();
-
 ////
 /*
   if (!time) { time=ts; }
@@ -265,12 +266,15 @@ var start=()=>{
     stopped=false;
     tsStyle="hsl("+getRandomInt(0,360)+",70%,30%)";
     maxdel=0;
-Count=getRandomInt(5,18);
-RR=canvas.width/(1.7*Count);
-R=canvas.width/2-RR;
-rad=Math.asin(RR/R);
+    Count=getRandomInt(5,25);
+    R=canvas.width/(2*(1+Math.sin(TP/(4*(Count+1)))));
+    RR=canvas.width/2-R;
+    //let RRx=canvas.width/(1.7*Count);
+    //let Rx=canvas.width/2-RR;
+    rad=Math.asin(RR/R);
     B=generateB();
     randomize();
+    ratchet=performance.now()+60000;
     AF=requestAnimationFrame(animate);
   } else {
     stopped=true;
@@ -279,6 +283,12 @@ rad=Math.asin(RR/R);
 canvas.addEventListener("click", start, false);
 
 onresize();
-//B=generateB();
-//randomize();
 start();
+
+var bd=()=>{
+  for (let i=0; i<B.length; i++) {
+    let j=(i+1)%B.length;
+    let d=B[i].o-B[j].o;
+    console.log(B[i].o.toFixed(3)+" "+d);
+  }
+}
