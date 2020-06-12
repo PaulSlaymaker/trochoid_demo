@@ -4,21 +4,23 @@ body.style.background="black";
 
 const TP=2*Math.PI;
 
-const canvas=(()=>{
+const ctx=(()=>{
   let c=document.createElement("canvas");
   c.width="800";
   c.height="800";
-  //document.getElementById("cancont").append(c);
   body.append(c);
-  return c;
+  return c.getContext("2d");
 })();
 
-var ctx=canvas.getContext("2d");
-//ctx.fillStyle="#AADDAA";
-
 onresize=function() { 
-//  canvas.width=window.innerWidth; 
+  ctx.canvas.width=window.innerWidth; 
+  ctx.canvas.height=window.innerHeight; 
+  DX=ctx.canvas.width/2;
+  DY=ctx.canvas.height/2;
   ctx.translate(DX,DY);
+  ROWS=Math.floor(ctx.canvas.height/90);
+  COLS=Math.floor(ctx.canvas.width/30);
+  //PY=DY/ROWS;
 }
 
 var getRandomInt=(min,max,low)=>{
@@ -34,40 +36,20 @@ var Shape=function() {
   this.oly=1;
   this.gon=4;
   this.rot=0;
-  this.randomize=()=>{
-    this.olx=0.8+0.5*Math.random();
-    this.oly=0.8+2.2*Math.random();
-  }
-}
-
-var Pattern=function() {
-  this.s1=new Shape();
-  this.olx=1;
-  this.oly=1;
-  this.color="";
-  this.bkg="";
-  this.gon=4;
-  this.rot=0;
   this.rotAlt=false;
-/*
-  overlap x,y
-  color, bkg
-  shape 1,2,?3....  4,6,8 gon or liss
-  rotate 1,2 (0 or 90)
-  count x,y   f(Dx,Dy)
-  nested, repeated, repeat (odd poly) or pattern (1,1,2), clipped
-*/
-  this.randomize=()=>{
-    let light="hsl("+getRandomInt(0,360)+",70%,70%)";
-    let dark="hsl("+getRandomInt(0,360)+",50%,50%)";
-    if (Math.random()<0.5) {
-      this.color=light;
-      this.bkg=dark;
+  this.randomize=(even)=>{
+    if (even) {
+      this.gon=[4,6,8][getRandomInt(0,3)];
     } else {
-      this.color=dark;
-      this.bkg=light;
+      this.gon=[4,6,3,8,5][getRandomInt(0,5,true)];
     }
-    this.gon=[3,4,5,6,8][getRandomInt(0,5)];
+    if (this.gon%2==1) {
+      this.olx=1+0.7*Math.random();
+      this.oly=1+2.5*Math.random();
+    } else {
+      this.olx=0.9+0.5*Math.random();
+      this.oly=0.9+2.2*Math.random();
+    }
     if (this.gon==3) {
       this.rot=TP/2;
     } else if (this.gon==4) {
@@ -88,34 +70,51 @@ var Pattern=function() {
     } else {
       this.rotAlt=false;
     }
-    if (this.gon%2==1) {
-      this.olx=1+0.7*Math.random();
-      this.oly=1+2.5*Math.random();
+  }
+}
+
+var Pattern=function() {
+  this.shapeSet="SSET";
+  this.s1=new Shape();
+  this.s2=new Shape();
+this.shapes=[this.s1,this.s2];
+  this.color="";
+  this.bkg="";
+  this.rows=ROWS;
+  this.cols=COLS;
+  //nested, repeated, repeat (odd poly) or pattern (1,1,2), clipped
+  this.randomize=()=>{
+    this.rows=getRandomInt(3,2*ROWS);
+    this.cols=getRandomInt(10,2*COLS);
+    this.shapeSet=["DSET","ASET","TSET","SSET"][getRandomInt(0,4)];
+    //let hue=getRandomInt(0,360);
+    let light="hsl("+getRandomInt(0,360)+",70%,70%)";
+    let dark="hsl("+getRandomInt(0,360)+",50%,50%)";
+    if (Math.random()<0.5) {
+      this.color=light;
+      this.bkg=dark;
     } else {
-      this.olx=0.8+0.5*Math.random();
-      this.oly=0.8+2.2*Math.random();
+      this.color=dark;
+      this.bkg=light;
     }
-    this.s1.randomize();
+    let egon=this.shapeSet=="SSET"?false:true;
+    this.shapes.forEach((s)=>{ s.randomize(egon); });
+/*
+    this.s1.randomize(egon);
+    this.s2.randomize(egon);
+*/
   }
   this.randomize();
 }
 
-const P1=new Pattern();
-const P2=new Pattern();
-
 var DX=400;
 var DY=400;
-var C=4;
-var F1=1;
 var ROWS=10;
-var COLS=32;
-let PY=DY/ROWS;
-//let PX=DX/COLS;
-let hue=0;
-let M=0;
+var COLS=36;
+var M=0;
 
 var draw=()=>{
-  ctx.clearRect(-DX,-DY,canvas.width,canvas.height);
+  ctx.clearRect(-DX,-DY,ctx.canvas.width,ctx.canvas.height);
   let z=DX*(2*(M<0?1+M:M)-1);
   if (M<0) {
     ctx.fillStyle=P1.bkg;
@@ -133,24 +132,27 @@ var draw=()=>{
 
   let cx=0;
   let mx=(2*M-1)*DX;
-  let fy=P1.oly*PY;
   ctx.beginPath();
   for (let c=-TP/2-M*TP/4; c<TP/2-M*TP/4; c=c+TP/COLS) {
     if (Math.cos(c)<-0.01) continue;
     //if (Math.cos(c)<0) continue;
-    let px=PX*Math.cos(c);
+    let px=DX/COLS*TP/2*Math.cos(c);
     cx+=px;
-    let fx=P1.olx*px;
-    let counter=0;
-    for (let ry=-DY-PY; ry<=DY+PY; ry+=2*DY/ROWS) {
-    let rot=P1.rot;
-    if (P1.rotAlt && counter%2==0) rot=0;
-      //let x=fx*Math.cos(P1.rot)+cx+mx;
-      ctx.moveTo(fx*Math.cos(rot)+cx+mx,fy*Math.sin(rot)+ry);
-      for (let t=0; t<=TP; t+=TP/P1.gon) {
-	ctx.lineTo(fx*Math.cos(t+rot)+cx+mx,fy*Math.sin(t+rot)+ry);
+    let L=(P1.shapeSet=="DSET"||P1.shapeSet=="TSET")?2:1;
+    for (let i=0; i<L; i++) {
+      //for (let ry=-DY-PY; ry<=DY+PY; ry+=2*PY) {
+      for (let ry=-DY-3*DY/P1.rows, counter=0; ry<=DY+3*DY/P1.rows; ry+=2*DY/P1.rows, counter++) {
+        if (P1.shapeSet=="TSET" && counter%2==0 && i==1) continue;
+        let j=P1.shapeSet=="ASET"?counter%2:i;
+        let fx=P1.shapes[j].olx*px;
+        let fy=P1.shapes[j].oly*DY/P1.rows;
+	let rot=P1.shapes[j].rot;
+	if (P1.shapes[j].rotAlt && counter%2==0) rot=0;
+	ctx.moveTo(fx*Math.cos(rot)+cx+mx,fy*Math.sin(rot)+ry);
+	for (let t=0; t<=TP; t+=TP/P1.shapes[j].gon) {
+	  ctx.lineTo(fx*Math.cos(t+rot)+cx+mx,fy*Math.sin(t+rot)+ry);
+	}
       }
-      counter++;
     }
     cx+=px;
   }
@@ -163,25 +165,28 @@ var draw=()=>{
   let m=M-1;
   if (m<-1) m+=2;
   mx=(2*m-1)*DX;
-  fy=P2.oly*PY;
   ctx.beginPath();
   for (let c=-TP/2-m; c<TP/2-m; c=c+TP/COLS) {
     if (Math.cos(c)<-0.01) continue;
     let px=PX*Math.cos(c);
     cx+=px;
-    let fx=P2.olx*px;
-    let counter=0;
-    for (let ry=-DY-PY; ry<=DY+PY; ry+=2*DY/ROWS) {
-      let rot=P2.rot;
-      if (P2.rotAlt && counter%2==0) rot=0;
-      //ctx.moveTo(cx+px-DX+4*m*COLS*TP,ry);
-      //let x=P2.olx*px*Math.cos(P2.rot)+cx+(2*m-1)*DX;
-      //ctx.moveTo(P2.olx*px+cx-DX+2*m*DX,ry);
-      ctx.moveTo(fx*Math.cos(rot)+cx+mx,fy*Math.sin(rot)+ry);
-      for (let t=0; t<=TP; t+=TP/P2.gon) {
-	ctx.lineTo(P2.olx*px*Math.cos(t+rot)+cx+mx,fy*Math.sin(t+rot)+ry);
+
+    let L=(P2.shapeSet=="DSET"||P2.shapeSet=="TSET")?2:1;
+    for (let i=0; i<L; i++) {
+      //for (let ry=-DY-3*DY/P2.rows; ry<=DY+3*DY/P2.rows; ry+=2*DY/P2.rows) {
+      for (let ry=-DY-3*DY/P2.rows, counter=0; ry<=DY+3*DY/P2.rows; ry+=2*DY/P2.rows, counter++) {
+        if (P2.shapeSet=="TSET" && counter%2==0 && i==1) continue;
+        let j=P2.shapeSet=="ASET"?counter%2:i;
+        let fx=P2.shapes[j].olx*px;
+        let fy=P2.shapes[j].oly*DY/P2.rows;
+	let rot=P2.shapes[j].rot;
+	if (P2.shapes[j].rotAlt && counter%2==0) rot=0;
+	//ctx.moveTo(P2.olx*px+cx-DX+2*m*DX,ry);
+	ctx.moveTo(fx*Math.cos(rot)+cx+mx,fy*Math.sin(rot)+ry);
+	for (let t=0; t<=TP; t+=TP/P2.shapes[i].gon) {
+	  ctx.lineTo(fx*Math.cos(t+rot)+cx+mx,fy*Math.sin(t+rot)+ry);
+	}
       }
-      counter++;
     }
     cx+=px;
   }
@@ -193,10 +198,13 @@ var draw=()=>{
   ctx.beginPath();
   ctx.moveTo(z,-DY);
   ctx.lineTo(z,DY);
+  ctx.lineWidth=4;
   ctx.closePath();
-  ctx.lineWidth=3;
+  ctx.shadowColor="black";
+  ctx.shadowBlur=10;
   ctx.stroke();
   ctx.lineWidth=1;
+  ctx.shadowColor="rgb(0,0,0,0)";
 }
 
 var time=0;
@@ -210,7 +218,6 @@ var animate=(ts)=>{
   //if (M>1.06) M=-1.06;
   if (M>1) {
     M=-1;
-    //P1.olx=1+0.7*Math.random();
     P1.randomize();
   } else if (Math.abs(M)<0.002) {
     P2.randomize();
@@ -222,8 +229,6 @@ var animate=(ts)=>{
 
 var start=()=>{
   if (stopped) {
-    //ctx.fillStyle="hsl("+getRandomInt(0,360)+",90%,70%)";
-    //ctx.strokeStyle=ctx.fillStyle;
     requestAnimationFrame(animate);
     stopped=false;
   } else {
@@ -232,22 +237,19 @@ var start=()=>{
 }
 ctx.canvas.addEventListener("click", start, false);
 
-//onresize();
-
-var getStdRange=(min,max,step,name)=>{
-  let sr=document.createElement("input");
-  sr.type="range";
-  sr.min=min;
-  sr.max=max;
-  sr.step=step;
-  sr.style.display="block";
-  sr.onmouseover=()=>{ sr.title=sr.value; }
-  return sr;
-}
-
-//document.getElementById("cont").append(
+/*
 body.append(
   (()=>{
+    var getStdRange=(min,max,step,name)=>{
+      let sr=document.createElement("input");
+      sr.type="range";
+      sr.min=min;
+      sr.max=max;
+      sr.step=step;
+      sr.style.display="block";
+      sr.onmouseover=()=>{ sr.title=sr.value; }
+      return sr;
+    }
     let d=document.createElement("div");
     d.style.gridColumn="2";
     d.append(
@@ -260,17 +262,6 @@ body.append(
 	}
 	return c;
       })(),
-/*
-      (()=>{
-	let f1=getStdRange(1,13,2);
-	f1.value=F1;
-	f1.oninput=()=>{
-	  F1=parseFloat(f1.value);
-	  draw();
-	}
-	return f1;
-      })(),
-*/
       (()=>{
 	let m=getStdRange(-1.1,1.1,0.01);
 	m.value=M;
@@ -280,12 +271,16 @@ body.append(
 	}
 	return m;
       })(),
-
     );
     return d;
   })(),
 );
+*/
 
 onresize();
+
+const P1=new Pattern();
+const P2=new Pattern();
+
 //draw(1);
 start();
