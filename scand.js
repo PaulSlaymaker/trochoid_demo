@@ -37,7 +37,27 @@ var Shape=function() {
   this.gon=4;
   this.rot=0;
   this.rotAlt=false;
-  this.randomize=(even)=>{
+  this.gt=true;
+  this.randomizeGT=()=>{
+    this.gon=[6,10,12][getRandomInt(0,3)];
+    this.olx=0.4+0.3*Math.random();
+    this.oly=0.4+1.2*Math.random();
+    if (this.gon==6) {
+      this.rot=[0,TP/12][getRandomInt(0,2)];
+    } else if (this.gon==10) {
+      this.rot=[0,TP/20][getRandomInt(0,2)];
+    } else if (this.gon==12) {
+      this.rot=[0,TP/24][getRandomInt(0,2)];
+    } else {
+      this.rot=0;
+    }
+    if (this.rot>0) {
+      this.rotAlt=Math.random()<0.5?true:false;
+    } else {
+      this.rotAlt=false;
+    }
+  }
+  this.randomizePG=(even)=>{
     if (even) {
       this.gon=[4,6,8][getRandomInt(0,3)];
     } else {
@@ -62,22 +82,51 @@ var Shape=function() {
       this.rot=0;
     }
     if (this.rot>0) {
-      if (this.gon%2==1) {
-        this.rotAlt=true;
-      } else {
-        this.rotAlt=Math.random()<0.5?true:false;
-      }
+      if (this.gon%2==1) this.rotAlt=true;
+      else this.rotAlt=Math.random()<0.5?true:false;
     } else {
       this.rotAlt=false;
     }
+  }
+  this.randomize=(even)=>{
+    this.gt=Math.random()<0.4?true:false;
+    if (this.gt) {
+      this.randomizeGT();
+    } else {
+      this.randomizePG(even);
+    }
+  }
+  this.drawGT=(xo,xf,yo,yf,alt)=>{
+    let rot=this.rot;
+    if (this.rotAlt && alt) rot=0;
+    ctx.moveTo(
+      xo+this.olx*xf*(Math.cos(rot)+Math.cos(3*rot)),
+      yo+this.oly*yf*(Math.sin(rot)-Math.sin(3*rot))
+    );
+    for (let t=0; t<=TP+0.01; t+=TP/this.gon) {
+      ctx.lineTo(
+        xo+this.olx*xf*(Math.cos(t+rot)+Math.cos(3*(t+rot))),
+        yo+this.oly*yf*(Math.sin(t+rot)-Math.sin(3*(t+rot)))
+      );
+    }
+  }
+  this.drawPG=(xo,xf,yo,yf,alt)=>{
+    let rot=this.rot;
+    if (this.rotAlt && alt) rot=0;
+    ctx.moveTo(xo+this.olx*xf*Math.cos(rot),yo+yf*Math.sin(rot));
+    for (let t=0; t<=TP; t+=TP/this.gon) {
+      ctx.lineTo(xo+this.olx*xf*Math.cos(t+rot),yo+this.oly*yf*Math.sin(t+rot));
+    }
+  }
+  this.draw=(xo,xf,yo,yf,alt)=>{
+    if (this.gt) this.drawGT(xo,xf,yo,yf,alt);
+    else this.drawPG(xo,xf,yo,yf,alt);
   }
 }
 
 var Pattern=function() {
   this.shapeSet="SSET";
-  this.s1=new Shape();
-  this.s2=new Shape();
-this.shapes=[this.s1,this.s2];
+  this.shapes=[new Shape(),new Shape()];
   this.color="";
   this.bkg="";
   this.rows=ROWS;
@@ -88,8 +137,8 @@ this.shapes=[this.s1,this.s2];
     this.cols=getRandomInt(10,2*COLS);
     this.shapeSet=["DSET","ASET","TSET","SSET"][getRandomInt(0,4)];
     //let hue=getRandomInt(0,360);
-    let light="hsl("+getRandomInt(0,360)+",70%,70%)";
-    let dark="hsl("+getRandomInt(0,360)+",50%,50%)";
+    let light="hsl("+getRandomInt(0,360)+",80%,70%)";
+    let dark="hsl("+getRandomInt(0,360)+",60%,50%)";
     if (Math.random()<0.5) {
       this.color=light;
       this.bkg=dark;
@@ -99,10 +148,6 @@ this.shapes=[this.s1,this.s2];
     }
     let egon=this.shapeSet=="SSET"?false:true;
     this.shapes.forEach((s)=>{ s.randomize(egon); });
-/*
-    this.s1.randomize(egon);
-    this.s2.randomize(egon);
-*/
   }
   this.randomize();
 }
@@ -138,12 +183,13 @@ var draw=()=>{
     //if (Math.cos(c)<0) continue;
     let px=DX/COLS*TP/2*Math.cos(c);
     cx+=px;
-    let L=(P1.shapeSet=="DSET"||P1.shapeSet=="TSET")?2:1;
+    let L=(P1.shapeSet=="DSET" || P1.shapeSet=="TSET")?2:1;
     for (let i=0; i<L; i++) {
-      //for (let ry=-DY-PY; ry<=DY+PY; ry+=2*PY) {
       for (let ry=-DY-3*DY/P1.rows, counter=0; ry<=DY+3*DY/P1.rows; ry+=2*DY/P1.rows, counter++) {
         if (P1.shapeSet=="TSET" && counter%2==0 && i==1) continue;
         let j=P1.shapeSet=="ASET"?counter%2:i;
+	P1.shapes[j].draw(cx+mx,px,ry,DY/P1.rows,counter%2==0);
+/*
         let fx=P1.shapes[j].olx*px;
         let fy=P1.shapes[j].oly*DY/P1.rows;
 	let rot=P1.shapes[j].rot;
@@ -152,6 +198,7 @@ var draw=()=>{
 	for (let t=0; t<=TP; t+=TP/P1.shapes[j].gon) {
 	  ctx.lineTo(fx*Math.cos(t+rot)+cx+mx,fy*Math.sin(t+rot)+ry);
 	}
+*/
       }
     }
     cx+=px;
@@ -177,15 +224,7 @@ var draw=()=>{
       for (let ry=-DY-3*DY/P2.rows, counter=0; ry<=DY+3*DY/P2.rows; ry+=2*DY/P2.rows, counter++) {
         if (P2.shapeSet=="TSET" && counter%2==0 && i==1) continue;
         let j=P2.shapeSet=="ASET"?counter%2:i;
-        let fx=P2.shapes[j].olx*px;
-        let fy=P2.shapes[j].oly*DY/P2.rows;
-	let rot=P2.shapes[j].rot;
-	if (P2.shapes[j].rotAlt && counter%2==0) rot=0;
-	//ctx.moveTo(P2.olx*px+cx-DX+2*m*DX,ry);
-	ctx.moveTo(fx*Math.cos(rot)+cx+mx,fy*Math.sin(rot)+ry);
-	for (let t=0; t<=TP; t+=TP/P2.shapes[i].gon) {
-	  ctx.lineTo(fx*Math.cos(t+rot)+cx+mx,fy*Math.sin(t+rot)+ry);
-	}
+	P2.shapes[j].draw(cx+mx,px,ry,DY/P2.rows,counter%2==0);
       }
     }
     cx+=px;
@@ -201,7 +240,7 @@ var draw=()=>{
   ctx.lineWidth=4;
   ctx.closePath();
   ctx.shadowColor="black";
-  ctx.shadowBlur=10;
+  ctx.shadowBlur=8;
   ctx.stroke();
   ctx.lineWidth=1;
   ctx.shadowColor="rgb(0,0,0,0)";
@@ -222,7 +261,6 @@ var animate=(ts)=>{
   } else if (Math.abs(M)<0.002) {
     P2.randomize();
   }
-  
   draw();
   requestAnimationFrame(animate);
 }
