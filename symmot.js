@@ -13,17 +13,12 @@ const ctx=(()=>{
   return c.getContext("2d");
 })();
 
-//var ctx=canvas.getContext('2d');
-
 onresize=function() { 
-  //canvas.width=window.innerWidth; 
-  //canvas.height=window.innerHeight; 
-  ctx.canvas.width=ctx.canvas.parentElement.offsetWidth; 
-  ctx.canvas.height=ctx.canvas.parentElement.offsetHeight; 
-//  ctx.fillStyle="#4444AA";
+  ctx.canvas.width=window.innerWidth; 
+  ctx.canvas.height=window.innerHeight; 
+  //ctx.canvas.width=ctx.canvas.parentElement.offsetWidth; 
+  //ctx.canvas.height=ctx.canvas.parentElement.offsetHeight; 
   ctx.lineWidth=0.2;
-//ctx.shadowColor="black";
-//ctx.shadowBlur=20;
   //cancelAnimationFrame(AF);
   //stopped=true;
   setPoints();
@@ -39,12 +34,8 @@ var getRandomInt=(min,max,low)=>{
 
 var pts=[];
 var R=100;
-var kf=1;
 var O=0;
 var C=32;
-//var F1=3;
-//var F2=9;
-//var sType=["A","B"][getRandomInt(0,2)];
 var atype=true;
 
 var Shape=function() {
@@ -101,14 +92,16 @@ var Shape=function() {
 }
 
 var setPoints=()=>{
-//  do {
   //R=200+200*Math.random();
-  R=ctx.canvas.width/4;  // min/max, 2-300px optimum?
+  let d=Math.floor(Math.max(ctx.canvas.width,ctx.canvas.height)/250);
+console.log(d);
+  
+  //R=ctx.canvas.width/4;  // min/max, 2-300px optimum?
+  R=ctx.canvas.width/d;  // min/max, 2-300px optimum?
   pts=[];
   for (let x=-R; x<=ctx.canvas.width+R; x+=R) {
     for (let y=-R; y<=ctx.canvas.height+R; y+=R) { pts.push([x,y]); }
   }
-//  } while (pts.length%2==0);
 }
 
 var draw=(frac)=>{
@@ -119,21 +112,18 @@ var draw=(frac)=>{
   for (let i=0; i<pts.length; i++) {
     let x=pts[i][0];
     let y=pts[i][1];
-    let q=(i%2==0)?-1:1;
-//    let xn=(1-frac)*s1.getX(q*O)+frac*s2.getX(q*O);
-//    let yn=(1-frac)*s1.getY(q*O)+frac*s2.getY(q*O);
-    let xn=0.6*((1-frac)*s1.getX(q*O)+s2.getX(q*O)+frac*s3.getX(q*O));
-    let yn=0.6*((1-frac)*s1.getY(q*O)+s2.getY(q*O)+frac*s3.getY(q*O));
-    ctx.moveTo(x+kf*xn,y+kf*yn);
+//    let xn=(1-frac)*s1.getX(0)+frac*s2.getX(0);
+//    let yn=(1-frac)*s1.getY(0)+frac*s2.getY(0);
+    let xn=0.6*((1-frac)*s1.getX(0)+s2.getX(0)+frac*s3.getX(0));
+    let yn=0.6*((1-frac)*s1.getY(0)+s2.getY(0)+frac*s3.getY(0));
+    ctx.moveTo(x+xn,y+yn);
     for (let j=0; j<=C; j++) {
-      let rv=j*TP/C+q*O;
+      let rv=j*TP/C;
       //let px=(1-frac)*s1.getX(rv)+frac*s2.getX(rv);
       //let py=(1-frac)*s1.getY(rv)+frac*s2.getY(rv);
       let px=0.6*((1-frac)*s1.getX(rv)+s2.getX(rv)+frac*s3.getX(rv));
       let py=0.6*((1-frac)*s1.getY(rv)+s2.getY(rv)+frac*s3.getY(rv));
-//(1-frac)*s1.K*(Math.sin(s1.F1*rv)+Math.sin(s1.F2*rv))+frac*s2.K*(Math.sin(s2.F1*rv)+Math.sin(s2.F2*rv));
-//let py=(1-frac)*s1.K*(Math.cos(s1.F1*rv)+s1.rf*Math.cos(s1.F2*rv))+frac*s2.K*(Math.cos(s2.F1*rv)+s2.rf*Math.cos(s2.F2*rv));
-      ctx.lineTo(x+kf*px,y+kf*py);
+      ctx.lineTo(x+px,y+py);
     }
   }
   ctx.closePath();
@@ -148,18 +138,12 @@ var time=0;
 var stopped=true;
 var frac=1;
 //var duration=20000;
-var duration=5000;
+var duration=6000;
 //var duration=2000;
 var AF=0;
 var state="ST";
 var animate=(ts)=>{
   if (stopped) return;
-/*
-    O+=0.00005;	// TP/C cycle
-    kf=1-Math.sin(O)/6;
-    draw(1);
-    AF=requestAnimationFrame(animate);
-*/
   if (!time) { time=ts; }
   let progress=ts-time;
   if (progress<duration) {
@@ -174,7 +158,6 @@ var animate=(ts)=>{
     }
     draw(frac);
   } else {
-
     if (state=="TI") {
       state="TO";
       randomize();
@@ -182,7 +165,9 @@ var animate=(ts)=>{
       ctx.globalAlpha=1;
       state="ST";
     } else if (state=="ST") {
-      if (Math.random()<0.3) {
+      let prob=0.1+0.01*Math.abs(C-24);	// max C==84
+console.log(C+" "+prob);
+      if (Math.random()<prob) {
         state="TI";
 console.log("transit");
       }
@@ -231,24 +216,16 @@ var randomize=()=>{
   fillStyle2="hsl("+getRandomInt(0,360)+",80%,70%)";
   fillStyleb="hsl("+getRandomInt(0,360)+",90%,50%)";
   ctx.fillStyle=fillStyle1;
-
   C=4*getRandomInt(2,22,true);
-  //C=8;
-
-    O=0;
-
   if (Math.random()<0.3) atype=!atype;
-
-s1.randomizeFactors();
-s2.randomizeFactors();
-s3.randomizeFactors();
-setControls();
+  s1.randomizeFactors();
+  s2.randomizeFactors();
+  s3.randomizeFactors();
+//  setControls();
 }
 
 var start=()=>{
   if (stopped) {
-    O=0;
-// use frac to set time
   if (frac>0) {
     time=performance.now()-frac*duration;
   } else {
@@ -266,6 +243,7 @@ var s1=new Shape();
 var s2=new Shape();
 var s3=new Shape();
 
+/*
 var controls=[];
 body.append(
   (()=>{
@@ -314,18 +292,6 @@ body.append(
         controls.push(c);
 	return c;
       })(),
-/*
-      (()=>{
-	let k=getStdRange(1,400,0.5);
-	k.oninput=()=>{
-	  K=parseFloat(k.value);
-	  draw(1);
-	}
-        k.set=()=>{ k.value=K; }
-        controls.push(k);
-	return k;
-      })(),
-*/
       (()=>{
 	let o=getStdRange(-3,3,0.0001);
 	o.value=O;
@@ -342,6 +308,7 @@ body.append(
 var setControls=()=>{
   for (let con of controls) { con.set(); }
 }
+*/
 
 onresize();
 randomize();
