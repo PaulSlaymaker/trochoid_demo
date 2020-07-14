@@ -32,12 +32,13 @@ onresize=function() {
   ctx.canvas.height=D;
   ctx.translate(D/2,D/2);
   ctx.lineWidth=0.4;
-  let P=D/2.2; 
+  P=D/2.1; 
   setPoints();
 }
 
-var Tile=function(p1,p2,p3,p4) {
+var Tile=function(p1,p2,p3,p4,i) {
   this.v=[p1,p2,p3,p4];
+  this.i=i;
   this.rx=P*(1-2*Math.random());
   this.ry=P*(1-2*Math.random());
   this.drawX=(frac)=>{
@@ -52,6 +53,37 @@ var Tile=function(p1,p2,p3,p4) {
     ctx.closePath();
     ctx.stroke();
   }
+  this.drawR=(frac)=>{
+    let f=frac;
+    let fpzx=P*f*Math.cos(C/W*this.v[0].z);
+    let fpzy=P*f*Math.sin(C/W*this.v[0].z);
+    ctx.beginPath();
+    ctx.moveTo(fpzx+(1-f)*this.v[0].x,fpzy+(1-f)*this.v[0].y);
+    ctx.lineTo(fpzx+(1-f)*this.v[1].x,fpzy+(1-f)*this.v[1].y);
+    ctx.lineTo(fpzx+(1-f)*this.v[2].x,fpzy+(1-f)*this.v[2].y);
+    ctx.lineTo(fpzx+(1-f)*this.v[3].x,fpzy+(1-f)*this.v[3].y);
+    ctx.closePath();
+    ctx.stroke();
+  }
+  this.drawR2=(frac)=>{
+    let f=frac;
+    let fpzx=-P*f*Math.cos(this.i*W*TP/C);
+    let fpzy=P*f*Math.sin(this.i*W*TP/C);
+/*
+    let fpzx=-P*f*Math.cos(this.i*TP/((W-1)*C));
+    let fpzy=P*f*Math.sin(this.i*TP/((W-1)*C));
+    let fpzx=-P*f*Math.cos(C/W*this.v[0].z);
+    let fpzy=P*f*Math.sin(C/W*this.v[0].z);
+*/
+    ctx.beginPath();
+    ctx.moveTo(fpzx+(1-f)*this.v[0].x,fpzy+(1-f)*this.v[0].y);
+    ctx.lineTo(fpzx+(1-f)*this.v[1].x,fpzy+(1-f)*this.v[1].y);
+    ctx.lineTo(fpzx+(1-f)*this.v[2].x,fpzy+(1-f)*this.v[2].y);
+    ctx.lineTo(fpzx+(1-f)*this.v[3].x,fpzy+(1-f)*this.v[3].y);
+    ctx.closePath();
+    ctx.stroke();
+  }
+
   this.drawC=(frac)=>{
     let f=frac;
     ctx.beginPath();
@@ -59,6 +91,18 @@ var Tile=function(p1,p2,p3,p4) {
     ctx.lineTo((1-f)*this.v[1].x+f*this.v[0].x,(1-f)*this.v[1].y+f*this.v[0].y);
     ctx.lineTo((1-f)*this.v[2].x+f*this.v[0].x,(1-f)*this.v[2].y+f*this.v[0].y);
     ctx.lineTo((1-f)*this.v[3].x+f*this.v[0].x,(1-f)*this.v[3].y+f*this.v[0].y);
+    ctx.closePath();
+    ctx.stroke();
+  }
+  this.drawC2=(frac)=>{
+    let f=frac;
+    ctx.beginPath();
+    let fpx=f*this.v[0].x*Math.sin(f*TP/2);
+    let fpy=f*this.v[0].y*Math.sin(f*TP/2);
+    ctx.moveTo(fpx+(1-f)*this.v[0].x,fpy+(1-f)*this.v[0].y);
+    ctx.lineTo(fpx+(1-f)*this.v[1].x,fpy+(1-f)*this.v[1].y);
+    ctx.lineTo(fpx+(1-f)*this.v[2].x,fpy+(1-f)*this.v[2].y);
+    ctx.lineTo(fpx+(1-f)*this.v[3].x,fpy+(1-f)*this.v[3].y);
     ctx.closePath();
     ctx.stroke();
   }
@@ -77,8 +121,8 @@ var Tile=function(p1,p2,p3,p4) {
   }
   this.draw=this.drawX;
   this.setDraw=(d)=>{
-    //this.draw=[this.drawC,this.drawF,this.drawX,this.drawR,this.drawC2][d];
-    this.draw=[this.drawF,this.drawX,this.drawC][d];
+    this.draw=[this.drawC,this.drawF,this.drawX,this.drawR,this.drawC2,this.drawR2][d];
+    //this.draw=this.drawR;
   }
 }
 
@@ -142,14 +186,22 @@ var setTileSets=()=>{
 }
 
 var randomizeF=()=>{
-  W=getRandomInt(2,10); // layers+1
+  //W=getRandomInt(2,11); // layers+1
   //C=2*getRandomInt(3,28); // radials
-  C=2*(32-getRandomInt(15,30,true)); // radials
+  let S=[-1,1][getRandomInt(0,2)];
+  C=2*(16+S*getRandomInt(0,15,true)); // radials
+  let b=Math.floor(C/3);
+  S=[-1,1][getRandomInt(0,2)];
+  if (b<3) {
+    W==2;
+  } else {
+    W=b+S*getRandomInt(0,b-2,true);
+  }
+  W=Math.min(27,W);
 }
 
 var setPoints=()=>{
   pts=[];
-  //let P=D/2.2; 
   let q=1/(2*C);
   for (let c=0; c<C; c++) {
     let o=c*TP/C; 
@@ -158,7 +210,7 @@ var setPoints=()=>{
       let r2=Math.cos(r*TP/(4*W));
       let x=r2*P*Math.cos(Z);
       let y=r2*P*Math.sin(Z);
-      pts.push({"x":x,"y":y,"z":""});
+      pts.push({"x":x,"y":y,"z":Z});
     }
   }
 }
@@ -168,7 +220,7 @@ var reset=()=>{
   drawO();
 }
 
-var pr=[
+var pr=[ //19
 [0],
 [0,0],
 [1,0,0],
@@ -180,7 +232,21 @@ var pr=[
 [0,1,1,0,0,1,1,0,0],
 [0,0,1,1,0,0,1,1,0,0],
 [1,0,0,1,1,0,0,1,1,0,0],
-[1,1,0,0,1,1,0,0,1,1,0,0]
+[1,1,0,0,1,1,0,0,1,1,0,0],
+[0,1,1,0,0,1,1,0,0,1,1,0,0],
+[0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
+[0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0],
 ];
 
 var di=[
@@ -196,6 +262,20 @@ var di=[
 [1,0,0,1,1,0,0,1,1,0],
 [1,1,0,0,1,1,0,0,1,1,0],
 [0,1,1,0,0,1,1,0,0,1,1,0],
+[0,0,1,1,0,0,1,1,0,0,1,1,0],
+[1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
+[1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0],
 ];
 
 var setTiles=(v)=>{
@@ -203,32 +283,19 @@ var setTiles=(v)=>{
   let pointCount=2*C*W;
   for (let l=0, i=0; l<W-1; l++) {
     for (let c=0; c<C; c++,i++) {
-
-let prox=(c+pr[W-2][l])*2*W+l;
-if (prox>=pointCount) prox=prox-pointCount;
-//if (pts[prox]==undefined) debugger;
-let s1=c*2*W+l+1;
-let s2=(c+1)*2*W+l+1;
-if (s2>=pointCount) s2=s2-pointCount;
-let dist=(c+di[W-2][l])*2*W+l+2;
-if (dist>=pointCount) dist=dist-pointCount;
-
-let pdt=2+(c)*2*W+l;
-if (pdt<0) pdt=pdt+pointCount;
-if (pdt>pointCount) pdt=pdt-pointCount;
-if (pts[pdt]==undefined) debugger;
-//let pdx=1+(c+1)*2*W+l;
-let pdx=1+(c-1)*2*W+l;
-//if ((W-l)%2==1) pdx-=2*W;
-if ((W-l)%2==0) pdx+=4*W;
-if (pdx<0) pdx=pdx+pointCount;
-if (pdx>pointCount) pdx=pdx-pointCount;
-if (pts[pdx]==undefined) debugger;
+      let prox=(c+pr[W-2][l])*2*W+l;
+      if (prox>=pointCount) prox=prox-pointCount;
+      let s1=c*2*W+l+1;
+      let s2=(c+1)*2*W+l+1;
+      if (s2>=pointCount) s2=s2-pointCount;
+      let dist=(c+di[W-2][l])*2*W+l+2;
+      if (dist>=pointCount) dist=dist-pointCount;
       tileSets[2*l+c%2].tiles.push(new Tile(
         pts[prox],
         pts[1+c*2*W+l],
         pts[dist],
         pts[s2],
+        i
       ));
     }
   }
@@ -253,8 +320,7 @@ var draw=()=>{
 }
 
 var randomizeTransition=()=>{
-  //let dt=getRandomInt(0,5);
-  let dt=getRandomInt(0,3);
+  let dt=getRandomInt(0,6);
   for (let tset of tileSets) { tset.randomizeTransition(dt); }
 }
 
@@ -305,16 +371,17 @@ var animate=(ts)=>{
     if (state%3==1) {
       pauseTS=performance.now()+300;
     } else if (state%3==2) {
+      randomizeTransition();
       pauseTS=performance.now()+300;
     } else {
       randomizeF();
       setPoints();
       setTiles();
       transitColors();
+      randomizeTransition();
       pauseTS=performance.now()+300;
     }
     af=pause;
-    randomizeTransition();
   }
   requestAnimationFrame(af);
 }
@@ -334,6 +401,7 @@ var start=()=>{
 }
 ctx.canvas.addEventListener("click", start, false);
 
+/*
 body.append(
   (()=>{
     var getStdRange=(min,max,step)=>{
@@ -371,6 +439,7 @@ body.append(
     return d;
   })(),
 );
+*/
 
 randomizeF();
 onresize();
