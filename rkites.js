@@ -36,13 +36,22 @@ onresize=function() {
   setPoints();
 }
 
+function cFrac(frac) {
+  let f1=.1;
+  let f2=.9;
+  var e2=3*frac*Math.pow(1-frac,2)*f1;
+  var e3=3*(1-frac)*Math.pow(frac,2)*f2;
+  var e4=Math.pow(frac,3);
+  return e2+e3+e4;
+}
+
 var Tile=function(p1,p2,p3,p4,i) {
   this.v=[p1,p2,p3,p4];
   this.i=i;
   this.rx=P*(1-2*Math.random());
   this.ry=P*(1-2*Math.random());
   this.drawX=(frac)=>{
-    let f=frac;
+    let f=cFrac(frac);
     ctx.beginPath();
     let fpx=f*this.rx;
     let fpy=f*this.ry;
@@ -54,7 +63,7 @@ var Tile=function(p1,p2,p3,p4,i) {
     ctx.stroke();
   }
   this.drawR=(frac)=>{
-    let f=frac;
+    let f=cFrac(frac);
     let fpzx=P*f*Math.cos(C/W*this.v[0].z);
     let fpzy=P*f*Math.sin(C/W*this.v[0].z);
     ctx.beginPath();
@@ -66,7 +75,7 @@ var Tile=function(p1,p2,p3,p4,i) {
     ctx.stroke();
   }
   this.drawR2=(frac)=>{
-    let f=frac;
+    let f=cFrac(frac);
     let fpzx=-P*f*Math.cos(this.i*W*TP/C);
     let fpzy=P*f*Math.sin(this.i*W*TP/C);
 /*
@@ -83,9 +92,8 @@ var Tile=function(p1,p2,p3,p4,i) {
     ctx.closePath();
     ctx.stroke();
   }
-
-  this.drawC=(frac)=>{
-    let f=frac;
+  this.drawC=(frac)=>{  // dots
+    let f=cFrac(frac);
     ctx.beginPath();
     ctx.moveTo(this.v[0].x,this.v[0].y);
     ctx.lineTo((1-f)*this.v[1].x+f*this.v[0].x,(1-f)*this.v[1].y+f*this.v[0].y);
@@ -95,7 +103,7 @@ var Tile=function(p1,p2,p3,p4,i) {
     ctx.stroke();
   }
   this.drawC2=(frac)=>{
-    let f=frac;
+    let f=cFrac(frac);
     ctx.beginPath();
     let fpx=f*this.v[0].x*Math.sin(f*TP/2);
     let fpy=f*this.v[0].y*Math.sin(f*TP/2);
@@ -107,7 +115,8 @@ var Tile=function(p1,p2,p3,p4,i) {
     ctx.stroke();
   }
   this.drawF=(frac)=>{
-    let f=frac/2;
+    let f=cFrac(frac)/2;
+    //let f=frac/2;
     ctx.beginPath();
     ctx.moveTo(this.v[0].x,this.v[0].y);
     ctx.lineTo((1-f)*this.v[1].x+f*this.v[3].x,(1-f)*this.v[1].y+f*this.v[3].y);
@@ -121,8 +130,7 @@ var Tile=function(p1,p2,p3,p4,i) {
   }
   this.draw=this.drawX;
   this.setDraw=(d)=>{
-    this.draw=[this.drawC,this.drawF,this.drawX,this.drawR,this.drawC2,this.drawR2][d];
-    //this.draw=this.drawR;
+    this.draw=[this.drawR,this.drawX,this.drawC2,this.drawR2,this.drawC,this.drawF][d];
   }
 }
 
@@ -320,18 +328,38 @@ var draw=()=>{
 }
 
 var randomizeTransition=()=>{
-  let dt=getRandomInt(0,6);
+  let dt=getRandomInt(0,6,true);
   for (let tset of tileSets) { tset.randomizeTransition(dt); }
 }
 
 var transitColors=()=>{
-  for (let tset of tileSets) {
-    tset.hue=tset.hue2;
-    tset.hue2=(tset.hue+getRandomInt(0,180))%360;
-    tset.sat=tset.sat2;
-    tset.sat2=70+20*Math.random();
-    tset.lum=tset.lum2;
-    tset.lum2=70+20*Math.random();
+  if (Math.random()<0.5) {
+    let sHue=tileSets[tileSets.length-1].hue2;
+    let sSat=tileSets[tileSets.length-1].sat2;
+    let sLum=tileSets[tileSets.length-1].lum2;
+    for (let i=tileSets.length-1; i>0; i--) {
+      tileSets[i].hue=tileSets[i].hue2;
+      tileSets[i].hue2=tileSets[i-1].hue2;
+      tileSets[i].sat=tileSets[i].sat2;
+      tileSets[i].sat2=tileSets[i-1].sat2;
+      tileSets[i].lum=tileSets[i].lum2;
+      tileSets[i].lum2=tileSets[i-1].lum2;
+    }
+    tileSets[0].hue=tileSets[0].hue2;
+    tileSets[0].hue2=sHue;
+    tileSets[0].sat=tileSets[0].sat2;
+    tileSets[0].sat2=sSat;
+    tileSets[0].lum=tileSets[0].lum2;
+    tileSets[0].lum2=sLum;
+  } else {
+    for (let tset of tileSets) {
+      tset.hue=tset.hue2;
+      tset.hue2=(tset.hue+getRandomInt(0,180))%360;
+      tset.sat=tset.sat2;
+      tset.sat2=70+20*Math.random();
+      tset.lum=tset.lum2;
+      tset.lum2=70+20*Math.random();
+    }
   }
 }
 
