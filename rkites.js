@@ -45,6 +45,7 @@ function cFrac(frac) {
   return e2+e3+e4;
 }
 
+var RD=getRandomInt(1,20,true);
 var Tile=function(p1,p2,p3,p4,i) {
   this.v=[p1,p2,p3,p4];
   this.i=i;
@@ -64,8 +65,8 @@ var Tile=function(p1,p2,p3,p4,i) {
   }
   this.drawR=(frac)=>{
     let f=cFrac(frac);
-    let fpzx=P*f*Math.cos(C/W*this.v[0].z);
-    let fpzy=P*f*Math.sin(C/W*this.v[0].z);
+    let fpzx=P*f*Math.cos(RD*this.v[0].z);
+    let fpzy=P*f*Math.sin(RD*this.v[0].z);
     ctx.beginPath();
     ctx.moveTo(fpzx+(1-f)*this.v[0].x,fpzy+(1-f)*this.v[0].y);
     ctx.lineTo(fpzx+(1-f)*this.v[1].x,fpzy+(1-f)*this.v[1].y);
@@ -142,7 +143,6 @@ var TileSet=function() {
   this.sat2=70+20*Math.random();
   this.lum=0;
   this.lum2=70+20*Math.random();
-  this.state=0;
   this.state=0;
   //this.shiftTiles=()=>{ this.tiles.forEach((ti)=>{ ti.shift() }); }
   //this.flipTiles=()=>{ this.tiles.forEach((ti)=>{ ti.shift(); ti.shift; }); }
@@ -328,6 +328,7 @@ var draw=()=>{
 }
 
 var randomizeTransition=()=>{
+  RD=getRandomInt(1,20,true);
   let dt=getRandomInt(0,6,true);
   for (let tset of tileSets) { tset.randomizeTransition(dt); }
 }
