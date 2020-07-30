@@ -30,8 +30,8 @@ onresize=function() {
   ctx.canvas.width=D;
   ctx.canvas.height=D;
   ctx.translate(D/2,D/2);
-  ctx.lineWidth=0.8;
-ctx.strokeStyle="#555";
+//  ctx.lineWidth=0.8;
+//ctx.strokeStyle="#555";
   P=D/2; 
   setPoints();
 }
@@ -129,8 +129,10 @@ var Color=function() {
     this.hue=(this.hue+getRandomInt(0,180))%360;
     //this.sat=70+20*Math.random();
     //this.lum=70+20*Math.random();
-    this.sat=65+25*Math.random();
-    this.lum=65+25*Math.random();
+    //this.sat=65+25*Math.random();
+    //this.lum=65+25*Math.random();
+    this.sat=55+30*Math.random();
+    this.lum=55+30*Math.random();
   }
 }
 
@@ -149,7 +151,7 @@ var transition={"shape":false,"h":0};
 
 var setShape=()=>{
   let change=false;
-  let newShape=(Math.random()<0.4)?["S1","S2","H1","H2","B2","B","L","C"][getRandomInt(0,8)]:shape;
+  let newShape=(Math.random()<0.4)?["S1","S2","H1","H2","B1","B2","C1","C2"][getRandomInt(0,8)]:shape;
   if (newShape!=shape) {
     if (!shape.startsWith("H") && newShape.startsWith("H")) {
       transition.h=1;
@@ -165,13 +167,6 @@ var setShape=()=>{
     transition.h=0;
     transition.shape=true;
   }
-/*
-  if (shape=="H") {
-    ctx.strokeStyle="silver";
-  } else {
-    ctx.strokeStyle="#444";
-  }
-*/
   return change;
 }
 
@@ -205,8 +200,9 @@ var cCols={
   240:[48,60,40,80,30,24,20,16,12,10]
 }
 
-var randomizeF=()=>{
-if (Math.random()<0.3) return false;	// don't return when shape changes
+var randomizeFactors=()=>{
+  transition.factors=false;
+if (!transition.shape && Math.random()<0.3) return false;
   let oldC=C;
   if (shape.startsWith("B")) {
     C=[24,30,20,32,16,40,48,60,80][getRandomInt(0,9,true)]; // radials
@@ -220,7 +216,6 @@ if (ms>0) {
     W=480/C+1;
 }
 */
-
   } else {
     C=[48,60,40,80,32,30,24,20,16][getRandomInt(0,9,true)]; // radials
 //    W=Count/C+1;
@@ -247,20 +242,18 @@ if (ms>0) {
 */
 //C=4;W=[2,3][getRandomInt(0,2)];
 //C=4;W=3;
-  return C!=oldC;
+  transition.factors=(C!=oldC);
 }
 
 var setStarPoints=()=>{
   pts=[];
-//  let os=Math.random()<0.5;
+  let exp=[3,5,1][getRandomInt(0,3,true)];
   for (let c=0; c<C; c++) {
     let o=c*TP/C; 
-//if (os && c%2==0) o+=0.03;
     for (let r=0; r<W; r++) {
       let r2=r*P/W;
-//if (c%2==0) r2+=0.03*r2;
-      let x=r2*Math.pow(Math.sin(o),3);
-      let y=r2*Math.pow(Math.cos(o),3);
+      let x=r2*Math.pow(Math.sin(o),exp);
+      let y=r2*Math.pow(Math.cos(o),exp);
       pts.push({"x":x,"y":y});
     }
   }
@@ -309,7 +302,7 @@ if (os && (W-1)%2==0) {
 }
 
 var setPoints=()=>{
-  if (shape=="B") {
+  if (shape=="B1") {
     randomizeOffsets();
     setBlockPoints();
   } else if (shape=="B2") {
@@ -378,9 +371,8 @@ var di=generateSlots([0,1,1,0]);
 var ms=0;	// 0:480 1:480->240 2:240 3:240->480
 var setMergeSplit=()=>{
   if (transition.shape) return;  // fixme
-  if (shape=="C") return; // fixme
+  if (shape.startsWith("C")) return; // fixme
   if (shape.startsWith("H")) return; // fixme
-  //if (shape=="L") return; // fixme
   if (ms==0) {
     if (Math.random()<0.5) {
       ms=1;
@@ -405,7 +397,7 @@ var setMergeSplit=()=>{
 }
 
 var transitTiles=()=>{
-  if (shape=="L") {
+  if (shape=="C1") {
     transitTilesL();
   } else if (shape.startsWith("B")) {
     transitTilesB();
@@ -558,12 +550,12 @@ if (ms>0) return;
     }
     tiles=st;	// ?copy
   }
-LOG.set({"s":dst});
+  LOG.set({"s":dst});
   return dst;
 }
 
+/*
 var shiftTilesC=()=>{
-//debugger;
 if (ms>0) return;  //fixme
   let st=[];
 //  let h=(Math.random()<0.5)?W-1:C;
@@ -581,6 +573,7 @@ let h=C*getRandomInt(1,6);;
 var shiftTiles2=()=>{
   tiles.sort((a,b)=>{ return (a.y-b.y); });
 }
+*/
 
 var shiftVertices=()=>{
   let nv=0;
@@ -590,21 +583,24 @@ var shiftVertices=()=>{
       tiles.forEach((ti)=>{ ti.shift(); });
     } 
   } else {
-    nv=getRandomInt(0,3);
+    if (transition.factors) {
+      nv=getRandomInt(0,3);
+    } else {
+      nv=getRandomInt(0,2);
+    }
     if (nv>0) {
       tiles.forEach((ti)=>{ ti.shift(); if (nv==2) ti.shift(); });
     }
   }
   LOG.set({"v":nv});
-//  [logSet1,logSet2][csToggle%2].v=nv;
   return nv;
 }
 
 var reverseTiles=()=>{
   let rvs=false;
-  if (shape=="C") {
+  if (shape=="C2") {
     rvs=Math.random()<0.7;
-  } else if (shape=="L") {
+  } else if (shape=="C1") {
     rvs=Math.random()<0.2;
   } else {
     rvs=Math.random()<0.3;
@@ -656,15 +652,15 @@ var drawO=()=>{
 var draw=()=>{
   let ss=30;
   if (transition.h==1) {
-    ss=frac*45+30;
+    ss=frac*50+25;
     ctx.strokeStyle="hsl(0,0%,"+ss+"%)";
   } else if (transition.h==2) {
-    ss=(1-frac)*45+30;
+    ss=(1-frac)*50+25;
     ctx.strokeStyle="hsl(0,0%,"+ss+"%)";
   } else if (shape.startsWith("H")) {
     ctx.strokeStyle="hsl(0,0%,75%)";
   } else {
-    ctx.strokeStyle="hsl(0,0%,35%)";
+    ctx.strokeStyle="hsl(0,0%,25%)";
   }
   ctx.clearRect(-D/2,-D/2,D,D);
   for (let i=0; i<Count; i++) {
@@ -726,37 +722,17 @@ var animate=(ts)=>{
   } else {
     setShape();
 //setMergeSplit();
-    randomizeF();
+    randomizeFactors();
     setPoints();
     transitColors();
     shiftVertices();
-let R=reverseTiles();
-let S=shiftTiles();
-/*
-    if (shape=="L") {
-      S=shiftTiles();
-      if (Math.random()<0.6) {
-        if (Math.random()<0.7) {
-          shiftTilesC();
-S=true;
-        } else {
-        }
-      }
-    } else if (shape.startsWith("B")) {
-        if (Math.random()<0.3) {
-          S=shiftTiles();
-        }
-    } else { // "C"
-        if (Math.random()<0.3) {
-          S=shiftTiles();
-        }
-    }
-*/
+    reverseTiles();
+    shiftTiles();
 //shuffle();
     transitTiles();
     let D=randomizeTransition();
 //log(false," V:"+sf+" R:"+R+" S:"+S+" D:"+D);
-LOG.log(false," D:"+D);
+//LOG.log(false,"");
 
 //console.log(xr+" "+xc+" "+yr+" "+yc);
     pauseTS=performance.now()+1400;
@@ -785,7 +761,8 @@ var LOG={
     //console.log(`${C}  ${(W-1).toString().padStart(2)}`+a);
     let ls=[logSet1,logSet2][csToggle%2];
     console.log(
-       shape.padStart(2)
+      shape
+       //shape.padStart(2)
   //    +` ${C}`
       +C.toString().padStart(3)
       +(W-1).toString().padStart(4)
@@ -815,7 +792,7 @@ var start=()=>{
 ctx.canvas.addEventListener("click", start, false);
 
 onresize();
-randomizeF();
+randomizeFactors();
 
 reverseTiles();
 
@@ -823,7 +800,7 @@ setTilesAndColors();
 setPoints();
 transitColors();
 transitTiles();
-randomizeF();
+randomizeFactors();
 //tiles.reverse();
 reverseTiles();
 randomizeOffsets();
@@ -832,5 +809,5 @@ setPoints();
 transitColors();
 transitTiles();
 draw();
-LOG.log(true,"");
+//LOG.log(true,"");
 start();
