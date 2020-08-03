@@ -112,12 +112,6 @@ var Tile=function(p1,p2,p3,p4) {
   this.setDraw=(d)=>{
     this.draw=[this.drawZ,this.drawC,this.drawC2][d];
   }
-/*
-  this.transit=(p1,p2,p3,p4)=>{
-    this.v=this.v2;
-    this.v2=[p1,p2,p3,p4];
-  }
-*/
 }
 
 var Color=function() {
@@ -169,18 +163,17 @@ var setShape=()=>{
 
 var setTilesAndColors=()=>{
   tiles=[];
-  let count=C*(W-1);
+//  let count=C*(W-1);
+  let count=480;
   for (let i=0; i<count; i++) tiles.push(new Tile());	// 480, C=16-80
   colorSet=[];
   colorSet2=[];
-  let cols=2*Count/16;  // 16 is max layer/radial ratio
+  //let cols=2*Count/16;  // 16 is max layer/radial ratio
+  let cols=2*count/16;  // 16 is max layer/radial ratio
 //if (HEART) cols=count/2;	// heart
   //let cols=48;  // 240
   //let cols=30;  // 120
   //let cols=12;  // 48
-  //let cols=2;  // 4 
-  //let cols=4;
-  //for (let ts=0; ts<2*(W-1); ts++) tileSets.push(new TileSet());
   for (let ts=0; ts<cols; ts++) colorSet.push(new Color());	// 480, C=16-80
   for (let ts=0; ts<cols; ts++) colorSet2.push(new Color());	// 480, C=16-80
   //for (let ts=0; ts<48; ts++) tileSets.push(new TileSet());	// 240, C=10-60
@@ -189,26 +182,56 @@ var csToggle=0;
 
 var bCols={
   480:[24,30,20,32,16,40,48,60,80],
+  450:[18,30,50],
+  432:[24,36,18,48,54,72],
+  400:[20,40,16,50,80],
+  384:[24,32,48,64],
   360:[20,18,24,30,36,40,60,72],
   320:[20,16,32,40,64,80],
+  300:[20,30,50,60],
   288:[18,16,24,32,36,48,72],
+  270:[18,30,54],
+  256:[16,32,64],
   240:[16,20,12,24,10,30,40,48,60,80],
+  200:[20,40,50],
+  192:[16,24,32,48,64],
   180:[18,20,12,30,36,60],
   160:[16,20,10,32,40],
+  150:[10,30,50],
+  144:[12,16,18,24,36,48,72],
+  128:[16,32,64],
   120:[12,24,20,30,40,60],
-   96:[12,16,24,32,48]
+  100:[10,20,50],
+   96:[12,16,24,32,48],
+   90:[10,18,30],
+   80:[10,16,20,40,80]
 }
 
 var cCols={
   480:[60,48,80,40,32,30,24,20,16],  // 8 ratio
+  450:[50,30,18],
+  432:[54,48,72,36,24,18],
+  400:[50,40,80,20,16],
+  384:[48,32,64,24],
   360:[60,40,72,36,30,24,20,18],
   320:[40,32,64,20,80,16],
+  300:[50,30,60,20],
   288:[48,36,72,32,24,18,16],
+  270:[54,30,18],
+  256:[64,32,16],
   240:[48,60,40,80,30,24,20,16,12,10], // 5 ratio
+  200:[40,50,20],
+  192:[48,32,64,24,16],
   180:[36,30,60,20,18,12],
   160:[40,32,20,16,10],  // 4 ratio
+  150:[50,30,10],
+  144:[36,24,48,18,72,16,12],
+  128:[32,16,64],
   120:[30,24,40,20,60,12],
-   96:[32,24,48,16,12]
+  100:[20,50,10],
+   96:[32,24,48,16,12],
+   90:[30,18,10],
+   80:[40,20,80,16,10]
 }
 
 var randomizeFactors=()=>{
@@ -226,106 +249,6 @@ var randomizeFactors=()=>{
     C=cols[Count][getRandomInt(0,cols[Count].length,true)]; // radials
     W=Count/C+1;
   }
-  transition.factors=(C!=oldC);
-}
-
-var randomizeFactorsO=()=>{
-  transition.factors=false;
-//if (!transition.shape && Math.random()<0.3) return false;
-//if (!inCountTransition() && !transition.shape && Math.random()<0.3) return false;
-if (!transition.count && !transition.shape && Math.random()<0.3) return false;  // shape exclusion esthetic
-  let oldC=C;
-
-  if (transition.count && transition.type[0]=="m") {
-    let pCount=Count/transition.type[1];
-    let cols=(shape.startsWith("B"))?bCols:cCols;
-    C=cols[pCount][getRandomInt(0,cols[pCount].length,true)]; // radials
-    W=pCount/C+1;
-  } else {
-    let cols=(shape.startsWith("B"))?bCols:cCols;
-    C=cols[Count][getRandomInt(0,cols[Count].length,true)]; // radials
-    W=Count/C+1;
-  }
-transition.factors=(C!=oldC);
-return;
-
-if (ms==1 || ms==2) {
-/*
-if (transition.count) { 
-  //console.log("12a "+Count/transition.type[1]);
-  console.log("12a "+transition.type[0]);
-} else {
-  //console.log("12b "+Count);
-  console.log("12b "+transition.type[0]);
-}
-*/
-  let pCount=(transition.count)?Count/transition.type[1]:Count;
-  if (shape.startsWith("B")) {
-//    C=bCols[240][getRandomInt(0,10,true)]; // radials
-    C=bCols[pCount][getRandomInt(0,5,true)]; // radials
-  } else {
-    //C=cCols[240][getRandomInt(0,10,true)]; // radials
-    C=cCols[pCount][getRandomInt(0,5,true)]; // radials
-  }
-  W=pCount/C+1;
-} else if (ms==0 || ms==3) {
-/*
-if (transition.count) { 
-  //console.log("03a "+Count);
-  console.log("03a "+transition.type[0]);
-} else {
-  //console.log("03b "+Count);
-  console.log("03b "+transition.type[0]);
-}
-*/
-  if (shape.startsWith("B")) {
-    C=bCols[Count][getRandomInt(0,9,true)]; // radials
-  } else {
-    C=cCols[Count][getRandomInt(0,9,true)]; // radials
-  }
-  W=Count/C+1;
-} else {
-debugger;
-  if (shape.startsWith("B")) {
-    C=[24,30,20,32,16,40,48,60,80][getRandomInt(0,9,true)]; // radials
-/*
-if (ms>0) {
-//set 9 length
-    C=bCols[240][getRandomInt(0,9,true)]; // radials
-    W=240/C+1;
-} else {
-    C=bCols[480][getRandomInt(0,9,true)]; // radials
-    W=480/C+1;
-}
-*/
-  } else {
-    C=[48,60,40,80,32,30,24,20,16][getRandomInt(0,9,true)]; // radials
-//    W=Count/C+1;
-/*
-if (ms>0) {
-//set 9 length
-    C=cCols[240][getRandomInt(0,9,true)]; // radials
-    W=240/C+1;
-} else {
-    C=cCols[480][getRandomInt(0,9,true)]; // radials
-    W=480/C+1;
-}
-*/
-  }
-  W=Count/C+1;
-}
-
-//}
-/*
-  C=[10,12,16,20,24,30,40,48,60,80][getRandomInt(0,9)]; // radials
-  W=240/C+1;
-  C=[8,10,12,20,24,30,40,60][getRandomInt(0,8)]; // radials
-  W=120/C+1;
-  C=[8,12,16,24,48][getRandomInt(0,5)]; // radials
-  W=48/C+1;
-*/
-//C=4;W=[2,3][getRandomInt(0,2)];
-//C=4;W=3;
   transition.factors=(C!=oldC);
 }
 
@@ -453,14 +376,29 @@ var di=generateSlots([0,1,1,0]);
 
 var trLists={
   480:[["m",2],["m",3],["m",4],["m",5]],
-  360:[["m",3],["m",2]],
-  320:[["m",2]],
-  288:[["m",2]],
-  240:[["s",2],["m",2]],
+  450:[["m",5],["m",3]],
+  432:[["m",3]],
+  400:[["m",5],["m",2],["m",4]],
+  384:[["m",2],["m",3]],
+  360:[["m",3],["m",2],["m",4]],
+  320:[["m",2],["m",4]],
+  300:[["m",2],["m",3]],
+  288:[["m",3],["m",2]],
+  270:[["m",3]],
+  256:[["m",2]],
+  240:[["s",2],["m",2],["m",3]],
+  200:[["s",2]],
+  192:[["m",2],["s",2]],
   180:[["s",2]],
-  160:[["s",3],["s",2]],
+  160:[["s",3],["s",2],["m",2]],
+  150:[["s",3],["s",2]],
+  144:[["s",2],["s",3]],
+  128:[["s",3]],
   120:[["s",2],["s",3],["s",4]],
-   96:[["s",5],["s",3]],
+  100:[["s",2],["s",4],["s",3]],
+   96:[["s",5],["s",3],["s",2]],
+   90:[["s",2],["s",4],["s",5]],
+   80:[["s",2],["s",3],["s",4],["s",5]],
 };
 
 /*
@@ -486,59 +424,18 @@ var setMergeSplit=()=>{
     }
     transition.count=false;
   }
-}
-
-var ms=0;	// 0:480 1:480->240 2:240 3:240->480
-var setMergeSplitO=(td)=>{
-  if (ms==0) {
-    if (Math.random()<0.5) {
-      ms=1;
-      transition.count=true;
-      transition.type=["m",3];
-    }
-  } else if (ms==1) {
-    ms=2;
-    Count=160;
-    transition.count=false;
-  } else if (ms==2) {
-    if (Math.random()<0.5) {
-      ms=3;
-      Count=480;
-      transition.count=true;
-      transition.type=["s",3];
-    }
-  } else if (ms==3) {
-    ms=0;
-    transition.count=false;
-  }
+//if (Count==128) debugger;
 }
 
 var transitTiles=()=>{
-
-if (transition.count && transition.type[0]=="s") {
-  let m=Count/transition.type[1];
-  let e=Count-m;
-  for (let i=0; i<e; i++) {
-    tiles[i+m].v2=tiles[i].v2;
-    tiles[i+m].colorSet2=tiles[i].colorSet2;
-  }
-}
-
-/*
-    for (let i=0; i<240; i++) {
-      tiles[i+240].v2=tiles[i].v2;
-      tiles[i+240].colorSet2=tiles[i].colorSet2;
-    }
-*/
-/*
-  if (ms==3) {
-    for (let i=0; i<320; i++) {
-      tiles[i+160].v2=tiles[i].v2;
-      tiles[i+160].colorSet2=tiles[i].colorSet2;
+  if (transition.count && transition.type[0]=="s") {
+    let m=Count/transition.type[1];
+    let e=Count-m;
+    for (let i=0; i<e; i++) {
+      tiles[i+m].v2=tiles[i].v2;
+      tiles[i+m].colorSet2=tiles[i].colorSet2;
     }
   }
-*/
-
   if (shape=="C1") {
     transitTilesL();
   } else if (shape.startsWith("B")) {
@@ -550,37 +447,16 @@ if (transition.count && transition.type[0]=="s") {
   } else {
     transitTilesC();
   }
-
-/*
-  if (ms==1) {
-    for (let i=0; i<240; i++) {
-      tiles[i+240].v=tiles[i+240].v2;
-      tiles[i+240].v2=tiles[i].v2;
-      tiles[i+240].colorSet=tiles[i+240].colorSet2;
-      tiles[i+240].colorSet2=tiles[i].colorSet2;
-    }
-*/
-if (transition.count && transition.type[0]=="m") {
-  let m=Count/transition.type[1];
-  let e=Count-m;
+  if (transition.count && transition.type[0]=="m") {
+    let m=Count/transition.type[1];
+    let e=Count-m;
     for (let i=0; i<e; i++) {
       tiles[i+m].v=tiles[i+m].v2;
       tiles[i+m].v2=tiles[i].v2;
       tiles[i+m].colorSet=tiles[i+m].colorSet2;
       tiles[i+m].colorSet2=tiles[i].colorSet2;
     }
-}
-/*
-debugger;
-    for (let i=0; i<320; i++) {
-      tiles[i+160].v=tiles[i+160].v2;
-      tiles[i+160].v2=tiles[i].v2;
-      tiles[i+160].colorSet=tiles[i+160].colorSet2;
-      tiles[i+160].colorSet2=tiles[i].colorSet2;
-    }
   }
-*/
-
 }
 
 var transitTilesH1=()=>{
@@ -606,7 +482,6 @@ var transitTilesH2=()=>{
   let cSet=csToggle%2;
   for (let l=0, i=0; l<W-1; l++) {
     for (let c=0; c<C; c++,i++) {
-//      let prox=c*W+l;
       let s2=c*W+l+W;
       if (s2>=pointCount) s2=s2-pointCount;
       let dist=c*W+l+W+1;
@@ -641,7 +516,6 @@ var transitTilesC=()=>{
 var transitTilesL=()=>{
   let pointCount=2*C*W;
   let cSet=csToggle%2;
-
   for (let c=0, i=0; c<C; c++) {
     for (let l=0; l<W-1; l++,i++) {
       let prox=(c+pr[W-2][l])*2*W+l;
@@ -656,29 +530,11 @@ var transitTilesL=()=>{
       tiles[i].colorSet2=[colorSet,colorSet2][cSet][2*l+c%2];
     }
   }
-/*
-  if (ms==1) {
-    for (let i=0; i<240; i++) {
-      tiles[i+240].v=tiles[i+240].v2;
-      tiles[i+240].v2=tiles[i].v2;
-      tiles[i+240].colorSet=tiles[i+240].colorSet2;
-      tiles[i+240].colorSet2=tiles[i].colorSet2;
-    }
-  }
-*/
 }
 
 var transitTilesB=()=>{
   let cSet=csToggle%2;
   let tCount=(W-1)*C;
-/*
-  if (ms==3) {
-    for (let i=0; i<240; i++) {
-      tiles[i+240].v2=tiles[i].v2;
-      tiles[i+240].colorSet2=tiles[i].colorSet2;
-    }
-  }
-*/
   for (let i=0, k=0; i<tCount; i++) {
     if (i%(W-1)==0) k++;
     let j=k-1;
@@ -687,16 +543,6 @@ var transitTilesB=()=>{
     tiles[i].colorSet=tiles[i].colorSet2;
     tiles[i].colorSet2=[colorSet,colorSet2][cSet][i%W];
   }
-/*
-  if (ms==1) {
-    for (let i=0; i<240; i++) {
-      tiles[i+240].v=tiles[i+240].v2;
-      tiles[i+240].v2=tiles[i].v2;
-      tiles[i+240].colorSet=tiles[i+240].colorSet2;
-      tiles[i+240].colorSet2=tiles[i].colorSet2;
-    }
-  }
-*/
 }
 
 var shiftTiles=()=>{
@@ -718,13 +564,6 @@ var shiftTiles=()=>{
     if (dst==2) {
        h=C*getRandomInt(1,6);;
     }
-/*
-// this is borken
-    for (let i=0; i<tiles.length; i++) {
-      st.push(tiles[(i+h)%tiles.length]);
-    }
-    tiles=st;	// ?copy
-*/
     for (let i=0; i<Count; i++) {
       st.push(tiles[(i+h)%Count]);
     }
@@ -826,7 +665,6 @@ var draw=()=>{
     ctx.strokeStyle="hsl(0,0%,25%)";
   }
   ctx.clearRect(-D/2,-D/2,D,D);
-//if (ms==1) debugger;
   for (let i=0; i<Count; i++) {
     tiles[i].draw(frac);
   }
@@ -873,21 +711,19 @@ var animate=(ts)=>{
     frac=progress/duration;
     draw();
   } else {
-setMergeSplit();
+    setMergeSplit();
     setShape();
     randomizeFactors();
     setPoints();
     transitColors();
     shiftVertices();
-//if (!inCountTransition()) {
-if (!transition.count) {
-    reverseTiles();
-    shiftTiles();
-//shuffle();
-}
+    if (!transition.count) {
+	reverseTiles();
+	shiftTiles();
+    //shuffle();
+    }
     transitTiles();
     let D=randomizeTransition();
-//log(false," V:"+sf+" R:"+R+" S:"+S+" D:"+D);
 LOG.log(false,"");
 
 //console.log(xr+" "+xc+" "+yr+" "+yc);
@@ -913,13 +749,10 @@ var LOG={
   },
   log:(h,a)=>{
     if (h || csToggle%8==0) console.log("sh  C W-1 V R S D");
-    //console.log(`${C}  ${W-1}`+a);
     //console.log(`${C}  ${(W-1).toString().padStart(2)}`+a);
     let ls=[logSet1,logSet2][csToggle%2];
     console.log(
       shape
-       //shape.padStart(2)
-  //    +` ${C}`
       +C.toString().padStart(3)
       +(W-1).toString().padStart(4)
       //+` ${[logSet1,logSet2][csToggle%2].v} `
@@ -927,7 +760,7 @@ var LOG={
       +` ${ls.reverse}`
       +` ${ls.s}`
       +` ${ls.dt}`
-      +a
+//      +a
     );
   }
 }
@@ -957,7 +790,6 @@ setPoints();
 transitColors();
 transitTiles();
 randomizeFactors();
-//tiles.reverse();
 reverseTiles();
 randomizeOffsets();
 shiftVertices(1);
