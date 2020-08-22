@@ -487,7 +487,7 @@ if (EM) stopped=true;
 }
 
 var stopped=true;
-const start=()=>{
+function start() {
   if (stopped) {
     stopped=false;
     resetTimes();

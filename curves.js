@@ -641,7 +641,7 @@ const resetTimes=()=>{
   }
 }
 
-const start=()=>{
+function start() {
   if (stopped) {
     stopped=false;
     resetTimes();

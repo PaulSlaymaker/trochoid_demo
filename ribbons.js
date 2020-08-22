@@ -1,7 +1,6 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 
-const EM=location.href.endsWith('em');
-//console.log("em "+location.href);
+const EM=location.href.endsWith("em");
 //const EMA=location.href.endsWith('ema');
 const CSIZE=400;
 
