@@ -1,23 +1,19 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
-var styleSheet=(()=>{
-  let tag=document.createElement("style");
-  tag.type="text/css";
-  body.append(tag);
-  let ss=document.styleSheets[document.styleSheets.length-1];
-  ss.insertRule("body { background:#000; }",0);
-  return ss;
-})();
-
+body.style.background="#000";
+const EM=location.href.endsWith("em");
+const TP=2*Math.PI;
 const CSIZE=400;
 
-const canvas=document.querySelector("#cta");
-const ctx=canvas.getContext("2d");
+const ctx=document.querySelector("#cta").getContext("2d");
 ctx.translate(CSIZE,CSIZE);
 ctx.rotate(-Math.PI/2);
 ctx.fillStyle="hsla(0,0%,0%,0.05)";
-onresize=()=>{ canvas.style.maxHeight=window.innerHeight-20+"px"; }
-var stopped=true;
+onresize=()=>{ 
+  let D=Math.min(window.innerWidth,window.innerHeight)-40; 
+  ctx.canvas.style.width=D+"px";
+  ctx.canvas.style.height=D+"px";
+}
 const PUBLISH=true;
 
 function powerRandom(p) {
@@ -103,7 +99,7 @@ var POINTS=generatePoints();
 var cSet=null;
 var cSet2=null;
 
-var fSets={
+const fSets={
     "p":[
 /*
       [ 0,+1,+1, 0,+1,+1],
@@ -185,7 +181,7 @@ var Roulette=function(ro) {
   }
   let rself=this;
   this.getMetrics=(pointFrac)=>{
-    let z=pointFrac*2*Math.PI;
+    let z=pointFrac*TP;
     var y,oFrac;
     var	x=fSet[0]*rself.r1*Math.cos(rself.m1*z)
          +fSet[1]*rself.r2*Math.cos(rself.m2*z)
@@ -218,7 +214,7 @@ var Path=function(durOffset) {
   this.ro1=new Roulette();
   this.ro2=new Roulette();
   this.ro3=new Roulette();
-  this.start=0;
+  this.time=0;
   this.frac=0;
   this.duration=2700+durOffset;
   this.transitCount=0;
@@ -345,27 +341,24 @@ if (!PUBLISH) console.log("found first "+JSON.stringify(trip));
     this.ro3=new Roulette(this.ro2);
     this.randomizeCycles(this.ro3);
     this.ro3.randomizeRadii();
-//    if (!no_report) { setTable(); }
   },
   this.animate=(ts)=>{
     if (stopped) return;
-    if (!this.start) {
-      this.start=ts;
+    if (!this.time) {
+      this.time=ts;
     }
-    let progress=ts-this.start;
+    let progress=ts-this.time;
     if (progress<this.duration) {
       this.frac=progress/this.duration;
     } else {
       this.transit();
-      this.start=0;
+      this.time=0;
       this.frac=0;
     }
     requestAnimationFrame(this.animate);
   }
 }
 
-var path=new Path(0);
-//var paths=[path,new Path(300)];
 var paths=[new Path(0), new Path(300), new Path(600)];
 
 var Orb=function(or) {
@@ -393,7 +386,6 @@ var Orb=function(or) {
 var orbs={
   fromOrb:new Orb(),
   toOrb:new Orb(),
-  start:0,
   frac:0,
   oCount:0,
   duration:10000,
@@ -404,7 +396,7 @@ var orbs={
   state:"steady", // contract,expand
   startC:Infinity,
   fracC:0,
-  durationC:10000,
+//  durationC:10000,
   getRadius:(oFrac)=>{
     return orbs.frac*orbs.toOrb.getRadius(oFrac)+(1-orbs.frac)*orbs.fromOrb.getRadius(oFrac);
   },
@@ -421,7 +413,7 @@ var orbs={
     // both orbital and transitional
     return orbs.frac*orbs.toOrb.getOpacity(oFrac)+(1-orbs.frac)*orbs.fromOrb.getOpacity(oFrac);
   },
-  draw:(rotFrac)=>{
+  draw:()=>{
     //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
     for (let i=0; i<POINTS; i++) {
       ctx.beginPath();
@@ -440,25 +432,17 @@ var orbs={
         orbs.getHue(metrics.oFrac, orbs.frac)+',90%,'+
         orbs.getLum(metrics.oFrac)+'%,'+
         (stopped?1:rf*orbs.getOpacity(metrics.oFrac, orbs.frac))+')';
-
-      ctx.arc(metrics.x,metrics.y, 
-          rf*orbs.getRadius(metrics.oFrac, orbs.frac),0,2*Math.PI);
-
+      ctx.arc(metrics.x,metrics.y,rf*orbs.getRadius(metrics.oFrac, orbs.frac),0,TP);
       let metrics2=paths[1].getMetrics(pFrac);
-      ctx.arc(metrics2.x,metrics2.y, 
-	  rf*orbs.getRadius(metrics2.oFrac, orbs.frac),0,2*Math.PI);
+      ctx.arc(metrics2.x,metrics2.y,rf*orbs.getRadius(metrics2.oFrac, orbs.frac),0,TP);
       ctx.fill();
       ctx.closePath();
 
       ctx.beginPath();
       let metrics3=paths[2].getMetrics(pFrac);
-      ctx.arc(metrics3.x,metrics3.y, 
-	  rf*orbs.getRadius(metrics3.oFrac, orbs.frac),0,2*Math.PI);
+      ctx.arc(metrics3.x,metrics3.y,rf*orbs.getRadius(metrics3.oFrac, orbs.frac),0,TP);
       ctx.fill();
       ctx.closePath();
-
-//      ctx.fill();
-//      ctx.closePath();
     }
   },
   transit:function() {
@@ -473,8 +457,6 @@ var orbs={
     } else if (orbs.state=="expand") {
       orbs.state="steady";
     }
-//if (!PUBLISH) console.log("state "+orbs.state);
-
     Object.assign(this.fromOrb, this.toOrb);
     this.toOrb=new Orb(this.fromOrb);
     let f=9/8-POINTS/320;
@@ -501,68 +483,54 @@ if (!PUBLISH) console.log("portal reset");
       }
     }
   },
-  animate:(ts)=>{
-    if (stopped) { return; }
-    if (!orbs.start) {
-      orbs.start=ts;
-    }
-    let progress=ts-orbs.start;
-    if (progress<orbs.duration) {
-      orbs.frac=progress/orbs.duration;
-    } else {
-      orbs.transit();
-      orbs.start=0;
-      orbs.frac=0;
-    }
-    if (!orbs.startV) {
-      orbs.startV=ts;
-    }
-    let progV=ts-orbs.startV;
-    if (progV<orbs.durationV) {
-      orbs.fracV=progV/orbs.durationV;
-    } else {
-      orbs.transitVertices();
-      orbs.startV=0;
-      orbs.fracV=0;
-    }
-    orbs.draw(orbs.frac);
-    requestAnimationFrame(orbs.animate);
-  },
 }
 
-var fade={
-  start:0,
-  animate:(ts)=>{
-    if (stopped) return;
-    if (!fade.start) {
-      fade.start=ts;
-    }
-    let progress=ts-fade.start;
-    if (progress>40) {
-      ctx.fillStyle="hsla(0,0%,0%,0.03)";
-      ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-      fade.start=0;
-//ctx.putImageData(ctx.getImageData(0,0,2*CSIZE,2*CSIZE),-1,0);
-    }
-    requestAnimationFrame(fade.animate);
-  }
-}
-
-/*
-var rndPath=()=>{
+var stopped=true;
+var orbsTime=0;
+var vertexTime=0;
+var fadeTime=0;
+function animate(ts) {
+  if (stopped) return;
   for (let p of paths) {
-    p.ro1.m1=getRandomInt(1,50);
-    p.ro1.m2=getRandomInt(1,50);
-    p.ro1.m3=getRandomInt(1,50);
-    p.ro2.m1=getRandomInt(1,50);
-    p.ro2.m2=getRandomInt(1,50);
-    p.ro2.m3=getRandomInt(1,50);
-    p.ro3.m1=getRandomInt(1,50);
-    p.ro3.m2=getRandomInt(1,50);
-    p.ro3.m3=getRandomInt(1,50);
+    if (!p.time) p.time=ts;
+    let progress=ts-p.time;
+    if (progress<p.duration) {
+      p.frac=progress/p.duration;
+    } else {
+      p.transit();
+      p.time=0;
+      p.frac=0;
+    }
   }
+  if (!orbsTime) orbsTime=ts;
+  let progress=ts-orbsTime;
+  if (progress<orbs.duration) {
+    orbs.frac=progress/orbs.duration;
+  } else {
+    orbs.transit();
+    orbsTime=0;
+    orbs.frac=0;
+    if (EM) stopped=true;
+  }
+  if (!vertexTime) vertexTime=ts;
+  progress=ts-vertexTime;
+  if (progress<orbs.durationV) {
+    orbs.fracV=progress/orbs.durationV;
+  } else {
+    orbs.transitVertices();
+    vertexTime=0;
+    orbs.fracV=0;
+  }
+  if (!fadeTime) fadeTime=ts;
+  progress=ts-fadeTime;
+  if (progress>40) {
+    ctx.fillStyle="hsla(0,0%,0%,0.03)";
+    ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+    fadeTime=0;
+  }
+  orbs.draw();
+  requestAnimationFrame(animate);
 }
-*/
 
 var reset=()=>{
   do {
@@ -577,149 +545,39 @@ var reset=()=>{
   fSet=fSets[["p","n"][getRandomInt(0,2)]][getRandomInt(0,6)];
   portal=[];
   orbs.transitCount=0;
-  orbs.start=0;
+  orbsTime=0;
+}
+
+const resetTimes=()=>{
+  for (let p of paths) {
+    if (p.frac>0) {
+      p.time=performance.now()-p.frac*p.duration;
+    } else {
+      p.time=0;
+    }
+  }
+  if (orbs.frac>0) {
+    orbsTime=performance.now()-orbs.frac*orbs.duration;
+  } else {
+    orbsTime=0;
+  }
+  if (orbs.fracV>0) {
+    vertexTime=performance.now()-orbs.fracV*orbs.durationV;
+  } else {
+    vertexTime=0;
+  }
 }
 
 onresize();
 function start() {
   if (stopped) {
-//    reset();
-    requestAnimationFrame(orbs.animate);
-    for (let p of paths) {
-      requestAnimationFrame(p.animate);
-    }
-    requestAnimationFrame(fade.animate);
+    resetTimes();
+    requestAnimationFrame(animate);
     stopped=false;
   } else {
     stopped=true;
   }
 }
-canvas.addEventListener("click", start, false);
+ctx.canvas.addEventListener("click", start, false);
 reset();
 start();
-
-/*
-var reptable=document.querySelector('#reptable');
-var GR=function(obj) {
-  let row=(()=>{ 
-    return document.createElement('tr');
-  })();
-  row.append((()=>{
-    let label=document.createElement('td');
-    label.textContent=obj.label;
-    return label;
-  })());
-  this.td=document.createElement('td');
-  this.td.setAttribute("colspan","4");
-  this.td.style.textAlign="center";
-  row.append(this.td);
-  reptable.append(row);
-  this.oc=obj.oc;
-  let gself=this;
-  this.report=()=>{
-    obj.oc(gself.td);
-  }
-}
-var SR=function(obj) {
-  let row=(()=>{ 
-    return document.createElement('tr');
-  })();
-  reptable.append(row);
-  let label=document.createElement('td');
-  label.textContent=obj.label;
-  row.append(label);
-  this.tds=[];
-  for (let i=0; i<4; i++) {
-    this.tds[i]=document.createElement('td');
-    row.append(this.tds[i]);
-  }
-  let sself=this;
-  this.report=()=>{
-    obj.oc(sself.tds);
-  }
-}
-var grs=[
-  new GR({
-    label:'points',
-    oc:(td)=>{
-      td.textContent=POINTS;
-    }
-  }),
-  new GR({
-    label:'cset',
-    oc:(td)=>{
-      td.textContent=cSet[0];
-    }
-  }),
-  new GR({
-    label:'cset count',
-    oc:(td)=>{
-      td.textContent=cSet.length;
-    }
-  }),
-  new GR({
-    label:'state',
-    oc:(td)=>{
-      td.textContent=orbs.state;
-    }
-  })
-];
-reptable.append((()=>{ 
-  let tdl=(s)=>{ 
-    let td=document.createElement('td');
-    td.textContent=s;
-    return td;
-  }
-  let tr=document.createElement('tr');
-  tr.append(
-    document.createElement('td'),
-    tdl("from"),
-    tdl("to"),
-    tdl("from"),
-    tdl("to")
-  );
-  return tr;
-})());
-var srs=[
-  new SR({
-    label:'m1',
-    oc:function(tds) {
-      tds[0].textContent=paths[0].ro1.m1;
-      tds[1].textContent=paths[0].ro2.m1;
-      tds[2].textContent=paths[1].ro1.m1;
-      tds[3].textContent=paths[1].ro2.m1;
-    }
-  }),
-  new SR({
-    label:'m2',
-    oc:function(tds) {
-      tds[0].textContent=paths[0].ro1.m2;
-      tds[1].textContent=paths[0].ro2.m2;
-      tds[2].textContent=paths[1].ro1.m2;
-      tds[3].textContent=paths[1].ro2.m2;
-    }
-  }),
-  new SR({
-    label:'m3',
-    oc:(tds)=>{
-      tds[0].textContent=paths[0].ro1.m3;
-      tds[1].textContent=paths[0].ro2.m3;
-      tds[2].textContent=paths[1].ro1.m3;
-      tds[3].textContent=paths[1].ro2.m3;
-    }
-  }),
-  new SR({
-    label:'oRadius',
-    oc:function(ft,tt) {
-      ft.textContent=orbs.fromOrb.radius.toFixed(0);
-      tt.textContent=orbs.toOrb.radius.toFixed(0);
-    }
-  }),
-];
-
-function setTable() {
-  for (let gr of grs) gr.report();
-  for (let sr of srs) sr.report();
-}
-setTable();
-*/
