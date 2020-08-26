@@ -1,14 +1,8 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
-var styleSheet=(()=>{
-  let tag=document.createElement("style");
-  tag.type="text/css";
-  body.append(tag);
-  let ss=document.styleSheets[document.styleSheets.length-1];
-  ss.insertRule("body { background:#000; }",0);
-  return ss;
-})();
-
+body.style.background="#000";
+const TP=2*Math.PI;
+const EM=location.href.endsWith("em");
 const CSIZE=400;
 
 const canvas=document.querySelector("#cta");
@@ -16,29 +10,20 @@ const ctx=canvas.getContext("2d");
 ctx.translate(CSIZE,CSIZE);
 ctx.rotate(-Math.PI/2);
 ctx.fillStyle="hsla(0,0%,0%,0.05)";
-onresize=()=>{ canvas.style.maxHeight=window.innerHeight-20+"px"; }
+onresize=()=>{ 
+  let D=Math.min(window.innerWidth,window.innerHeight)-40; 
+  ctx.canvas.style.width=D+"px";
+  ctx.canvas.style.height=D+"px";
+}
 var stopped=true;
 const PUBLISH=true;
 
-function powerRandom(p) {
-  function rec(p,r) {
-    --p;
-    if (p<=0) {
-      return r;
-    } else {
-      r*=Math.random();
-      return rec(p,r);
-    }
+var getRandomInt=(min,max,low)=>{
+  if (low) {
+    return Math.floor(Math.random()*Math.random()*(max-min))+min;
+  } else {
+    return Math.floor(Math.random()*(max-min))+min;
   }
-  p=Math.round(p);
-  return rec(p,Math.random());
-}
-
-function getRandomInt(min, max, low) {
-  var p=low?low:1;
-  min=Math.ceil(min);
-  max=Math.floor(max);
-  return Math.floor(powerRandom(p)*(max-min))+min;
 }
 
 var coprime=(a,b)=>{
@@ -171,7 +156,7 @@ var Roulette=function(ro) {
   }
   let rself=this;
   this.getMetrics=(pointFrac)=>{
-    let z=pointFrac*2*Math.PI;
+    let z=pointFrac*TP;
     var y,oFrac;
     var	x=fSet[0]*rself.r1*Math.cos(rself.m1*z)
          +fSet[1]*rself.r2*Math.cos(rself.m2*z)
@@ -194,11 +179,6 @@ if (!PUBLISH) if (cset2==null) { debugger; }
     rself.r1=400-200*Math.random();
     rself.r2=400-200*Math.random();
     rself.r3=400-200*Math.random();
-/*
-    rself.r1=200-80*Math.random();
-    rself.r2=200-80*Math.random();
-    rself.r3=200-80*Math.random();
-*/
   }
 }
 
@@ -210,7 +190,7 @@ var portal=[];
 var Path=function(durOffset) {
   this.ro1=new Roulette();
   this.ro2=new Roulette();
-  this.start=0;
+  this.time=0;
   this.frac=0;
   this.duration=7700+durOffset;
   this.transitCount=0;
@@ -346,22 +326,6 @@ if (!PUBLISH) console.log("found first "+JSON.stringify(trip));
     this.randomizeCycles(this.ro3);
     this.ro3.randomizeRadii();
 */
-//    if (!no_report) { setTable(); }
-  },
-  this.animate=(ts)=>{
-    if (stopped) return;
-    if (!this.start) {
-      this.start=ts;
-    }
-    let progress=ts-this.start;
-    if (progress<this.duration) {
-      this.frac=progress/this.duration;
-    } else {
-      this.transit();
-      this.start=0;
-      this.frac=0;
-    }
-    requestAnimationFrame(this.animate);
   }
 }
 
@@ -395,7 +359,7 @@ var orbs={
   state:"steady", // contract,expand
   startC:Infinity,
   fracC:0,
-  durationC:10000,
+//  durationC:10000,
   getRadius:(oFrac,pFrac)=>{
 //    return orbs.frac*orbs.toOrb.getRadius(oFrac)+(1-orbs.frac)*orbs.fromOrb.getRadius(oFrac);
     return Math.sin(pFrac*Math.PI)*orbs.toOrb.getRadius(oFrac)+Math.sin((1-pFrac)*Math.PI)*orbs.fromOrb.getRadius(oFrac);
@@ -405,7 +369,7 @@ var orbs={
     let midHue=orbs.frac*(orbs.toOrb.hue-orbs.fromOrb.hue)+orbs.fromOrb.hue;
     return (hdiff*oFrac+midHue)%360;
   },
-  draw:(rotFrac)=>{
+  draw:()=>{
     ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
     for (let i=0; i<POINTS; i++) {
       var pFrac=i/POINTS;
@@ -417,7 +381,6 @@ var orbs={
 	}
 	return 1;
       })();
-
       let metrics=paths[0].getMetrics(pFrac);
       ctx.fillStyle='hsla('+
         orbs.getHue(metrics.oFrac, orbs.frac)+',90%,60%,0.9';
@@ -425,21 +388,19 @@ var orbs={
 //        (stopped?1:rf*orbs.getOpacity(metrics.oFrac, orbs.frac))+')';
       ctx.beginPath();
       ctx.arc(metrics.x,metrics.y, 
-          rf*orbs.getRadius(metrics.oFrac, paths[0].frac),0,2*Math.PI);
+          rf*orbs.getRadius(metrics.oFrac, paths[0].frac),0,TP);
       ctx.fill();
       ctx.closePath();
-
       ctx.beginPath();
       let metrics2=paths[1].getMetrics(pFrac);
       ctx.arc(metrics2.x,metrics2.y, 
-	  rf*orbs.getRadius(metrics2.oFrac, paths[1].frac),0,2*Math.PI);
+	  rf*orbs.getRadius(metrics2.oFrac, paths[1].frac),0,TP);
       ctx.fill();
       ctx.closePath();
-
       ctx.beginPath();
       let metrics3=paths[2].getMetrics(pFrac);
       ctx.arc(metrics3.x,metrics3.y, 
-	  rf*orbs.getRadius(metrics3.oFrac, paths[2].frac),0,2*Math.PI);
+	  rf*orbs.getRadius(metrics3.oFrac, paths[2].frac),0,TP);
       ctx.fill();
       ctx.closePath();
     }
@@ -456,8 +417,6 @@ var orbs={
     } else if (orbs.state=="expand") {
       orbs.state="steady";
     }
-//if (!PUBLISH) console.log("state "+orbs.state);
-
     Object.assign(this.fromOrb, this.toOrb);
     this.toOrb=new Orb(this.fromOrb);
     this.toOrb.hue=getRandomInt(0,360);
@@ -480,56 +439,8 @@ if (!PUBLISH) console.log("portal reset");
 	}
       }
     }
-  },
-  animate:(ts)=>{
-    if (stopped) { return; }
-    if (!orbs.start) {
-      orbs.start=ts;
-    }
-    let progress=ts-orbs.start;
-    if (progress<orbs.duration) {
-      orbs.frac=progress/orbs.duration;
-    } else {
-      orbs.transit();
-      orbs.start=0;
-      orbs.frac=0;
-    }
-    if (!orbs.startV) {
-      orbs.startV=ts;
-    }
-    let progV=ts-orbs.startV;
-    if (progV<orbs.durationV) {
-      orbs.fracV=progV/orbs.durationV;
-    } else {
-      orbs.transitVertices();
-      orbs.startV=0;
-      orbs.fracV=0;
-    }
-    orbs.draw(orbs.frac);
-    requestAnimationFrame(orbs.animate);
-  },
-}
-
-/*
-var fade={
-  start:0,
-  animate:(ts)=>{
-    if (stopped) return;
-    if (!fade.start) {
-      fade.start=ts;
-    }
-    let progress=ts-fade.start;
-    //if (progress>40) {
-    if (progress>4) {
-      //ctx.fillStyle="hsla(0,0%,0%,0.03)";
-      ctx.fillStyle="hsla(0,0%,0%,0.1)";
-      ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-      fade.start=0;
-    }
-    requestAnimationFrame(fade.animate);
   }
 }
-*/
 
 var reset=()=>{
   do {
@@ -550,148 +461,74 @@ var reset=()=>{
   orbs.toOrb.radius=f*(3+4*Math.random());
 }
 
-onresize();
+var orbsTime=0;
+var vertexTime=0;
+const animate=(ts)=>{
+  if (stopped) return;
+  if (!orbsTime) orbsTime=ts;
+  let progress=ts-orbsTime;
+  if (progress<orbs.duration) {
+    orbs.frac=progress/orbs.duration;
+  } else {
+    orbs.transit();
+    orbs.frac=0;
+    orbsTime=0;
+    if (EM) stopped=true;
+  }
+  if (!vertexTime) vertexTime=ts;
+  progress=ts-vertexTime;
+  if (progress<orbs.durationV) {
+    orbs.fracV=progress/orbs.durationV;
+  } else {
+    orbs.transitVertices();
+    orbs.fracV=0;
+    vertexTime=0;
+  }
+  for (let p of paths) {
+    if (!p.time) p.time=ts;
+    let progress=ts-p.time;
+    if (progress<p.duration) {
+      p.frac=progress/p.duration;
+    } else {
+      p.transit();
+      p.time=0;
+      p.frac=0;
+    }
+  }
+  orbs.draw();
+  requestAnimationFrame(animate);
+}
+
+const resetTimes=()=>{
+  for (let p of paths) {
+    if (p.frac>0) {
+      p.time=performance.now()-p.frac*p.duration;
+    } else {
+      p.time=0;
+    }
+  }
+  if (orbs.frac>0) {
+    orbsTime=performance.now()-orbs.frac*orbs.duration;
+  } else {
+    orbsTime=0;
+  }
+  if (orbs.fracV>0) {
+    vertexTime=performance.now()-orbs.fracV*orbs.durationV;
+  } else {
+    vertexTime=0;
+  }
+}
+
 function start() {
   if (stopped) {
-//    reset();
-    requestAnimationFrame(orbs.animate);
-    for (let p of paths) {
-      requestAnimationFrame(p.animate);
-    }
-//    requestAnimationFrame(fade.animate);
+    resetTimes();
+    requestAnimationFrame(animate);
     stopped=false;
   } else {
     stopped=true;
   }
 }
 canvas.addEventListener("click", start, false);
+onresize();
 reset();
 start();
-
-/*
-var reptable=document.querySelector('#reptable');
-var GR=function(obj) {
-  let row=(()=>{ 
-    return document.createElement('tr');
-  })();
-  row.append((()=>{
-    let label=document.createElement('td');
-    label.textContent=obj.label;
-    return label;
-  })());
-  this.td=document.createElement('td');
-  this.td.setAttribute("colspan","4");
-  this.td.style.textAlign="center";
-  row.append(this.td);
-  reptable.append(row);
-  this.oc=obj.oc;
-  let gself=this;
-  this.report=()=>{
-    obj.oc(gself.td);
-  }
-}
-var SR=function(obj) {
-  let row=(()=>{ 
-    return document.createElement('tr');
-  })();
-  reptable.append(row);
-  let label=document.createElement('td');
-  label.textContent=obj.label;
-  row.append(label);
-  this.tds=[];
-  for (let i=0; i<4; i++) {
-    this.tds[i]=document.createElement('td');
-    row.append(this.tds[i]);
-  }
-  let sself=this;
-  this.report=()=>{
-    obj.oc(sself.tds);
-  }
-}
-var grs=[
-  new GR({
-    label:'points',
-    oc:(td)=>{
-      td.textContent=POINTS;
-    }
-  }),
-  new GR({
-    label:'cset',
-    oc:(td)=>{
-      td.textContent=cSet[0];
-    }
-  }),
-  new GR({
-    label:'cset count',
-    oc:(td)=>{
-      td.textContent=cSet.length;
-    }
-  }),
-  new GR({
-    label:'state',
-    oc:(td)=>{
-      td.textContent=orbs.state;
-    }
-  })
-];
-reptable.append((()=>{ 
-  let tdl=(s)=>{ 
-    let td=document.createElement('td');
-    td.textContent=s;
-    return td;
-  }
-  let tr=document.createElement('tr');
-  tr.append(
-    document.createElement('td'),
-    tdl("from"),
-    tdl("to"),
-    tdl("from"),
-    tdl("to")
-  );
-  return tr;
-})());
-var srs=[
-  new SR({
-    label:'m1',
-    oc:function(tds) {
-      tds[0].textContent=paths[0].ro1.m1;
-      tds[1].textContent=paths[0].ro2.m1;
-      tds[2].textContent=paths[1].ro1.m1;
-      tds[3].textContent=paths[1].ro2.m1;
-    }
-  }),
-  new SR({
-    label:'m2',
-    oc:function(tds) {
-      tds[0].textContent=paths[0].ro1.m2;
-      tds[1].textContent=paths[0].ro2.m2;
-      tds[2].textContent=paths[1].ro1.m2;
-      tds[3].textContent=paths[1].ro2.m2;
-    }
-  }),
-  new SR({
-    label:'m3',
-    oc:(tds)=>{
-      tds[0].textContent=paths[0].ro1.m3;
-      tds[1].textContent=paths[0].ro2.m3;
-      tds[2].textContent=paths[1].ro1.m3;
-      tds[3].textContent=paths[1].ro2.m3;
-    }
-  }),
-  new SR({
-    label:'r1',
-    oc:(tds)=>{
-      tds[0].textContent=paths[0].ro1.r1.toFixed(0);
-      tds[1].textContent=paths[0].ro2.r1.toFixed(0);
-      tds[2].textContent=paths[1].ro1.r1.toFixed(0);
-      tds[3].textContent=paths[1].ro2.r1.toFixed(0);
-    }
-  }),
-];
-
-function setTable() {
-  for (let gr of grs) gr.report();
-  for (let sr of srs) sr.report();
-}
-setTable();
-*/
