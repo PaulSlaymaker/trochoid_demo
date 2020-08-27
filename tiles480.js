@@ -1,8 +1,8 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
-body.style.background="#444";
+body.style.background="#000";
 body.style.margin="20";
-
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 
 const ctx=(()=>{
@@ -27,13 +27,15 @@ var getRandomInt=(min,max,low)=>{
 var D=400;
 onresize=function() { 
   D=Math.min(window.innerWidth,window.innerHeight)-40; 
-  ctx.canvas.width=D;
-  ctx.canvas.height=D;
-  ctx.translate(D/2,D/2);
-//  ctx.lineWidth=0.8;
-  P=D/2; 
-  setPoints();
+  ctx.canvas.style.width=D+"px";
+  ctx.canvas.style.height=D+"px";
+//  ctx.canvas.width=D;
+//  ctx.canvas.height=D;
+//  ctx.translate(D/2,D/2);
+//  P=D/2; 
+//  setPoints();
 }
+ctx.translate(D,D);
 
 function cFrac(frac) {
   let f1=.1;
@@ -130,11 +132,12 @@ var Color=function() {
 }
 
 var shape="B2";
-var P=D;
+//var P=D;
+var P=400;
 var W=11; // layers+1
 var C=48; // radials
 var Count=480;
-var pts=[]
+var pts=[];
 var tiles=[];
 var colorSet=[];
 var colorSet2=[];
@@ -640,7 +643,7 @@ var randomizeTransition=()=>{
 }
 
 var drawO=()=>{
-  ctx.clearRect(-D/2,-D/2,D,D);
+  ctx.clearRect(-P/2,-P/2,P,P);
   ctx.font="18px serif";
   ctx.beginPath();
   for (let i in pts) {
@@ -664,7 +667,7 @@ var draw=()=>{
   } else {
     ctx.strokeStyle="hsl(0,0%,25%)";
   }
-  ctx.clearRect(-D/2,-D/2,D,D);
+  ctx.clearRect(-P,-P,2*P,2*P);
   for (let i=0; i<Count; i++) {
     tiles[i].draw(frac);
   }
@@ -723,15 +726,14 @@ var animate=(ts)=>{
     //shuffle();
     }
     transitTiles();
-    let D=randomizeTransition();
-LOG.log(false,"");
-
-//console.log(xr+" "+xc+" "+yr+" "+yc);
+    randomizeTransition();
+//LOG.log(false,"");
     pauseTS=performance.now()+1400;
     time=0;
     frac=0;
     af=pause;
     draw();
+   if (EM) stopped=true;
   }
   requestAnimationFrame(af);
 }
@@ -797,5 +799,5 @@ setPoints();
 transitColors();
 transitTiles();
 draw();
-LOG.log(true,"");
+//LOG.log(true,"");
 start();
