@@ -1,10 +1,13 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
-
+body.style.background="#000";
+body.style.margin="20";
 const TP=2*Math.PI;
+const EM=location.href.endsWith("em");
 
 const ctx=(()=>{
   let d=document.createElement("div");
+  d.style.textAlign="center";
   let c=document.createElement("canvas");
   c.width="800";
   c.height="800";
@@ -14,14 +17,10 @@ const ctx=(()=>{
 })();
 
 onresize=function() { 
-  ctx.canvas.width=window.innerWidth; 
-  ctx.canvas.height=window.innerHeight; 
-  //ctx.canvas.width=ctx.canvas.parentElement.offsetWidth; 
-  //ctx.canvas.height=ctx.canvas.parentElement.offsetHeight; 
+  let D=Math.min(window.innerWidth,window.innerHeight)-40; 
+  ctx.canvas.style.width=D+"px";
+  ctx.canvas.style.height=D+"px";
   ctx.lineWidth=0.2;
-  //cancelAnimationFrame(AF);
-  //stopped=true;
-  setPoints();
 }
 
 var getRandomInt=(min,max,low)=>{
@@ -92,10 +91,8 @@ var Shape=function() {
 }
 
 var setPoints=()=>{
-  //R=200+200*Math.random();
-  let d=Math.floor(Math.max(ctx.canvas.width,ctx.canvas.height)/250);
-console.log(d);
-  
+  let d=Math.floor(Math.max(ctx.canvas.width,ctx.canvas.height)/150);
+//console.log(d);
   //R=ctx.canvas.width/4;  // min/max, 2-300px optimum?
   R=ctx.canvas.width/d;  // min/max, 2-300px optimum?
   pts=[];
@@ -136,7 +133,7 @@ var draw=(frac)=>{
 
 var time=0;
 var stopped=true;
-var frac=1;
+var frac=0;
 //var duration=20000;
 var duration=6000;
 //var duration=2000;
@@ -166,10 +163,10 @@ var animate=(ts)=>{
       state="ST";
     } else if (state=="ST") {
       let prob=0.1+0.01*Math.abs(C-24);	// max C==84
-console.log(C+" "+prob);
+//console.log(C+" "+prob);
       if (Math.random()<prob) {
         state="TI";
-console.log("transit");
+//console.log("transit");
       }
     } 
 
@@ -190,7 +187,6 @@ console.log("transit");
     //s2.randomizeFactors();
     s3.randomizeFactors();
 
-
 //if (Math.abs(s1.F1-s1.F2)%C==Math.abs(s2.F1-s2.F2)%C) { console.log(s1.F1+" "+s1.F2+" "+s1.rf+" "+s2.F1+" "+s2.F2+" "+s2.rf); }
     time=0;
     frac=0;
@@ -199,6 +195,7 @@ console.log("transit");
 //} else if (Number.isInteger((s1.F1+s1.F2)/(C/2))) {
 //} else if (Number.isInteger(Math.abs(s1.F1-s1.rf*s1.F2)/(C/2))) {
 //}
+    if (EM) stopped=true;
   }
   AF=requestAnimationFrame(animate);
 }
@@ -226,11 +223,11 @@ var randomize=()=>{
 
 var start=()=>{
   if (stopped) {
-  if (frac>0) {
-    time=performance.now()-frac*duration;
-  } else {
-    time=0;
-  }
+    if (frac>0) {
+      time=performance.now()-frac*duration;
+    } else {
+      time=0;
+    }
     requestAnimationFrame(animate);
     stopped=false;
   } else {
@@ -311,6 +308,7 @@ var setControls=()=>{
 */
 
 onresize();
+setPoints();
 randomize();
 
 //draw(0);
