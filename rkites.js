@@ -1,9 +1,8 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
-body.style.background="#444";
+body.style.background="#000";
 body.style.display="grid";
-body.style.margin="0";
-
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 
 const ctx=(()=>{
@@ -16,6 +15,8 @@ const ctx=(()=>{
   d.append(c);
   return c.getContext("2d");
 })();
+ctx.translate(400,400);
+ctx.lineWidth=0.4;
 
 var getRandomInt=(min,max,low)=>{
   if (low) {
@@ -25,15 +26,16 @@ var getRandomInt=(min,max,low)=>{
   }
 }
 
-var D=400;
+//var D=400;
 onresize=function() { 
-  D=Math.min(window.innerWidth,window.innerHeight); 
+  let D=Math.min(window.innerWidth,window.innerHeight)-40; 
+  ctx.canvas.style.width=D+"px";
+  ctx.canvas.style.height=D+"px";
+/*
   ctx.canvas.width=D;
   ctx.canvas.height=D;
-  ctx.translate(D/2,D/2);
   ctx.lineWidth=0.4;
-  P=D/2.1; 
-  setPoints();
+*/
 }
 
 function cFrac(frac) {
@@ -46,11 +48,13 @@ function cFrac(frac) {
 }
 
 var RD=getRandomInt(1,20,true);
+var RD2=[-1,1][getRandomInt(0,2)];
 var Tile=function(p1,p2,p3,p4,i) {
   this.v=[p1,p2,p3,p4];
   this.i=i;
   this.rx=P*(1-2*Math.random());
   this.ry=P*(1-2*Math.random());
+  //this.shift=()=>{ this.v.push(this.v.shift()); }
   this.drawX=(frac)=>{
     let f=cFrac(frac);
     ctx.beginPath();
@@ -65,7 +69,7 @@ var Tile=function(p1,p2,p3,p4,i) {
   }
   this.drawR=(frac)=>{
     let f=cFrac(frac);
-    let fpzx=P*f*Math.cos(RD*this.v[0].z);
+    let fpzx=RD2*P*f*Math.cos(RD*this.v[0].z);
     let fpzy=P*f*Math.sin(RD*this.v[0].z);
     ctx.beginPath();
     ctx.moveTo(fpzx+(1-f)*this.v[0].x,fpzy+(1-f)*this.v[0].y);
@@ -183,7 +187,7 @@ debugger;
   }
 }
 
-var P=D;
+var P=400;
 var W=2; // layers+1
 var C=4; // radials
 var pts=[]
@@ -322,13 +326,14 @@ var drawO=()=>{
 }
 
 var draw=()=>{
-  ctx.clearRect(-D/2,-D/2,D,D);
+  ctx.clearRect(-400,-400,800,800);
   for (let ts of tileSets) ts.drawTiles();
 //  for (let i=0; i<tileSets.length; i++) { tileSets[i].drawTiles(); }
 }
 
 var randomizeTransition=()=>{
-  RD=getRandomInt(1,20,true);
+  RD=getRandomInt(1,20,true)*[-1,1][getRandomInt(0,2)];
+  RD2=[-1,1][getRandomInt(0,2)];
   let dt=getRandomInt(0,6,true);
   for (let tset of tileSets) { tset.randomizeTransition(dt); }
 }
@@ -385,7 +390,7 @@ var animate=(ts)=>{
   let progress=ts-time;
   let af=animate;
   if (state%3==1) {
-    duration=6000;
+    duration=4000;
   } else {
     duration=2000;
   }
@@ -401,6 +406,7 @@ var animate=(ts)=>{
       pauseTS=performance.now()+300;
     } else if (state%3==2) {
       randomizeTransition();
+      if (EM) stopped=true;
       pauseTS=performance.now()+300;
     } else {
       randomizeF();
@@ -472,6 +478,7 @@ body.append(
 
 randomizeF();
 onresize();
+setPoints();
 setTiles();
 transitColors();
 //draw();
