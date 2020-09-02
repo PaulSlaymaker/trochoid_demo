@@ -48,8 +48,8 @@ var C=72;
 var pointSet=0;
 var colorSet=0;
 var f1=0;
-var s1=1,s2=1,s3=3;
-var c1=1,c2=1,c3=3;
+var s1=1,s2=1,s3=3,s4=1;
+var c1=1,c2=1,c3=3,c4=1;
 
 var VSide={
   pts:[[],[]],
@@ -57,8 +57,8 @@ var VSide={
     for (let i=0; i<C; i++) {
       let t=i*TP/C;
       VSide.pts[pointSet][i]={
-        "x":f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)),
-        "y":25*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t))
+        "x":f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)+Math.sin(s4*t)),
+        "y":20*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)+Math.cos(c4*t))
       };
     }
   }
@@ -70,8 +70,8 @@ var HSide={
     for (let i=0; i<C; i++) {
       let t=i*TP/C;
       HSide.pts[pointSet][i]={
-        "x":25*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)),
-        "y":f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t))
+        "x":20*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)+Math.cos(c4*t)),
+        "y":f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)+Math.sin(s4*t))
       };
     }
   }
@@ -95,9 +95,11 @@ const transit=()=>{
   s1=2*getRandomInt(0,4,true)+1;
   s2=2*getRandomInt(0,4,true)+1;
   s3=2*getRandomInt(0,4,true)+1;
+  s4=2*getRandomInt(0,4,true)+1;
   c1=2*getRandomInt(0,4,true)+1;
   c2=2*getRandomInt(0,4,true)+1;
   c3=2*getRandomInt(0,4,true)+1;
+  c4=2*getRandomInt(0,4,true)+1;
   HSide.setPoints();
   VSide.setPoints();
 }
