@@ -46,19 +46,37 @@ ctx.strokeStyle=new Color(true).getHSLString();
 //var C=200;
 var C=72;
 var pointSet=0;
+const AR=0, AL=1, ML=2, MR=3;
+var state=0;
 var colorSet=0;
 var f1=0;
-var s1=1,s2=1,s3=3,s4=1;
+var s1=1,s2=1,s3=3,s4=1,s5=1,s6=1;
 var c1=1,c2=1,c3=3,c4=1;
 
 var VSide={
   pts:[[],[]],
   setPoints:()=>{
+    if (state==AR || state==AL) {
+      VSide.setPointsA();
+    } else {
+      VSide.setPointsB();
+    }
+  },
+  setPointsA:()=>{
     for (let i=0; i<C; i++) {
       let t=i*TP/C;
       VSide.pts[pointSet][i]={
         "x":f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)+Math.sin(s4*t)),
         "y":20*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)+Math.cos(c4*t))
+      };
+    }
+  },
+  setPointsB:()=>{
+    for (let i=0; i<C; i++) {
+      let t=i*TP/C;
+      VSide.pts[pointSet][i]={
+        "y":120*(Math.cos(c1*t)*Math.sin(c2*t)),//+Math.cos(c3*t)*Math.sin(c4*t)),
+        "x":40*(Math.cos(s1*t)*Math.sin(s2*t)+Math.cos(s3*t)*Math.sin(s4*t)+Math.cos(s5*t)*Math.sin(s6*t))
       };
     }
   }
@@ -67,11 +85,27 @@ var VSide={
 var HSide={
   pts:[[],[]],
   setPoints:()=>{
+    if (state==AR || state==AL) {
+      HSide.setPointsA();
+    } else {
+      HSide.setPointsB();
+    }
+  },
+  setPointsA:()=>{
     for (let i=0; i<C; i++) {
       let t=i*TP/C;
       HSide.pts[pointSet][i]={
         "x":20*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)+Math.cos(c4*t)),
         "y":f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)+Math.sin(s4*t))
+      };
+    }
+  },
+  setPointsB:()=>{
+    for (let i=0; i<C; i++) {
+      let t=i*TP/C;
+      HSide.pts[pointSet][i]={
+        "y":40*(Math.cos(s1*t)*Math.sin(s2*t)+Math.cos(s3*t)*Math.sin(s4*t)+Math.cos(s5*t)*Math.sin(s6*t)),
+        "x":120*(Math.cos(c1*t)*Math.sin(c2*t))
       };
     }
   }
@@ -86,22 +120,104 @@ const transitColor=()=>{
   bkg[colorSet].randomize();
   fill[colorSet].randomize();
   stroke[colorSet].randomize();
-  width[colorSet]=getRandomInt(4,32);
+  width[colorSet]=getRandomInt(4,16,true);
 }
 
+var dir=1;
 const transit=()=>{
   pointSet=++pointSet%2;
-  f1=2+80*Math.random();
-  s1=2*getRandomInt(0,4,true)+1;
-  s2=2*getRandomInt(0,4,true)+1;
-  s3=2*getRandomInt(0,4,true)+1;
-  s4=2*getRandomInt(0,4,true)+1;
-  c1=2*getRandomInt(0,4,true)+1;
-  c2=2*getRandomInt(0,4,true)+1;
-  c3=2*getRandomInt(0,4,true)+1;
-  c4=2*getRandomInt(0,4,true)+1;
+  if (state==AL) {
+    if (dir==1) {
+      transitMR(true);
+      state=ML;
+    } else {
+      transitAR();
+      state=AR;
+    }
+  } else if (state==ML) {
+    if (dir==1) {
+      transitMR();
+      state=MR;
+    } else {
+      transitAR(true);
+      state=AL;
+    }
+  } else if (state==MR) {
+    if (Math.random()<0.2) {
+      state=ML;
+      transitMR(true);
+      dir=-1;
+    } else {
+      transitMR();
+    }
+  }  else {
+    if (Math.random()<0.2) {
+      state=AL;
+      transitAR(true);
+      dir=1;
+    } else {
+      transitAR();
+    }
+  }
   HSide.setPoints();
   VSide.setPoints();
+}
+
+const transitAR=(line)=>{
+  if (line) {
+    f1=0;
+    c1=2*getRandomInt(-3,3)+1;
+    c2=2*getRandomInt(-3,3)+1;
+    s1=2*getRandomInt(-3,3)+1;
+    s2=2*getRandomInt(-3,3)+1;
+    c3=2*getRandomInt(-3,3)+1;
+    c4=2*getRandomInt(-3,3)+1;
+    s3=2*getRandomInt(-3,3)+1;
+    s4=2*getRandomInt(-3,3)+1;
+  } else {
+    f1=2+50*Math.random();
+    if (pointSet==0) {
+      c1=2*getRandomInt(-3,3)+1;
+      c2=2*getRandomInt(-3,3)+1;
+      s1=2*getRandomInt(-3,3)+1;
+      s2=2*getRandomInt(-3,3)+1;
+    } else {
+      c3=2*getRandomInt(-3,3)+1;
+      c4=2*getRandomInt(-3,3)+1;
+      s3=2*getRandomInt(-3,3)+1;
+      s4=2*getRandomInt(-3,3)+1;
+    }
+  }
+}
+
+const transitMR=(line)=>{
+  if (line) { 
+    s2=s4=s6=0;
+    c1=2*getRandomInt(-1,-1);
+    c2=c1+2*getRandomInt(-2,1)+1;
+/*
+    c1=getRandomInt(-3,3);
+    c2=c1+2*getRandomInt(-2,1)+1;
+    s1=getRandomInt(-3,3);
+    s2=s1+2*getRandomInt(-1,1);
+    s3=getRandomInt(-3,3);
+    s4=s3+2*getRandomInt(-1,1);
+    s5=getRandomInt(-3,3);
+    s6=s5+2*getRandomInt(-1,1);
+*/
+  } else {
+    if (pointSet==0) {
+      c1=getRandomInt(-3,3);
+      c2=c1+2*getRandomInt(-2,1)+1;
+      s1=getRandomInt(-3,3);
+      s2=s1+2*getRandomInt(-1,1);
+    } else {
+      s3=getRandomInt(-3,3);
+      s4=s3+2*getRandomInt(-1,1);
+      s5=getRandomInt(-3,3);
+      s6=s5+2*getRandomInt(-1,1);
+    }
+  }
 }
 
 var Side=function(sp) {
