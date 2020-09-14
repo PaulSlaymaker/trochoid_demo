@@ -1,5 +1,6 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
+//body.style.background="black";
 const PUBLISH=false;
 const TP=2*Math.PI;
 
@@ -34,64 +35,79 @@ var getRandomInt=(min,max,low)=>{
 }
 
 var ps=0;
-const C_SR=0, C_SL=1, CS_CSR=2, CS_CSL=3, CCS_CSSR=4, CCS_CSSL=5;
-var state=0;
+const C_SR=0, C_SL=1, CS_CSR=2, CS_CSL=3, CS_CCR=4, CS_CCL=5, CCS_CSSR=6, CCS_CSSL=7;
+var state=6;
 
-var Curve=function() {  // deprecate, only pts[[],[]] needed
+var Curve=function() {
   this.cs=1;	// curve scale
+  this.sp=[setPointsC_S,setPointsCS_CS,setPointsCS_CC,setPointsCCS_CSS];
   this.setPoints=()=>{
+    if (state%2==0) {
+      this.sp[state/2].call();
+    } else {
+      this.sp[(state-1)/2].call(null,true);
+    }
+  }
+/*
+if (state<6) {	// temporary
+} else {
     if (state==CCS_CSSR) {
       setPointsCCS_CSS();
     } else if (state==CS_CSR) {
       setPointsCS_CS();
+    } else if (state==C_SR) {
+      setPointsC_S();
+    } else if (state==CS_CCR) {
+      setPointsCS_CC();
     } else if (state==C_SL) {
-      setPointsC_S(true);
+setPointsC_S.call(null,true);
+//      setPointsC_S(true);
+    } else if (state==CS_CCL) {
+      setPointsCS_CC(true);
     } else if (state==CS_CSL) {
       setPointsCS_CS(true);
     } else if (state==CCS_CSSL) {
       setPointsCCS_CSS(true);
     } else {
-      setPointsC_S();
+      debugger;
     }
-  }
-  this.X=(idx)=>{ 
-    //if (scale*this.cs*this.pts[idx].x > 400) debugger;
-    return scale*this.cs*this.pts[idx].x; 
-  }
+}
+*/
+  this.X=(idx)=>{ return scale*this.cs*this.pts[idx].x; }
   this.Y=(idx)=>{ return scale*this.cs*this.pts[idx].y; }
+}
 
-  this.setPointsC_S2=(line)=>{
-    let mx=[];
-    let my=[];
-
-    let mux={}, muy={};
-    let c=getRandomInt(1,10);
-    for (let i=0; i<c; i++) {
-      let f=2*getRandomInt(-3,3)+1;
-      if (mux.hasOwnProperty(f)) mux.m++;
-      else mux.m=1;
-
-      if (ps%3==0) {  	// variety
-        my[i]=2*getRandomInt(-3,3)+1;
-      } else {		// beauty
-        my[i]=mx[i];
-      }
+const setPointsC_S2=(line)=>{	// inefficient
+  let mux={}, muy={};
+  let c=getRandomInt(1,10);
+  for (let i=0; i<c; i++) {
+    let m=2*getRandomInt(-3,3)+1;
+    if (mux.hasOwnProperty(m)) mux[m]++;
+    else mux[m]=1;
+    if (ps%3==0) {  	// variety
+      m=2*getRandomInt(-3,3)+1;
+      if (muy.hasOwnProperty(m)) muy[m]++;
+      else muy[m]=1;
+    } else {		// beauty
+      if (muy.hasOwnProperty(m)) muy[m]++;
+      else muy[m]=1;
     }
-    const getX=(t)=>{ 
-      let v=0;
-      for (let i=0; i<c; i++) v+=Math.cos(mx[i]*t);
-      return v;
-    }
-    const getY=(t)=>{ 
-      let v=0;
-      for (let i=0; i<c; i++) v+=Math.sin(my[i]*t);
-      return v;
-    }
-    this.pts=[];
-    this.cs=1;
-    for (let i=0, t=0; i<Z; i+=1, t=i*I) {
-      this.pts[i]={x:getX(t)/c,y:line?0:getY(t)/c};
-    }
+  }
+  const getX=(t)=>{ 
+    let v=0;
+    for (let [m,f] of Object.entries(mux)) { v+=f*Math.cos(m*t); }
+    return v;
+  }
+  const getY=(t)=>{ 
+    let v=0;
+    for (let [m,f] of Object.entries(muy)) { v+=f*Math.sin(m*t); }
+    return v;
+  }
+  let pointSet=ps%2;
+  curves[pointSet].pts=[];
+  curves[pointSet].cs=1;
+  for (let i=0, t=0; i<Z; i+=1, t=i*I) {
+    curves[pointSet].pts[i]={x:getX(t)/c,y:line?0:getY(t)/c};
   }
 }
 
@@ -125,25 +141,44 @@ const setPointsC_S=(line)=>{
   }
 }
 
+const generatePoints=(xf,yf,c)=>{
+  let pointSet=ps%2;
+  curves[pointSet].pts=[];
+  curves[pointSet].cs=1;
+  let maxs=0;
+  for (let i=0, t=0; i<Z; i+=1, t=i*I) {
+    let x=xf(t);
+    maxs=Math.max(maxs,x);
+    let y=yf(t);
+    maxs=Math.max(maxs,y);
+    curves[pointSet].pts.push({"x":x,"y":y});
+  }
+  curves[pointSet].cs=1/(maxs<0.01?1:maxs);
+}
+
 const setPointsCS_CS=(line)=>{
   let mx=[], mx2=[];
   let my=[], my2=[];
-  let c=line?1:getRandomInt(1,7);
+  let c=line?1:getRandomInt(1,8);
   if (line) {
     my[0]=0;
     my2[0]=0;
     mx[0]=2*getRandomInt(-3,4);
-if (mx[0]%2==0) mx2[0]=2*getRandomInt(-2,2)+1;
-else mx2[0]=2*getRandomInt(-2,3);
+    if (mx[0]%2==0) mx2[0]=2*getRandomInt(-2,2)+1;
+    else mx2[0]=2*getRandomInt(-2,3);
 //      mx2[0]=mx[0]+2*getRandomInt(-2,2)+1;
   } else {
     for (let i=0; i<c; i++) {
       mx[i]=getRandomInt(-3,4);
-      mx2[i]=mx[i]+2*getRandomInt(-2,2)+1;  // test even odd, rather than add
+      if (mx[i]%2==0) mx2[i]=2*getRandomInt(-2,2)+1;
+      else mx2[i]=2*getRandomInt(-2,3); // test for 0 in if
+//      mx2[i]=mx[i]+2*getRandomInt(-2,2)+1;  // test even odd, rather than add
       if (mx2[i]==0) mx2[i]=2;
       my[i]=getRandomInt(-3,4);
       //my[i]=mx[i];
-      my2[i]=my[i]+2*getRandomInt(-2,3);  // test even odd, rather than add
+      if (my[i]%2==0) my2[i]=2*getRandomInt(-2,3);
+      else my2[i]=2*getRandomInt(-2,2)+1; // test for 0 in if
+//      my2[i]=my[i]+2*getRandomInt(-2,3);  // test even odd, rather than add
       if (my2[i]==0) my2[i]=2;
     }
   }
@@ -157,27 +192,59 @@ else mx2[0]=2*getRandomInt(-2,3);
     for (let i=0; i<c; i++) v+=Math.cos(my[i]*t)*Math.sin(my2[i]*t);
     return v;
   }
-  let pointSet=ps%2;
-  curves[pointSet].pts=[];
-  curves[pointSet].cs=1;
-let maxs=0;
-  for (let i=0, t=0; i<Z; i+=1, t=i*I) {
-    let x=getXM(t)/c;
-    maxs=Math.max(maxs,x);
-    let y=getYM(t)/c;
-    maxs=Math.max(maxs,y);
-    curves[pointSet].pts.push({"x":x,"y":y});
+  generatePoints(getXM,getYM,c);
+}
+
+const setPointsCS_CC=(line)=>{
+  let mx=[], mx2=[];
+  let my=[], my2=[];
+  let c=line?1:getRandomInt(1,8);
+  if (line) {
+    mx[0]=0;
+    mx2[0]=0;
+    my2[0]=0;
+    my[0]=2*getRandomInt(-2,3);
+    if (my[0]%2==0) my2[0]=2*getRandomInt(-2,2)+1;
+    else my2[0]=2*getRandomInt(-2,3);
+  } else {
+    for (let i=0; i<c; i++) {
+      mx[i]=getRandomInt(-3,4);
+      if (mx[i]%2==0) mx2[i]=2*getRandomInt(-2,2)+1;
+      else mx2[i]=2*getRandomInt(-2,3);
+//      mx2[i]=mx[i]+2*getRandomInt(-2,3);
+      if (mx2[i]==0) mx2[i]=2;
+      my[i]=getRandomInt(-3,4);
+      if (my[i]%2==0) my2[i]=2*getRandomInt(-2,2)+1;
+      else my2[i]=2*getRandomInt(-2,3);
+    //my2[i]=my[i]+2*getRandomInt(-2,2)+1;
+    }
   }
-  curves[pointSet].cs=1/(maxs<0.01?1:maxs);
-//console.log(maxx+" "+curves[pointSet].cs);
-//console.log(maxx+" "+1/(maxx<0.01?1:maxx));
+  const getX=(t)=>{ 
+    let v=0;
+    for (let i=0; i<c; i++) v+=Math.cos(mx[i]*t)*Math.sin(mx2[i]*t);
+    return v;
+  }
+  const getY=(t)=>{ 
+    let v=0;
+    for (let i=0; i<c; i++) v+=Math.cos(my[i]*t)*Math.cos(my2[i]*t);
+    return v;
+  }
+  generatePoints(getX,getY,c);
 }
 
 const setPointsCCS_CSS=(line)=>{
   let mx=[], mx2=[], mx3=[];
   let my=[], my2=[], my3=[];
-  let c=line?1:getRandomInt(1,3);
+  let c=line?1:getRandomInt(1,5);
   if (line) {
+    mx[0]=0;  // untested
+    mx2[0]=0;
+    mx3[0]=0;
+    my[0]=2*getRandomInt(-2,3);
+    my2[0]=2*getRandomInt(-3,4);
+    if (my2[0]==0) my2[0]=2;
+    my3[0]=2*getRandomInt(-3,3)+1;
+/*
     my[0]=0;
     my2[0]=0;
     my3[0]=0;
@@ -185,6 +252,7 @@ const setPointsCCS_CSS=(line)=>{
     //mx[0]=0;
     mx2[0]=2*getRandomInt(-3,4);
     mx3[0]=2*getRandomInt(-3,3)+1;
+*/
   } else {
     for (let i=0; i<c; i++) {
       mx[i]=getRandomInt(-3,4);
@@ -196,7 +264,6 @@ const setPointsCCS_CSS=(line)=>{
 	if (mx3[i]==0) mx3[i]=2;  // less needed as c increases, test it
       }
       my[i]=getRandomInt(-3,4);
-      //if (my[i]==0) my[i]=1;
       my2[i]=getRandomInt(-3,4);
       if (my2[i]==0) my2[i]=1;
       if ((my2[i]-my[i])%2==0) {
@@ -217,18 +284,56 @@ const setPointsCCS_CSS=(line)=>{
     for (let i=0; i<c; i++) v+=Math.cos(my[i]*t)*Math.sin(my2[i]*t)*Math.sin(my3[i]*t);
     return v;
   }
+  generatePoints(getXT,getYT,c);
+/*
   let pointSet=ps%2;
   curves[pointSet].pts=[];
   curves[pointSet].cs=1;
-  let maxx=0;
-  //for (let i=0; i<Z; i+=1) {
+  let maxs=0;
   for (let i=0, t=0; i<Z; i+=1, t=i*I) {
-    //let t=i*TP/Z;
-    let x=getXT(t)/c;
-//      maxx=Math.max(maxx,x);
-    curves[pointSet].pts.push({"x":x,y:getYT(t)/c});
+    let x=getXT(t)/c; 
+    maxs=Math.max(maxs,x);
+    let y=getYT(t)/c;
+    maxs=Math.max(maxs,y);
+    curves[pointSet].pts.push({"x":x,"y":y});
   }
-//console.log(maxx);
+  curves[pointSet].cs=1/(maxs<0.01?1:maxs);
+*/
+}
+
+const setPointsCCS_CCS=(line)=>{
+  let mx=[], mx2=[], mx3=[];
+  let my=[], my2=[], my3=[];
+  let c=line?1:getRandomInt(1,5);
+  if (line) {
+    mx[0]=0;
+    mx2[0]=0;
+    mx3[0]=0;
+    my[0]=2*getRandomInt(-2,3);
+    my2[0]=2*getRandomInt(-3,4);
+    if (my2[0]==0) my2[0]=2;
+    my3[0]=2*getRandomInt(-3,3)+1;
+  } else {
+    for (let i=0; i<c; i++) {
+      mx[i]=getRandomInt(-3,4);
+      mx2[i]=getRandomInt(-3,4);
+      if ((mx2[i]-mx[i])%2==0) {
+	mx3[i]=2*getRandomInt(-3,3)+1;
+      } else {
+	mx3[i]=2*getRandomInt(-2,3);
+	if (mx3[i]==0) mx3[i]=2;  // less needed as c increases, test it
+      }
+      my[i]=getRandomInt(-3,4);
+      my2[i]=getRandomInt(-3,4);
+      if (my2[i]==0) my2[i]=1;
+      if ((my2[i]-my[i])%2==0) {
+	my3[i]=2*getRandomInt(-3,3)+1;
+      } else {
+	my3[i]=2*getRandomInt(-3,4);
+	if (my3[i]==0) my3[i]=2;  // less needed as c increases, test it
+      }
+    }
+  }
 }
 
 var curve1=new Curve();
@@ -281,118 +386,78 @@ var draw=()=>{
     y=(1-f)*c2.Y(i)+f*c1.Y(i);
     ctx.lineTo(x,y);
   }
-  x=(1-f)*c2.pts[0].x+f*c1.pts[0].x;
-  y=(1-f)*c2.pts[0].y+f*c1.pts[0].y;
-  ctx.lineTo(scale*x,scale*y);
-
+  x=(1-f)*c2.X(0)+f*c1.X(0);
+  y=(1-f)*c2.Y(0)+f*c1.Y(0);
+  ctx.lineTo(x,y);
   j=0;
   f=fracs[j];
-  y=(1-f)*c2.pts[0].x+f*c1.pts[0].x;
-  x=(1-f)*c2.pts[0].y+f*c1.pts[0].y;
-  //y=(1-f)*c2.X(0)+f*c1.X(0);
-  //x=(1-f)*c2.Y(0)+f*c1.Y(0);
-  ctx.moveTo(scale*x,scale*y);
+  y=(1-f)*c2.X(0)+f*c1.X(0);
+  x=(1-f)*c2.Y(0)+f*c1.Y(0);
+  ctx.moveTo(x,y);
   for (let i=1; i<Z; i+=1) {
     j=(fracFactor*i)%Z;
     if (j<Z/2) f=fracs[j];
     else f=fracs[Z-1-j];
-    //y=scale*((1-f)*c2.pts[i].x+f*c1.pts[i].x);
-    //x=scale*((1-f)*c2.pts[i].y+f*c1.pts[i].y);
-    y=(1-f)*c2.X(i)+f*c1.X(i);
-    x=(1-f)*c2.Y(i)+f*c1.Y(i);
-    ctx.lineTo(x,y);
+    ctx.lineTo((1-f)*c2.Y(i)+f*c1.Y(i),(1-f)*c2.X(i)+f*c1.X(i));
   }
   ctx.closePath();
-//ctx.lineWidth=8;
-//ctx.strokeStyle="black";
+//ctx.lineWidth=10;
+//ctx.strokeStyle="red";
   ctx.stroke();
 
 /*
   ctx.beginPath();
   j=0;
   f=fracs[j];
-  y=(1-f)*c2.pts[0].x+f*c1.pts[0].x;
-  x=(1-f)*c2.pts[0].y+f*c1.pts[0].y;
-  ctx.moveTo(scale*x,scale*y);
+  x=(1-f)*c2.X(0)+f*c1.X(0);
+  y=(1-f)*c2.Y(0)+f*c1.Y(0);
+  ctx.moveTo(x,y);
   for (let i=1; i<Z; i+=1) {
     j=(fracFactor*i)%Z;
     if (j<Z/2) f=fracs[j];
     else f=fracs[Z-1-j];
-    y=(1-f)*c2.pts[i].x+f*c1.pts[i].x;
-    x=(1-f)*c2.pts[i].y+f*c1.pts[i].y;
-    ctx.lineTo(scale*x,scale*y);
+    x=(1-f)*c2.X(i)+f*c1.X(i);
+    y=(1-f)*c2.Y(i)+f*c1.Y(i);
+    ctx.lineTo(x,y);
+  }
+  x=(1-f)*c2.X(0)+f*c1.X(0);
+  y=(1-f)*c2.Y(0)+f*c1.Y(0);
+  ctx.lineTo(x,y);
+  j=0;
+ f=fracs[j];
+  y=(1-f)*c2.X(0)+f*c1.X(0);
+  x=(1-f)*c2.Y(0)+f*c1.Y(0);
+  ctx.moveTo(x,y);
+  for (let i=1; i<Z; i+=1) {
+    j=(fracFactor*i)%Z;
+    if (j<Z/2) f=fracs[j];
+    else f=fracs[Z-1-j];
+    ctx.lineTo((1-f)*c2.Y(i)+f*c1.Y(i),(1-f)*c2.X(i)+f*c1.X(i));
   }
   ctx.closePath();
-ctx.lineWidth=2;
-ctx.strokeStyle="silver";
+  ctx.lineWidth=4;
+  ctx.strokeStyle="blue";
   ctx.stroke();
 */
 
 //  ctx.fill("evenodd");
 }
 
-var transit=()=>{
+const transit=()=>{
   ps++;
-  if (state==C_SL) {
-if (Math.random()<0.5) {
-    state=CS_CSL;
+  if (state%2==1) {
+    //state=[CS_CSL,CCS_CSSL][getRandomInt(0,2)];
+    state=[C_SL,CS_CSL,CS_CCL,CCS_CSSL][getRandomInt(0,4)];
     curves[ps%2].setPoints();
-    state=CS_CSR;
-} else {
-    state=CCS_CSSL;
-    curves[ps%2].setPoints();
-    state=CCS_CSSR;
-}
+    state--;
     ps++;
-  } else if (state==CS_CSL) {
-    state=CCS_CSSL;
-    curves[ps%2].setPoints();
-    state=CCS_CSSR;
-    ps++;
-  } else if (state==CCS_CSSL) {
-if (Math.random()<0.5) {
-    state=C_SL;
-    curves[ps%2].setPoints();
-    state=C_SR;
-} else {
-    state=CS_CSL;
-    curves[ps%2].setPoints();
-    state=CS_CSR;
-}
-    ps++;
-  } else if (state==CS_CSR) {
-    if (Math.random()<0.3) {
-    //if (Math.random()<-.2) {
-      state=CS_CSL;
-    }
-  } else if (state==CCS_CSSR) {
-    if (Math.random()<0.3) {
-      state=CCS_CSSL;
-    }
-  } else {  // C_SR
-    if (Math.random()<0.3) {
-    //if (Math.random()<-.2) {
-      state=C_SL;
+  } else {
+    //if (Math.random()<0.3) {
+    if (Math.random()<0.5) {
+      state++;
     }
   }
   curves[ps%2].setPoints();
- 
-
-/*
-  if (ps%2==0) state=C_SL;
-  else state=C_SR;
-  if (ps%2==0) state=CS_CSL;
-  else state=CS_CSR;
-*/
-//  curves[ps%2].setPoints();
-}
-
-var transitO=()=>{
-  for (let i in curve1.pts) {
-    curve2.pts[i]={x:curve1.pts[i].x,y:curve1.pts[i].y};
-  }
-  ps++;
-  curve1.setPoints();
 }
 
 var step=0;
@@ -470,7 +535,7 @@ var animate=(ts)=>{
       return;
     }
     //pauseTS=performance.now()+600;
-    pauseTS=performance.now()+6;
+    pauseTS=performance.now()+6;	// randomize?, no pause on line
     requestAnimationFrame(pause);
   }
 }
