@@ -35,44 +35,19 @@ var getRandomInt=(min,max,low)=>{
 }
 
 var ps=0;
-const C_SR=0, C_SL=1, CS_CSR=2, CS_CSL=3, CS_CCR=4, CS_CCL=5, CCS_CSSR=6, CCS_CSSL=7;
-var state=6;
+const 
+C_SR=0, C_SL=1, 
+CS_CSR=2, CS_CSL=3, 
+CS_CCR=4, CS_CCL=5, 
+CCS_CSSR=6, CCS_CSSL=7,
+CCS_CCSR=8, CCS_CCSL=9,
+CCS_CCCR=10, CCS_CCCL=11,
+CCCS_CSSSR=12, CCCS_CSSSL=13;
+var state=0;
 
 var Curve=function() {
+  this.pts=[];
   this.cs=1;	// curve scale
-  this.sp=[setPointsC_S,setPointsCS_CS,setPointsCS_CC,setPointsCCS_CSS];
-  this.setPoints=()=>{
-    if (state%2==0) {
-      this.sp[state/2].call();
-    } else {
-      this.sp[(state-1)/2].call(null,true);
-    }
-  }
-/*
-if (state<6) {	// temporary
-} else {
-    if (state==CCS_CSSR) {
-      setPointsCCS_CSS();
-    } else if (state==CS_CSR) {
-      setPointsCS_CS();
-    } else if (state==C_SR) {
-      setPointsC_S();
-    } else if (state==CS_CCR) {
-      setPointsCS_CC();
-    } else if (state==C_SL) {
-setPointsC_S.call(null,true);
-//      setPointsC_S(true);
-    } else if (state==CS_CCL) {
-      setPointsCS_CC(true);
-    } else if (state==CS_CSL) {
-      setPointsCS_CS(true);
-    } else if (state==CCS_CSSL) {
-      setPointsCCS_CSS(true);
-    } else {
-      debugger;
-    }
-}
-*/
   this.X=(idx)=>{ return scale*this.cs*this.pts[idx].x; }
   this.Y=(idx)=>{ return scale*this.cs*this.pts[idx].y; }
 }
@@ -81,11 +56,11 @@ const setPointsC_S2=(line)=>{	// inefficient
   let mux={}, muy={};
   let c=getRandomInt(1,10);
   for (let i=0; i<c; i++) {
-    let m=2*getRandomInt(-3,3)+1;
+    let m=2*getRandomInt(-4,4)+1;
     if (mux.hasOwnProperty(m)) mux[m]++;
     else mux[m]=1;
     if (ps%3==0) {  	// variety
-      m=2*getRandomInt(-3,3)+1;
+      m=2*getRandomInt(-4,4)+1;
       if (muy.hasOwnProperty(m)) muy[m]++;
       else muy[m]=1;
     } else {		// beauty
@@ -111,14 +86,18 @@ const setPointsC_S2=(line)=>{	// inefficient
   }
 }
 
+const randomOdd=()=>{ return [-5,-3,-1,1,3,5][getRandomInt(0,6)]; }
+const randomEven=()=>{ return [-4,-2,0,2,4][getRandomInt(0,5)]; }
+const randomEvenNZ=()=>{ return [-6,-4,-2,2,4,6][getRandomInt(0,6)]; }
+
 const setPointsC_S=(line)=>{
   let mx=[];
   let my=[];
   let c=getRandomInt(1,10);
   for (let i=0; i<c; i++) {
-    mx[i]=2*getRandomInt(-3,3)+1;
+    mx[i]=randomOdd();
     if (ps%3==0) {  	// variety
-      my[i]=2*getRandomInt(-3,3)+1;
+      my[i]=randomOdd();
     } else {		// beauty
       my[i]=mx[i];
     }
@@ -141,6 +120,23 @@ const setPointsC_S=(line)=>{
   }
 }
 
+const generatePoints2=(xf,yf,c)=>{
+  let pointSet=ps%2;
+  curves[pointSet].pts=[];
+  curves[pointSet].cs=1;
+  let maxs=0;
+  for (let i=0, t=0; i<Z; i+=1, t=i*I) {
+    let x=0;
+    for (let i=0; i<c; i++) x+=xf(i,t);
+    maxs=Math.max(maxs,x);
+    let y=0;
+    for (let i=0; i<c; i++) y+=yf(i,t);
+    maxs=Math.max(maxs,y);
+    curves[pointSet].pts.push({"x":x,"y":y});
+  }
+  curves[pointSet].cs=1/(maxs<0.01?1:maxs);
+}
+
 const generatePoints=(xf,yf,c)=>{
   let pointSet=ps%2;
   curves[pointSet].pts=[];
@@ -161,16 +157,23 @@ const setPointsCS_CS=(line)=>{
   let my=[], my2=[];
   let c=line?1:getRandomInt(1,8);
   if (line) {
-    my[0]=0;
-    my2[0]=0;
-    mx[0]=2*getRandomInt(-3,4);
-    if (mx[0]%2==0) mx2[0]=2*getRandomInt(-2,2)+1;
-    else mx2[0]=2*getRandomInt(-2,3);
-//      mx2[0]=mx[0]+2*getRandomInt(-2,2)+1;
-  } else {
+    mx[0]=randomOdd();
+    mx2[0]=0;
+    my[0]=getRandomInt(-4,5);
+    if (my[0]%2==0) my2[0]=randomEvenNZ();
+    else my2[0]=randomOdd();
+  } else {	// 2 types: mx+mx2 is even, or odd
     for (let i=0; i<c; i++) {
+      mx[i]=getRandomInt(-4,5);
+      if (mx[i]%2==0) mx2[i]=randomOdd();
+      else mx2[i]=randomEvenNZ(); // test for sum(mx2)==0 at end of loop?
+      if (mx2[i]==0) mx2[i]=2;
+      my[i]=getRandomInt(-4,5);
+      if (my[i]%2==0) my2[i]=randomEven();
+      else my2[i]=randomOdd(); // test for 0
+/*
       mx[i]=getRandomInt(-3,4);
-      if (mx[i]%2==0) mx2[i]=2*getRandomInt(-2,2)+1;
+      if (mx[i]%2==0) mx2[i]=randomOdd();
       else mx2[i]=2*getRandomInt(-2,3); // test for 0 in if
 //      mx2[i]=mx[i]+2*getRandomInt(-2,2)+1;  // test even odd, rather than add
       if (mx2[i]==0) mx2[i]=2;
@@ -180,45 +183,63 @@ const setPointsCS_CS=(line)=>{
       else my2[i]=2*getRandomInt(-2,2)+1; // test for 0 in if
 //      my2[i]=my[i]+2*getRandomInt(-2,3);  // test even odd, rather than add
       if (my2[i]==0) my2[i]=2;
+*/
     }
   }
+  const getX=(i,t)=>{ return Math.cos(mx[i]*t)*Math.sin(mx2[i]*t); }
+  const getY=(i,t)=>{ return Math.cos(my[i]*t)*Math.sin(my2[i]*t); }
+/*
   var getXM=(t)=>{ 
     let v=0;
-    for (let i=0; i<c; i++) v+=Math.cos(mx[i]*t)*Math.sin(mx2[i]*t);
+    //for (let i=0; i<c; i++) v+=Math.cos(mx[i]*t)*Math.sin(mx2[i]*t);
+    for (let i=0; i<c; i++) v+=gx(i,t);
     return v;
   }
   var getYM=(t)=>{ 
     let v=0;
-    for (let i=0; i<c; i++) v+=Math.cos(my[i]*t)*Math.sin(my2[i]*t);
+    //for (let i=0; i<c; i++) v+=Math.cos(my[i]*t)*Math.sin(my2[i]*t);
+    for (let i=0; i<c; i++) v+=gy(i,t);
     return v;
   }
-  generatePoints(getXM,getYM,c);
+*/
+  generatePoints2(getX,getY,c);
+//  generatePoints(getXM,getYM,c);
+//console.log(mx[0]+" "+mx2[0]);
+//console.log(my[0]+" "+my2[0]);
 }
 
 const setPointsCS_CC=(line)=>{
   let mx=[], mx2=[];
   let my=[], my2=[];
-  let c=line?1:getRandomInt(1,8);
+//  let c=line?1:getRandomInt(1,8);
+let c=1;
   if (line) {
     mx[0]=0;
     mx2[0]=0;
     my2[0]=0;
     my[0]=2*getRandomInt(-2,3);
-    if (my[0]%2==0) my2[0]=2*getRandomInt(-2,2)+1;
-    else my2[0]=2*getRandomInt(-2,3);
+    if (my[0]%2==0) my2[0]=randomOdd();
+    else my2[0]=randomEven();
   } else {
     for (let i=0; i<c; i++) {
+/*
+      mx[i]=getRandomInt(-1,2);
+      mx2[i]=getRandomInt(-1,2);
+      if (mx2[i]==0) mx2[i]=2;
+      my[i]=getRandomInt(-1,2);
+      my2[i]=getRandomInt(-1,2);
+*/
+
       mx[i]=getRandomInt(-3,4);
-      if (mx[i]%2==0) mx2[i]=2*getRandomInt(-2,2)+1;
-      else mx2[i]=2*getRandomInt(-2,3);
-//      mx2[i]=mx[i]+2*getRandomInt(-2,3);
+      if (mx[i]%2==0) mx2[i]=randomOdd();
+      else mx2[i]=randomEven();
       if (mx2[i]==0) mx2[i]=2;
       my[i]=getRandomInt(-3,4);
       if (my[i]%2==0) my2[i]=2*getRandomInt(-2,2)+1;
       else my2[i]=2*getRandomInt(-2,3);
-    //my2[i]=my[i]+2*getRandomInt(-2,2)+1;
     }
   }
+/*
   const getX=(t)=>{ 
     let v=0;
     for (let i=0; i<c; i++) v+=Math.cos(mx[i]*t)*Math.sin(mx2[i]*t);
@@ -229,7 +250,10 @@ const setPointsCS_CC=(line)=>{
     for (let i=0; i<c; i++) v+=Math.cos(my[i]*t)*Math.cos(my2[i]*t);
     return v;
   }
-  generatePoints(getX,getY,c);
+*/
+  const getX=(i,t)=>{ return Math.cos(mx[i]*t)*Math.sin(mx2[i]*t); }
+  const getY=(i,t)=>{ return Math.cos(my[i]*t)*Math.cos(my2[i]*t); }
+  generatePoints2(getX,getY,c);
 }
 
 const setPointsCCS_CSS=(line)=>{
@@ -237,22 +261,13 @@ const setPointsCCS_CSS=(line)=>{
   let my=[], my2=[], my3=[];
   let c=line?1:getRandomInt(1,5);
   if (line) {
-    mx[0]=0;  // untested
+    mx[0]=0;
     mx2[0]=0;
     mx3[0]=0;
-    my[0]=2*getRandomInt(-2,3);
-    my2[0]=2*getRandomInt(-3,4);
+    my[0]=randomEven();
+    my2[0]=randomEven();
     if (my2[0]==0) my2[0]=2;
-    my3[0]=2*getRandomInt(-3,3)+1;
-/*
-    my[0]=0;
-    my2[0]=0;
-    my3[0]=0;
-    mx[0]=2*getRandomInt(-2,3);
-    //mx[0]=0;
-    mx2[0]=2*getRandomInt(-3,4);
-    mx3[0]=2*getRandomInt(-3,3)+1;
-*/
+    my3[0]=randomOdd();
   } else {
     for (let i=0; i<c; i++) {
       mx[i]=getRandomInt(-3,4);
@@ -274,32 +289,21 @@ const setPointsCCS_CSS=(line)=>{
       }
     }
   }
-  const getXT=(t)=>{ 
+  const getX=(t)=>{ 
     let v=0;
     for (let i=0; i<c; i++) v+=Math.cos(mx[i]*t)*Math.cos(mx2[i]*t)*Math.sin(mx3[i]*t);
     return v;
   }
-  const getYT=(t)=>{ 
+  const getY=(t)=>{ 
     let v=0;
     for (let i=0; i<c; i++) v+=Math.cos(my[i]*t)*Math.sin(my2[i]*t)*Math.sin(my3[i]*t);
     return v;
   }
-  generatePoints(getXT,getYT,c);
-/*
-  let pointSet=ps%2;
-  curves[pointSet].pts=[];
-  curves[pointSet].cs=1;
-  let maxs=0;
-  for (let i=0, t=0; i<Z; i+=1, t=i*I) {
-    let x=getXT(t)/c; 
-    maxs=Math.max(maxs,x);
-    let y=getYT(t)/c;
-    maxs=Math.max(maxs,y);
-    curves[pointSet].pts.push({"x":x,"y":y});
-  }
-  curves[pointSet].cs=1/(maxs<0.01?1:maxs);
-*/
+  generatePoints(getX,getY,c);
 }
+
+var LOGxm=0;
+var LOGym=0;
 
 const setPointsCCS_CCS=(line)=>{
   let mx=[], mx2=[], mx3=[];
@@ -309,36 +313,147 @@ const setPointsCCS_CCS=(line)=>{
     mx[0]=0;
     mx2[0]=0;
     mx3[0]=0;
-    my[0]=2*getRandomInt(-2,3);
-    my2[0]=2*getRandomInt(-3,4);
-    if (my2[0]==0) my2[0]=2;
-    my3[0]=2*getRandomInt(-3,3)+1;
+    my[0]=getRandomInt(-3,4);
+    let oa=my[0]%2;
+    my2[0]=getRandomInt(-3,4);
+    oa+=my2[0]%2;
+    if (oa%2==0) {
+      my3[0]=2*getRandomInt(-2,2)+1;
+    } else {
+      my3[0]=2*getRandomInt(-2,3);
+      if (my3[0]==0) my3[0]=2;
+    }
   } else {
     for (let i=0; i<c; i++) {
       mx[i]=getRandomInt(-3,4);
+      let oa=mx[i]%2;
       mx2[i]=getRandomInt(-3,4);
-      if ((mx2[i]-mx[i])%2==0) {
-	mx3[i]=2*getRandomInt(-3,3)+1;
+      oa+=mx2[i]%2;
+      if (oa%2==0) {
+        mx3[i]=2*getRandomInt(-2,3);
+        if (mx3[i]==0) mx3[i]=2;
       } else {
-	mx3[i]=2*getRandomInt(-2,3);
-	if (mx3[i]==0) mx3[i]=2;  // less needed as c increases, test it
+        mx3[i]=2*getRandomInt(-2,2)+1;
       }
       my[i]=getRandomInt(-3,4);
+      oa=my[i]%2;
       my2[i]=getRandomInt(-3,4);
-      if (my2[i]==0) my2[i]=1;
-      if ((my2[i]-my[i])%2==0) {
-	my3[i]=2*getRandomInt(-3,3)+1;
+      oa+=my2[i]%2;
+      if (oa%2==0) {
+        my3[i]=2*getRandomInt(-2,2)+1;
       } else {
-	my3[i]=2*getRandomInt(-3,4);
-	if (my3[i]==0) my3[i]=2;  // less needed as c increases, test it
+        my3[i]=2*getRandomInt(-2,3);
+        if (my3[0]==0) my3[0]=2;
       }
     }
   }
+//console.log(mx[0]+" "+mx2[0]+" "+mx3[0]);
+//console.log(my[0]+" "+my2[0]+" "+my3[0]);
+  const getX=(t)=>{ 
+    let v=0;
+    for (let i=0; i<c; i++) v+=Math.cos(mx[i]*t)*Math.cos(mx2[i]*t)*Math.sin(mx3[i]*t);
+    return v;
+  }
+  const getY=(t)=>{ 
+    let v=0;
+    for (let i=0; i<c; i++) v+=Math.cos(my[i]*t)*Math.cos(my2[i]*t)*Math.sin(my3[i]*t);
+    return v;
+  }
+  generatePoints(getX,getY,c);
 }
 
-var curve1=new Curve();
-var curve2=new Curve();
-var curves=[curve1,curve2];
+const setPointsCCS_CCC=(line)=>{
+  let mx=[], mx2=[], mx3=[];
+  let my=[], my2=[], my3=[];
+  let c=line?1:getRandomInt(1,5);
+  if (line) {
+    mx[0]=0;
+    mx2[0]=0;
+    mx3[0]=0;
+    my[0]=2*getRandomInt(-2,2)+1;
+    my2[0]=2*getRandomInt(-2,2)+1;
+    my3[0]=2*getRandomInt(-2,2)+1;
+  } else {
+    // 3 or 1 even x multipliers, 0 or 2 even y multipliers
+    for (let i=0; i<c; i++) {
+      mx[i]=getRandomInt(-3,4);
+      mx2[i]=getRandomInt(-3,4);
+      let oa=mx[i]%2+mx2[i]%2;
+      if (oa%2==0) {
+        mx3[i]=2*getRandomInt(-2,3);
+        if (mx3[i]==0) mx3[i]=2;
+      } else {
+        mx3[i]=2*getRandomInt(-2,2)+1;
+      }
+      my[i]=getRandomInt(-3,4);
+      my2[i]=getRandomInt(-3,4);
+      oa=my[i]%2+my2[i]%2;
+      if (oa%2==0) {
+        my3[i]=2*getRandomInt(-2,2)+1;
+      } else {
+        my3[i]=2*getRandomInt(-2,2);
+      }
+    }
+  }
+  const getX=(t)=>{ 
+    let v=0;
+    for (let i=0; i<c; i++) v+=Math.cos(mx[i]*t)*Math.cos(mx2[i]*t)*Math.sin(mx3[i]*t);
+    return v;
+  }
+  const getY=(t)=>{ 
+    let v=0;
+    for (let i=0; i<c; i++) v+=Math.cos(my[i]*t)*Math.cos(my2[i]*t)*Math.cos(my3[i]*t);
+    return v;
+  }
+  generatePoints(getX,getY,c);
+//console.log(mx[0]+" "+mx2[0]+" "+mx3[0]);
+//console.log(my[0]+" "+my2[0]+" "+my3[0]);
+}
+
+const setPointsCCCS_CSSS=(line)=>{
+  let mx=[], mx2=[], mx3=[], mx4=[];
+  let my=[], my2=[], my3=[], my4=[];
+  //let c=line?1:getRandomInt(1,5);
+  let c=1
+  if (line) {
+    mx[0]=0, mx2[0]=0, mx3[0]=0, mx4[0]=0;
+    my[0]=getRandomInt(-1,2);
+    my2[0]=getRandomInt(-1,2);
+    if (my2[0]==0) my2[0]=2;
+    my3[0]=getRandomInt(-1,2);
+    if (my3[0]==0) my3[0]=2;
+    my4[0]=getRandomInt(-1,2);
+    if (my4[0]==0) my4[0]=2;
+  } else {
+    for (let i=0; i<c; i++) {
+      mx[i]=getRandomInt(-1,2);
+      mx2[i]=getRandomInt(-1,2);
+      mx3[i]=getRandomInt(-1,2);
+      mx4[i]=getRandomInt(-1,2);
+      if (mx4[i]==0) mx4[i]=2;
+      my[i]=getRandomInt(-1,2);
+      my2[i]=getRandomInt(-1,2);
+      if (my2[i]==0) my2[i]=2;
+      my3[i]=getRandomInt(-1,2);
+      if (my3[i]==0) my3[i]=2;
+      my4[i]=getRandomInt(-1,2);
+      if (my4[i]==0) my4[i]=2;
+    }
+  }
+  const gx=(i,t)=>{ 
+    return Math.cos(mx[i]*t)*Math.cos(mx2[i]*t)*Math.cos(mx3[i]*t)*Math.sin(mx4[i]*t);
+  }
+  const gy=(i,t)=>{ 
+    return Math.cos(my[i]*t)*Math.sin(my2[i]*t)*Math.sin(my3[i]*t)*Math.sin(my4[i]*t);
+  }
+  generatePoints2(gx,gy,c);
+console.log(mx[0]+" "+mx2[0]+" "+mx3[0]+" "+mx4[0]);
+console.log(my[0]+" "+my2[0]+" "+my3[0]+" "+my4[0]);
+}
+
+//var curve1=new Curve();
+//var curve2=new Curve();
+var curves=[new Curve(),new Curve()];
 
 var ctx=canvas.getContext("2d");
 ctx.translate(CSIZE,CSIZE);
@@ -401,8 +516,8 @@ var draw=()=>{
     ctx.lineTo((1-f)*c2.Y(i)+f*c1.Y(i),(1-f)*c2.X(i)+f*c1.X(i));
   }
   ctx.closePath();
-//ctx.lineWidth=10;
-//ctx.strokeStyle="red";
+//ctx.lineWidth=12;
+//ctx.strokeStyle="#888";
   ctx.stroke();
 
 /*
@@ -435,29 +550,36 @@ var draw=()=>{
     ctx.lineTo((1-f)*c2.Y(i)+f*c1.Y(i),(1-f)*c2.X(i)+f*c1.X(i));
   }
   ctx.closePath();
-  ctx.lineWidth=4;
-  ctx.strokeStyle="blue";
+  ctx.lineWidth=3;
+  ctx.strokeStyle="hsl(0,80%,50%)";
   ctx.stroke();
 */
 
 //  ctx.fill("evenodd");
 }
 
+const setPoints=()=>{
+  const sp=[setPointsC_S,setPointsCS_CS,setPointsCS_CC,setPointsCCS_CSS,setPointsCCS_CCS,setPointsCCS_CCC,setPointsCCCS_CSSS];
+  if (state%2==0) sp[state/2].call();
+  else sp[(state-1)/2].call(null,true);
+}
+
 const transit=()=>{
   ps++;
   if (state%2==1) {
     //state=[CS_CSL,CCS_CSSL][getRandomInt(0,2)];
-    state=[C_SL,CS_CSL,CS_CCL,CCS_CSSL][getRandomInt(0,4)];
-    curves[ps%2].setPoints();
+    state=[C_SL,CS_CSL,CS_CCL,CCS_CSSL,CCS_CCSL,CCS_CCCL,CCCS_CSSSL][getRandomInt(0,6)];
+//state=CS_CSL;
+    setPoints();
     state--;
     ps++;
   } else {
-    //if (Math.random()<0.3) {
-    if (Math.random()<0.5) {
+    if (Math.random()<0.3) {
+    //if (Math.random()<-0.05) {
       state++;
     }
   }
-  curves[ps%2].setPoints();
+  setPoints();
 }
 
 var step=0;
@@ -473,6 +595,7 @@ const start=()=>{
 
 var pauseTS=1400;
 var pause=(ts)=>{
+  //if (true) {
   if (step==Infinity) {
     draw(true);
     return;
@@ -540,9 +663,10 @@ var animate=(ts)=>{
   }
 }
 
-curve1.setPoints();
-curve2.setPoints();
+//setPoints();
 transit();
+transit();
+//setPoints();
 
 onresize();
 draw();
