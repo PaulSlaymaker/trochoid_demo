@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 const TP=Math.PI*2;
-const DCOUNT=180;
+const DCOUNT=100;
 
 var D=0;
 var XD=0;
@@ -12,6 +12,10 @@ onresize=function() {
   D=2*Math.min(XD,YD)-40; 
   cd1.setDimensions();
   cd2.setDimensions();
+  for (let i=0; i<DCOUNT; i++) {
+    let rad=D/2.3*Math.pow(Math.random(),0.3);
+    divs[i].rad=rad;
+  }
 }
 
 const getRandomInt=(min,max,low)=>{
@@ -34,23 +38,21 @@ var HS=function(rd,color) {
   this.el.style.background=color;
   body.append(this.el);
   this.setDimensions=()=>{
-  this.el.style.width=2*XD-8+"px";
-  this.el.style.height=window.innerHeight-8+"px";
-  let polygon="polygon(";
-  for (let i=0; i<100; i++) {
-    let z=i*TP/100;
-    polygon+=XD+16+D*rd*getX(z)+"px "+(YD+D*rd*1.1*getY(z))+"px";
-    if (i<99) polygon+=",";
-  }
-  polygon+=")";
-  this.el.style.clipPath=polygon;
+    this.el.style.width=2*XD-8+"px";
+    this.el.style.height=window.innerHeight-8+"px";
+    let polygon="polygon(";
+    for (let i=0; i<100; i++) {
+      let z=i*TP/100;
+      polygon+=XD+16+D*rd*getX(z)+"px "+(YD+D*rd*1.1*getY(z))+"px";
+      if (i<99) polygon+=",";
+    }
+    polygon+=")";
+    this.el.style.clipPath=polygon;
   }
 }
 
 const cd1=new HS(0.53,"#CC1111");
 const cd2=new HS(0.50,"black");
-
-onresize();
 
 const divs=(()=>{
   let d=[];
@@ -62,13 +64,14 @@ const divs=(()=>{
     let rot=TP/DCOUNT*i;
     //let rad=D/2.3*(0.2+0.8*Math.pow(Math.random(),0.2));
     let rad=D/2.3*Math.pow(Math.random(),0.3);
-    //d.push({"el":co,"time":ti,"frac":0,"ce":ce,"rot":rot});
     let dir=(0.003+0.005*Math.random())*[-1,1][i%2];
     let ce=Math.random()<0.03?1:0;
     d.push({"el":co,"rad":rad,"rot":rot,"dir":dir,"ce":ce,"red":red});
   }
   return d;
 })();
+
+onresize();
 
 const setDivs=()=>{
   for (let i=0; i<DCOUNT; i++) {
@@ -83,7 +86,7 @@ const setDivs=()=>{
     divs[i].el.style.left=tx+"px";
 //let f=(divs[i].ce)?divs[i].frac:1-divs[i].frac;
 //divs[i].el.style.fontSize=20+divs[i].rad*2.3/D*50*(Math.abs(x)+Math.abs(y));
-    divs[i].el.style.fontSize=5+rad*2.3/D*60*(Math.abs(x)+Math.abs(y));
+    divs[i].el.style.fontSize=5+rad*2.3/D*40*(Math.abs(x)+Math.abs(y))+"px";
     let rf=rad/(D/2.3)*40+20;
     divs[i].el.style.color="hsl("+divs[i].red+",90%,"+rf+"%)";
   }
