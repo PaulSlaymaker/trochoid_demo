@@ -305,7 +305,7 @@ const resetTimes=()=>{
 }
 
 var stopped=false;
-const start=()=>{
+var start=()=>{
   if (stopped) { 
     stopped=false;
     resetTimes();

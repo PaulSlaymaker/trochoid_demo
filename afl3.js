@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 
 const TP=2*Math.PI;
 const HR2=Math.pow(2,0.5)/2;
@@ -32,16 +33,15 @@ const getRandomInt=(min,max,low)=>{
   }
 }
 
-var C=70;
-var W=70;   // even
+var C=100;
+var W=100;   // even
 
 var q=[];
 for (let w=0; w<=W; w++) q[w]=new Array(C+1);
 
 ctx.strokeStyle="hsl("+getRandomInt(0,360)+",70%,60%)";
-//ctx.strokeStyle="silver";
 var hues=[];
-const COLCOUNT=50;
+const COLCOUNT=100;
 for (let i=0; i<COLCOUNT; i++) {
   let bh=getRandomInt(0,360);
   //bh=(bh+getRandomInt(60,120))%360;
@@ -51,7 +51,11 @@ for (let i=0; i<COLCOUNT; i++) {
   let lum=50+20*Math.random();
   //hues.push("hsl("+bh+",70%,60%)");  // fill
   //hues.push("hsl("+bh+","+sat+"%,"+lum+"%)");  // fill
-  hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.9)");  // fill
+if (i%2==0) {
+  hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.7)");
+} else {
+  hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.9)");
+}
   //hues.push(bh);  // fill
 }
 
@@ -59,7 +63,8 @@ var Curve=function() {
   this.type=0;
   this.mx=[];
   this.my=[];
-  this.p=[];
+  this.px=0;
+  this.py=0;
   this.fx=[];
   this.fy=[];
   this.cx=1;
@@ -75,6 +80,13 @@ var Curve=function() {
     }
     this.sf=1/(maxp<0.01?1:maxp);
   }
+  this.randomizePoints=()=>{
+    let rx=-1+2*Math.random();
+    this.px=[()=>{ return rx; },Math.sin][getRandomInt(0,2)];
+    let ry=-1+2*Math.random();
+    this.py=[()=>{ return ry; },Math.cos][getRandomInt(0,2)];
+//console.log(this.px.call(null,0)+" "+this.py.call(null,0));
+  }
   this.randomizeFactors=()=>{
     this.mx=[];
     this.my=[];
@@ -86,9 +98,6 @@ var Curve=function() {
     for (let i=0; i<this.cx; i++) {
       this.fx[i]=[-1,1][getRandomInt(0,2)];
       this.mx[i]=multipliers[getRandomInt(0,8,true)];
- //     sc[this.mx[i]]+=this.fx[i];
-//if (Math.random()<0.1) this.p[i]=true;
-//else this.p[i]=false;
     }
     for (let i=0; i<this.cy; i++) {
       this.fy[i]=[-1,1][getRandomInt(0,2)];
@@ -98,38 +107,37 @@ var Curve=function() {
     this.setSizeFactor();
   }
   this.randomize=()=>{
-    this.type=[0,0,0,2,2,1,3,4,5][getRandomInt(0,9)];
-    //this.type=[0,5][getRandomInt(0,2)];
-    //this.type=4;
-    if (this.type<2) this.randomizeFactors();;
+    this.type=[0,0,0,2,2,1,3,4,5,6][getRandomInt(0,10)];
+    //this.type=[0,6][getRandomInt(0,2)];
+//console.log(this.type);
+    //this.type=6;
+    if (this.type<2) this.randomizeFactors();
+    else if (this.type==6) this.randomizePoints();
   }
   this.getX=(t)=>{ 
+    if (this.type==6) return this.px.call(null,t);
+    if (this.type==5) return getStarX(t);
+    if (this.type==4) return getSquareX(t);
+    if (this.type==3) return Math.sin(t);
+    if (this.type==2) return getHeartX(t)*0.95;
     let v=0;
-    for (let i=0; i<this.cx; i++) {
-      //if (this.p[i]) v+=this.fx[i]*Math.cos(this.mx[i]*t);
-      if (this.type==5) return getStarX(t);
-      if (this.type==4) return getSquareX(t);
-      if (this.type==3) return Math.sin(t);
-      if (this.type==2) return getHeartX(t)*0.95;
-      if (this.type==1) v+=this.fx[i]*Math.cos(this.mx[i]*t);
-      else v+=this.fx[i]*Math.sin(this.mx[i]*t);
-    }
-    //return v/this.cx;
+    if (this.type==1) for (let i=0; i<this.cx; i++) v+=this.fx[i]*Math.cos(this.mx[i]*t);
+    else for (let i=0; i<this.cx; i++) v+=this.fx[i]*Math.sin(this.mx[i]*t);
     return v*this.sf;
   }
   this.getY=(t)=>{ 
+    if (this.type==6) return this.py.call(null,t);
+    if (this.type==5) return getStarY(t);
+    if (this.type==4) return getSquareY(t);
+    if (this.type==3) return Math.cos(t);
+    if (this.type==2) return getHeartY(t)*0.9;
     let v=0;
-    for (let i=0; i<this.cy; i++) {
-      if (this.type==5) return getStarY(t);
-      if (this.type==4) return getSquareY(t);
-      if (this.type==3) return Math.cos(t);
-      if (this.type==2) return getHeartY(t)*0.9;
-      if (this.type==1) v+=this.fy[i]*Math.sin(this.my[i]*t);
-      else v+=this.fy[i]*Math.cos(this.my[i]*t);
-    }
+    if (this.type==1) for (let i=0; i<this.cy; i++) v+=this.fy[i]*Math.sin(this.my[i]*t);
+    else for (let i=0; i<this.cy; i++) v+=this.fy[i]*Math.cos(this.my[i]*t);
     return v*this.sf;
   }
-  this.randomize();
+  this.randomizeFactors();
+  this.randomizePoints();
 }
 var curveSet1=0;
 var curveSet1b=1;
@@ -137,57 +145,6 @@ var curveSet2=0;
 var curveSet2b=1;
 var curve1=[new Curve(), new Curve()];
 var curve2=[new Curve(), new Curve()];
-
-/*
-const getSquareX2=(tparm)=>{ 
-  let t=tparm;
-  if (t%TP<TP/8) {
-    return 1;
-  } else if (t%TP<TP/4) {
-    return -Math.cos(2*t);
-  } else if (t%TP<3*TP/4) {
-    return -1;
-  } else {
-    return Math.cos(2*t);
-  }
-}
-const getSquareY2=(tparm)=>{ 
-  let t=tparm;
-  if (t%TP<TP/4) {
-    return Math.cos(2*t);
-  } else if (t%TP<TP/2) {
-    return -1;
-  } else if (t%TP<3*TP/4) {
-    return -Math.cos(2*t);
-  } else {
-    return 1;
-  }
-}
-const getSquareXX=(tparm)=>{ 
-  let t=tparm;
-  if (t%TP<TP/4) {
-    return 1;
-  } else if (t%TP<TP/2) {
-    return -Math.cos(2*t);
-  } else if (t%TP<3*TP/4) {
-    return -1;
-  } else {
-    return Math.cos(2*t);
-  }
-}
-const getSquareYY=(tparm)=>{ 
-  let t=tparm;
-  if (t%TP<TP/4) {
-    return Math.cos(2*t);
-  } else if (t%TP<TP/2) {
-    return -1;
-  } else if (t%TP<3*TP/4) {
-    return -Math.cos(2*t);
-  } else {
-    return 1;
-  }
-}
-*/
 
 const getStarX=(t)=>{ 
   return Math.pow(Math.sin(t),5); 
@@ -228,8 +185,7 @@ var getCurve2Y=(t)=>{
 var getPointX=(t,u)=>{ return (1-u)*getCurve1X(t)+u*getCurve2X(t); }
 var getPointY=(t,u)=>{ return (1-u)*getCurve1Y(t)+u*getCurve2Y(t); }
 
-var ZP=80;	// randomize?
-//var perimeter=[ZP,CSIZE-ZP];
+var ZP=70;	// randomize?
 var perimeter=[ZP,CSIZE];
 
 var setPoints=()=>{
@@ -280,12 +236,11 @@ var draw=()=>{
       if (frame) {
 	ctx.stroke();
       } else {
-	ctx.fillStyle=hues[(w)%COLCOUNT];
+	//ctx.fillStyle=hues[(w)%COLCOUNT];
+	ctx.fillStyle=hues[w];
 	ctx.fill();
       }
     }
-  }
-  for (let c=0; c<C; c++) {
   }
 }
 
@@ -314,6 +269,7 @@ var animate=(ts)=>{
       pFrac=0;
       pTime=0;
       SH=0;
+      if (EM) stopped=true;
     }
   }
   if (SH>1) {
@@ -336,6 +292,7 @@ var animate=(ts)=>{
       }
       cTime=0;
       SH=0;
+      if (EM) stopped=true;
     }
   }
   setPoints();
