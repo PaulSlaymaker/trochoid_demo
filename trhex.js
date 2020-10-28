@@ -40,21 +40,22 @@ var W=100;   // 4-multiple
 var q=[];
 for (let w=0; w<=W; w++) q[w]=new Array(C+1);
 
-//ctx.strokeStyle="hsl("+getRandomInt(0,360)+",70%,60%)";
-var hues=[];
-const COLCOUNT=W/2;   // need only W/2 for now
-for (let i=0; i<COLCOUNT; i++) {
+const randomColor=()=>{
+/*
   let bh=getRandomInt(0,360);
   //bh=(bh+getRandomInt(60,120))%360;
   //bh=(bh++)%360;
   //bh=getRandomInt(-50,50);
-  let sat=50+20*Math.random();
-  let lum=50+20*Math.random();
-  //hues.push("hsl("+bh+",70%,60%)");  // fill
-  //hues.push("hsl("+bh+","+sat+"%,"+lum+"%)");  // fill
-if (i%19==0) hues.push("transparent");
-else hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.85)");
-  //hues.push(bh);  // fill
+*/
+  return "hsla("+getRandomInt(0,360)+","
+                +(50+20*Math.random())+"%,"
+                +(50+20*Math.random())+"%,0.85)";
+}
+var hues=[];
+const COLCOUNT=W/2;   // need only W/2 for now
+for (let i=0; i<COLCOUNT; i++) {
+  if (i%17==0) hues.push("transparent");
+  else hues.push(randomColor());
 }
 
 var Curve=function() {
@@ -86,10 +87,13 @@ var Curve=function() {
       else if (z<7*TP/8) return -SS*Math.cos(z);
       else               return -1;
     }
+    let gr=1; let gdx=1; let gdy=-1;
+/*
     let gr=[0,Math.random(),1][getRandomInt(0,3)];
     let inv=getRandomInt(0,2);
     let gdx=[1,-1][inv];
     let gdy=[-1,1][inv];
+*/
     this.getX=(z)=>{ return gr*fx(z)+gdx*(1-gr)*fy(z); }
     this.getY=(z)=>{ return gr*fy(z)+gdy*(1-gr)*fx(z); }
   }
@@ -121,12 +125,41 @@ var Curve=function() {
     //let ry1=[1,Math.random()][getRandomInt(0,2)];
     let gr=[0,Math.random(),1][getRandomInt(0,3)];
     let gd=[1,-1][getRandomInt(0,2)];
-    //this.px=(t)=>{ return gr*(rx1+(1-rx1)*Math.sin(t))-(1-gr)*(rx1+(1-rx1)*Math.cos(t)); }
-    //this.px=(t)=>{ return gr*(rx1*Math.sin(t))-(1-gr)*(rx1)*Math.cos(t); }
     this.getX=(z)=>{ return gr*Math.sin(z)+gd*(1-gr)*Math.cos(z); }
     this.getY=(z)=>{ return -gr*ry1*Math.cos(z)+ry1*gd*(1-gr)*Math.sin(z); }
   }
+
   this.randomizeFactors=()=>{
+    let gx=0.8+0.2*Math.random();
+    let gy=0.8+0.2*Math.random();
+    let inv=getRandomInt(0,2);
+    let gdx=[1,-1][inv];
+    let gdy=-gdx;
+    let xf=[3,5,7][getRandomInt(0,3,true)];
+    let yf=[3,5,7][getRandomInt(0,3,true)];
+    let procx=(z)=>{ return gx*Math.sin(z)+gdx*(1-gx)*Math.sin(xf*z); }
+    let procy=(z)=>{ return -gy*(Math.cos(z)+gdy*(1-gy)*Math.cos(yf*z)); }
+    //let gx2=0.7+0.3*Math.random();
+    //let inv2=getRandomInt(0,2);
+    let gx2=getRandomInt(0,2);
+    let inv3=getRandomInt(0,2);
+    let gdx2=[1,-1][inv3];
+    let procx2=(z)=>{ return (gx2*procx(z)-gdx*(1-gx2)*procy(z)); }
+    let procy2=(z)=>{ return (gx2*procy(z)+gdx*(1-gx2)*procx(z)); }
+    let sf=(()=>{
+      let maxp=0;
+      for (let i=0; i<C*(W+1); i++) {
+	let z=TP/C*i;
+	maxp=Math.max(maxp,Math.abs(procx2(z)));
+	maxp=Math.max(maxp,Math.abs(procy2(z)));
+      }
+      return 1/(maxp<0.01?1:maxp);
+    })();
+    this.getX=(z)=>{ return sf*procx2(z); }
+    this.getY=(z)=>{ return sf*procy2(z); }
+  }
+/*
+  this.randomizeFactorsO=()=>{
     let mx=[];
     let my=[];
     let fx=[];
@@ -135,14 +168,15 @@ var Curve=function() {
     let cy=1;
     cx=getRandomInt(1,8);
     cy=getRandomInt(1,8);
-    let multipliers=[-1,1,-2,2,-3,3,-4,4,-5,5];
+    //let multipliers=[-1,1,-2,2,-3,3,-4,4,-5,5];
+    let multipliers=[1,1];
     for (let i=0; i<cx; i++) {
-      fx[i]=[-1,1][getRandomInt(0,2)];
-      mx[i]=multipliers[getRandomInt(0,8,true)];
+      fx[i]=[1,1][getRandomInt(0,2)];
+      mx[i]=multipliers[getRandomInt(0,2,true)];
     }
     for (let i=0; i<cy; i++) {
-      fy[i]=[-1,1][getRandomInt(0,2)];
-      my[i]=multipliers[getRandomInt(0,8,true)];
+      fy[i]=[-1,-1][getRandomInt(0,2)];
+      my[i]=multipliers[getRandomInt(0,2,true)];
     }
     let procx=(z)=>{
       let v=0;
@@ -166,19 +200,19 @@ var Curve=function() {
     this.getX=(z)=>{ return sf*procx(z); }
     this.getY=(z)=>{ return sf*procy(z); }
   }
+*/
   this.randomize=()=>{
-    this.type=[0,1,1,1,2,4,5,5][getRandomInt(0,8)];
+    this.type=[0,0,0,0,0,1,1,1,1,2,4,4,5,5][getRandomInt(0,14)];
     //this.type=[0,1,1,3,4,5][getRandomInt(0,6)];
-    //this.type=[3,4,5][getRandomInt(0,3)];
+    //this.type=[0,0,4][getRandomInt(0,3)];
     if (this.type==0) this.randomizeFactors();
     else if (this.type==1) this.randomizeCircles();
     else if (this.type==2) this.setHeart();
     else if (this.type==3) this.setSimpleCircle();
     else if (this.type==4) this.setPerimeter();
     else if (this.type==5) this.randomizeStar();
-    else debugger;
+//    else debugger;
   }
-
   this.randomize();
 }
 var curveSet1=0;
@@ -270,9 +304,11 @@ var draw=()=>{
       //if (q[w][0].b && q[w+1][0].b && q[wm2][0].b && q[wm1][0].b && q[wm2][0].b) continue;
       //if (q[w][0].b && q[w+1][0].b && q[wm1][0].b) continue;
       //if (q[w][0].b && q[w+1][0].b) continue;
-      if (q[w+1][0].b) continue;
+      if (q[w+1][0].b) { 
+if (!q[w2][0].b) hues[w%COLCOUNT]=randomColor();
+continue; 
+}
       //if (q[w][0].b || q[w+1][0].b) continue;
-      //let w2=(w+2)%W;
       let w3=(w+3)%W;
       for (let c=0; c<C; c++) {
 	let cm=(w%4==0)?c:(C+c-1)%C;
@@ -346,7 +382,6 @@ var animate=(ts)=>{
       if (EM) stopped=true;
     }
   }
-
   if (SH2 || Math.random()<0.01) {
     if (!SH2) SH2=true;
     if (!cTime2) { cTime2=ts; 
@@ -362,7 +397,6 @@ var animate=(ts)=>{
       if (EM) stopped=true;
     }
   }
-
   if (SH1 || Math.random()<0.01) {
     if (!SH1) SH1=true;
     if (!cTime1) { cTime1=ts; 
