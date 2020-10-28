@@ -52,147 +52,133 @@ for (let i=0; i<COLCOUNT; i++) {
   let lum=50+20*Math.random();
   //hues.push("hsl("+bh+",70%,60%)");  // fill
   //hues.push("hsl("+bh+","+sat+"%,"+lum+"%)");  // fill
-if (i==0) hues.push("transparent");
-else 
-  hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.85)");
+if (i%19==0) hues.push("transparent");
+else hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.85)");
   //hues.push(bh);  // fill
 }
 
-/*
-const getPerimeterX=(t)=>{ 
-  if (t<TP/8)        return SS*Math.sin(t);
-  else if (t<3*TP/8) return 1;
-  else if (t<5*TP/8) return SS*Math.sin(t);
-  else if (t<7*TP/8) return -1;
-  else               return SS*Math.sin(t);
-}
-const getPerimeterY=(t)=>{ 
-  if (t<TP/8)        return -1;
-  else if (t<3*TP/8) return -SS*Math.cos(t);
-  else if (t<5*TP/8) return 1;
-  else if (t<7*TP/8) return -SS*Math.cos(t);
-  else               return -1;
-}
-*/
-
 var Curve=function() {
-  this.type=3;
-  this.mx=[];  // roulette multipliers
-  this.my=[];
-  this.px=0;	// x process function for getX
-  this.py=0;
-  this.fx=[];
-  this.fy=[];
-  this.cx=1;
-  this.cy=1;
-  this.sf=1;
-  this.setSizeFactor=()=>{
-    this.sf=1;
-    let maxp=0;
-    for (let i=0; i<C*(W+1); i++) {
-      let z=TP/C*i;
-      maxp=Math.max(maxp,Math.abs(this.getX(z)));
-      maxp=Math.max(maxp,Math.abs(this.getY(z)));
+  this.type=4;
+  this.getX=(z)=>{ /*debugger;*/ return 0; }
+  this.getY=(z)=>{ /*debugger;*/ return 0; }
+  this.setHeart=()=>{
+    this.getX=(z)=>{ return 0.95*Math.pow(Math.sin(z),3); }
+    this.getY=(z)=>{ 
+      return 0.95*(-0.8125*Math.cos(z)+0.3125*Math.cos(2*z)+0.125*Math.cos(3*z)+0.0625*Math.cos(4*z)); 
     }
-    this.sf=1/(maxp<0.01?1:maxp);
+  }
+  this.setSimpleCircle=()=>{
+    this.getX=(z)=>{ return Math.sin(z); }
+    this.getY=(z)=>{ return -Math.cos(z); }
   }
   this.setPerimeter=()=>{
-    this.px=(t)=>{
-      if (t<TP/8)        return SS*Math.sin(t);
-      else if (t<3*TP/8) return 1;
-      else if (t<5*TP/8) return SS*Math.sin(t);
-      else if (t<7*TP/8) return -1;
-      else               return SS*Math.sin(t);
+    let fx=(z)=>{
+      if (z<TP/8)        return SS*Math.sin(z);
+      else if (z<3*TP/8) return 1;
+      else if (z<5*TP/8) return SS*Math.sin(z);
+      else if (z<7*TP/8) return -1;
+      else               return SS*Math.sin(z);
     }
-    this.py=(t)=>{
-      if (t<TP/8)        return -1;
-      else if (t<3*TP/8) return -SS*Math.cos(t);
-      else if (t<5*TP/8) return 1;
-      else if (t<7*TP/8) return -SS*Math.cos(t);
+    let fy=(z)=>{
+      if (z<TP/8)        return -1;
+      else if (z<3*TP/8) return -SS*Math.cos(z);
+      else if (z<5*TP/8) return 1;
+      else if (z<7*TP/8) return -SS*Math.cos(z);
       else               return -1;
     }
-//    this.px=(t)=>{ return getPerimeterX(t); };
-//    this.py=(t)=>{ return getPerimeterY(t); };
+    let gr=[0,Math.random(),1][getRandomInt(0,3)];
+    let inv=getRandomInt(0,2);
+    let gdx=[1,-1][inv];
+    let gdy=[-1,1][inv];
+    this.getX=(z)=>{ return gr*fx(z)+gdx*(1-gr)*fy(z); }
+    this.getY=(z)=>{ return gr*fy(z)+gdy*(1-gr)*fx(z); }
   }
   this.randomizeStar=()=>{
-    let a=[3,1,5][getRandomInt(0,3,true)];
-    let b=[3,1,5][getRandomInt(0,3,true)];
-    let gr=[0,Math.random(),1][getRandomInt(0,3)];
-    this.px=(t)=>{ return gr*Math.pow(Math.sin(t),a)+(1-gr)*Math.pow(Math.cos(t),a); }
-    this.py=(t)=>{ return -(gr*Math.pow(Math.cos(t),b)-(1-gr)*Math.pow(Math.sin(t),b)); }
+    let a=[3,5][getRandomInt(0,2)];
+    let b=[3,5][getRandomInt(0,2)];
+    let c=[3,5][getRandomInt(0,2)];
+    let d=[3,5][getRandomInt(0,2)];
+    let cx1=[0,Math.random(),1][getRandomInt(0,3)];
+    let cx2=[0,Math.random(),1][getRandomInt(0,3)];
+    let cy1=[0,Math.random(),1][getRandomInt(0,3)];
+    let cy2=[0,Math.random(),1][getRandomInt(0,3)];
+
+    let sfxs=(z)=>{ return cx1*Math.sin(z)+(1-cx1)*Math.pow(Math.sin(z),a); }
+    let sfxc=(z)=>{ return cx2*Math.cos(z)+(1-cx2)*Math.pow(Math.cos(z),b); }
+    let sfyc=(z)=>{ return cy1*Math.cos(z)+(1-cy1)*Math.pow(Math.cos(z),c); }
+    let sfys=(z)=>{ return cy2*Math.sin(z)+(1-cy2)*Math.pow(Math.sin(z),d); }
+
+    let gr=[1,Math.random(),0][getRandomInt(0,3,true)];
+    //let gr=1;
+    let inv=getRandomInt(0,2);
+    let gdx=[1,-1][inv];
+    let gdy=[-1,1][inv];
+    this.getX=(z)=>{ return gr*sfxs(z)+gdx*(1-gr)*sfxc(z); }
+    this.getY=(z)=>{ return -(gr*sfyc(z)+gdy*(1-gr)*sfys(z)); }
   }
   this.randomizeCircles=()=>{
-    //let rx1=[0,Math.pow(Math.random(),2),1][getRandomInt(0,3)];
-    let ry1=1-50/CSIZE*Math.random();  // need ZP for 50
-/*
-    let rx2=Math.pow(Math.random(),2);
-    let ry1=[0,Math.pow(Math.random(),2),1][getRandomInt(0,3)];
-    let ry2=Math.pow(Math.random(),2);
-    let dfx1=[-1,1][getRandomInt(0,2)];
-    let dfx2=[-1,1][getRandomInt(0,2)];
-    let dfy1=[-1,1][getRandomInt(0,2)];
-    let dfy2=[-1,1][getRandomInt(0,2)];
-*/
-    //let gx=[Math.random()/2,1][gr];
-    //let gx=[Math.random(),Math.random()][gr];
+    let ry1=[1,1,1-(CSIZE-30)/CSIZE*Math.random()][getRandomInt(0,3)];  // need ZP for 50
+    //let ry1=[1,Math.random()][getRandomInt(0,2)];
     let gr=[0,Math.random(),1][getRandomInt(0,3)];
-//let gr=1;
-//console.log(gx.toFixed(3)+" "+gy);
+    let gd=[1,-1][getRandomInt(0,2)];
     //this.px=(t)=>{ return gr*(rx1+(1-rx1)*Math.sin(t))-(1-gr)*(rx1+(1-rx1)*Math.cos(t)); }
     //this.px=(t)=>{ return gr*(rx1*Math.sin(t))-(1-gr)*(rx1)*Math.cos(t); }
-    this.px=(t)=>{ return gr*Math.sin(t)+(1-gr)*Math.cos(t); }
-    this.py=(t)=>{ return -gr*ry1*Math.cos(t)+ry1*(1-gr)*Math.sin(t); }
-    //this.px=(t)=>{ return (1-gx)*Math.cos(t)+gx*Math.sin(t); }
-    //this.py=(t)=>{ return -((1-gy)*Math.cos(t)+gy*Math.sin(t)); }
-    //this.px=(t)=>{ return (1-gx)*(rx1+(1-rx1)*Math.cos(t))+gx*(rx2+(1-rx2)*Math.sin(t)); }
-    //this.py=(t)=>{ return (1-gy)*(ry1+(1-ry1)*Math.cos(t))+gy*(ry2+(1-ry2)*Math.sin(t)); }
-    //this.px=(t)=>{ return (1-gx)*dfx1*(rx1+(1-rx1)*Math.cos(t))+gx*dfx2*(rx2+(1-rx2)*Math.sin(t)); }
-    //this.py=(t)=>{ return (1-gy)*dfy1*(ry1+(1-ry1)*Math.cos(t))+gy*dfy2*(ry2+(1-ry2)*Math.sin(t)); }
+    this.getX=(z)=>{ return gr*Math.sin(z)+gd*(1-gr)*Math.cos(z); }
+    this.getY=(z)=>{ return -gr*ry1*Math.cos(z)+ry1*gd*(1-gr)*Math.sin(z); }
   }
   this.randomizeFactors=()=>{
-    this.mx=[];
-    this.my=[];
-    this.cx=getRandomInt(1,8);
-    this.cy=getRandomInt(1,8);
+    let mx=[];
+    let my=[];
+    let fx=[];
+    let fy=[];
+    let cx=1;
+    let cy=1;
+    cx=getRandomInt(1,8);
+    cy=getRandomInt(1,8);
     let multipliers=[-1,1,-2,2,-3,3,-4,4,-5,5];
-    for (let i=0; i<this.cx; i++) {
-      this.fx[i]=[-1,1][getRandomInt(0,2)];
-      this.mx[i]=multipliers[getRandomInt(0,8,true)];
+    for (let i=0; i<cx; i++) {
+      fx[i]=[-1,1][getRandomInt(0,2)];
+      mx[i]=multipliers[getRandomInt(0,8,true)];
     }
-    for (let i=0; i<this.cy; i++) {
-      this.fy[i]=[-1,1][getRandomInt(0,2)];
-      this.my[i]=multipliers[getRandomInt(0,8,true)];
+    for (let i=0; i<cy; i++) {
+      fy[i]=[-1,1][getRandomInt(0,2)];
+      my[i]=multipliers[getRandomInt(0,8,true)];
     }
-    this.setSizeFactor();
+    let procx=(z)=>{
+      let v=0;
+      for (let i=0; i<cx; i++) v+=fx[i]*Math.sin(mx[i]*z);
+      return v;
+    }
+    let procy=(z)=>{
+      let v=0;
+      for (let i=0; i<cy; i++) v+=fy[i]*Math.cos(my[i]*z);
+      return v;
+    }
+    let sf=(()=>{
+      let maxp=0;
+      for (let i=0; i<C*(W+1); i++) {
+	let z=TP/C*i;
+	maxp=Math.max(maxp,Math.abs(procx(z)));
+	maxp=Math.max(maxp,Math.abs(procy(z)));
+      }
+      return 1/(maxp<0.01?1:maxp);
+    })();
+    this.getX=(z)=>{ return sf*procx(z); }
+    this.getY=(z)=>{ return sf*procy(z); }
   }
   this.randomize=()=>{
-    this.type=[0,2,3,4,5,6,6,6][getRandomInt(0,8)];
-    //this.type=[3,6,6][getRandomInt(0,3)];
-//this.type=2;
-//console.log(this.type);
-    if (this.type<2) this.randomizeFactors();
+    this.type=[0,1,1,1,2,4,5,5][getRandomInt(0,8)];
+    //this.type=[0,1,1,3,4,5][getRandomInt(0,6)];
+    //this.type=[3,4,5][getRandomInt(0,3)];
+    if (this.type==0) this.randomizeFactors();
+    else if (this.type==1) this.randomizeCircles();
+    else if (this.type==2) this.setHeart();
+    else if (this.type==3) this.setSimpleCircle();
     else if (this.type==4) this.setPerimeter();
     else if (this.type==5) this.randomizeStar();
-    else if (this.type==6) this.randomizeCircles();
+    else debugger;
   }
-  this.getX=(t)=>{ 
-    if (this.type>3) return this.px.call(null,t);
-    if (this.type==3) return Math.sin(t);
-    if (this.type==2) return getHeartX(t)*0.95;
-    let v=0;
-    if (this.type==1) for (let i=0; i<this.cx; i++) v+=this.fx[i]*Math.cos(this.mx[i]*t);
-    else for (let i=0; i<this.cx; i++) v+=this.fx[i]*Math.sin(this.mx[i]*t);
-    return v*this.sf;
-  }
-  this.getY=(t)=>{ 
-    if (this.type>3) return this.py.call(null,t);
-    if (this.type==3) return -Math.cos(t);
-    if (this.type==2) return getHeartY(t)*0.95;
-    let v=0;
-    if (this.type==1) for (let i=0; i<this.cy; i++) v+=this.fy[i]*Math.sin(this.my[i]*t);
-    else for (let i=0; i<this.cy; i++) v+=this.fy[i]*Math.cos(this.my[i]*t);
-    return v*this.sf;
-  }
+
   this.randomize();
 }
 var curveSet1=0;
@@ -204,11 +190,6 @@ var curve2=[new Curve(), new Curve()];  // source for hex flow
 
 //const getSquareX=(t)=>{ return (11*Math.sin(t)+1.3*Math.sin(3*t))/10; }
 //const getSquareY=(t)=>{ return (11*Math.cos(t)-1.3*Math.cos(3*t))/10; }
-
-const getHeartX=(t)=>{ return Math.pow(Math.sin(t),3); }
-const getHeartY=(t)=>{ 
-  return -0.8125*Math.cos(t)+0.3125*Math.cos(2*t)+0.125*Math.cos(3*t)+0.0625*Math.cos(4*t);
-}
 
 var getCurve1X=(t)=>{ 
   if (cFrac1==0) return curve1[curveSet1b].getX(t);
@@ -227,10 +208,27 @@ var getCurve2Y=(t)=>{
   return (1-cFrac2)*curve2[curveSet2b].getY(t)+cFrac2*curve2[curveSet2].getY(t); 
 }
 
-var getPointX=(t,u)=>{ return (1-u)*getCurve1X(t)+u*getCurve2X(t); }
-var getPointY=(t,u)=>{ return (1-u)*getCurve1Y(t)+u*getCurve2Y(t); }
+var getPointX=(z,u)=>{ return (1-u)*getCurve1X(z)+u*getCurve2X(z); 
+/*
+  if (u<0) {
+    return (u+1)*getCurve2X(z)-u*getCurve1X(z); 
+  } else {
+//    return (-u/2)*getCurve2X(z); 
+  }
+*/
+}
 
-var ZP=50;	// randomize?
+var getPointY=(z,u)=>{ return (1-u)*getCurve1Y(z)+u*getCurve2Y(z); 
+/*
+  if (u<0) {
+    return (1-u)*getCurve2Y(z)+u*getCurve1Y(z); 
+  } else {
+//    return (-u/2)*getCurve2Y(z); 
+  }
+*/
+}
+
+var ZP=30;	// randomize?
 const perimeter=[ZP,CSIZE];
 
 var setPoints=()=>{
@@ -252,8 +250,8 @@ var setPoints=()=>{
     let qw=(Math.sin(r)+1)/2; // proportion of layer associated with "inner/outer" curve; 
     let sk=[0,-TP/C/2,-TP/C/2,0];
     for (let c=0; c<C+2; c++) {
-      let t=TP/C*c+sk[w%4];
-      q[w].push({"x":M*getPointX(t,qw),"y":M*getPointY(t,qw),"b":b});
+      let th=TP/C*c+sk[w%4];  // hex skews
+      q[w].push({"x":M*getPointX(th,qw),"y":M*getPointY(th,qw),"b":b});
     }
   }
 }
@@ -300,22 +298,42 @@ var draw=()=>{
   }
 }
 
-var SH=0;
+var transitCurve2=()=>{
+  curveSet2b=curveSet2;
+  curveSet2=++curveSet2%2;
+  curve2[curveSet2].randomize();
+  cFrac2=0;
+}
+
+var transitCurve1=()=>{
+  curveSet1b=curveSet1;
+  curveSet1=++curveSet1%2;
+  curve1[curveSet1].randomize();
+  cFrac1=0;
+}
+
+var SH=3;
+var SHP=false;
+var SH1=false;
+var SH2=false;
 var t=0;
 var perimSet=1;
 var pTime=0;
 var pFrac=0;
-var cTime=0;
+var cTime1=0;
+var cTime2=0;
 var cFrac1=0;
 var cFrac2=0;
 var stopped=true;
-var duration=7000;  // fit in time window, slower than t unit, faster than modulus
+var duration=4000;
 var animate=(ts)=>{
   if (stopped) return;
 //  t=0.0003*ts;
-  t+=0.005;
-  if (SH==0) if (Math.floor(t)%2==0) { SH=[1,2,2,2,3,3,3][getRandomInt(0,7)]; }
-  if (SH==1) {
+//  t+=0.005;
+  t+=0.004;
+
+  if (SHP || Math.random()<0.0002) {
+    if (!SHP) SHP=true;
     if (!pTime) { pTime=ts; }
     let progress=ts-pTime;
     if (progress<duration) {
@@ -324,33 +342,39 @@ var animate=(ts)=>{
       perimSet=++perimSet%2;
       pFrac=0;
       pTime=0;
-      SH=0;
+      SHP=false;
       if (EM) stopped=true;
     }
   }
-  if (SH>1) {
-    if (!cTime) { 
-      cTime=ts; 
-console.log(curve1[curveSet1].type+" "+curve2[curveSet2].type);
-    }
-    let progress=ts-cTime;
+
+  if (SH2 || Math.random()<0.01) {
+    if (!SH2) SH2=true;
+    if (!cTime2) { cTime2=ts; 
+//console.log("C2 "+curve2[curveSet2b].type+" "+curve2[curveSet2].type);
+}
+    let progress=ts-cTime2;
     if (progress<duration) {
-      if (SH==2) cFrac1=progress/duration;
-      else cFrac2=progress/duration;
+      cFrac2=progress/duration;
     } else {
-      if (SH==3) {
-        curveSet2b=curveSet2;
-	curveSet2=++curveSet2%2;
-	curve2[curveSet2].randomize();
-	cFrac2=0;
-      } else {
-        curveSet1b=curveSet1;
-	curveSet1=++curveSet1%2;
-	curve1[curveSet1].randomize();
-	cFrac1=0;
-      }
-      cTime=0;
-      SH=0;
+      transitCurve2();
+      cTime2=0;
+      SH2=false;
+      if (EM) stopped=true;
+    }
+  }
+
+  if (SH1 || Math.random()<0.01) {
+    if (!SH1) SH1=true;
+    if (!cTime1) { cTime1=ts; 
+//console.log("C1 "+curve1[curveSet1b].type+" "+curve2[curveSet1].type);
+}
+    let progress1=ts-cTime1;
+    if (progress1<duration) {
+      cFrac1=progress1/duration;
+    } else {
+      transitCurve1();
+      cTime1=0;
+      SH1=false;
       if (EM) stopped=true;
     }
   }
@@ -365,8 +389,8 @@ var start=()=>{
     if (frame) ctx.strokeStyle="hsl("+getRandomInt(0,360)+",70%,60%)";
     else ctx.strokeStyle="#444";
     if (pFrac>0) pTime=performance.now()-pFrac*duration;
-    else if (cFrac1>0) cTime=performance.now()-cFrac1*duration;
-    else if (cFrac2>0) cTime=performance.now()-cFrac2*duration;
+    else if (cFrac1>0) cTime1=performance.now()-cFrac1*duration;
+    else if (cFrac2>0) cTime2=performance.now()-cFrac2*duration;
     requestAnimationFrame(animate);
   } else {
     frame=!frame;
@@ -376,5 +400,10 @@ var start=()=>{
 body.addEventListener("click", start, false);
 
 onresize();
+transitCurve1();
+//curve1[0].type=4;
+//curve1[1].type=4;
+transitCurve2();
 setPoints();
+//draw();
 start();
