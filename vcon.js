@@ -7,18 +7,15 @@ const TP=2*Math.PI;
 const CSIZE=500;
 
 const ctx=(()=>{
-  let d=document.createElement("div");
-  d.style.textAlign="center";
-  body.append(d);
   let c=document.createElement("canvas");
   c.width="1000";
   c.height="1000";
   c.style.display="block";
-  d.append(c);
+  body.append(c);
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,CSIZE);
-ctx.lineWidth=5;
+ctx.lineWidth=3;
 ctx.lineCap="round";
 
 onresize=()=>{ 
@@ -97,7 +94,6 @@ var hues=[];
 for (let i=0; i<60; i++) { hues.push(new Color()); }
 
 var draw=()=>{
-  ctx.lineWidth=3;
   ctx.fillStyle="hsla(0,0%,0%,0.03)";
   ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
 //  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
