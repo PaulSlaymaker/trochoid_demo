@@ -5,26 +5,28 @@ body.style.margin="0";
 
 const TP=2*Math.PI;
 const CSIZE=500;
+var XD=100;
+var YD=100;
 
 const ctx=(()=>{
-  let d=document.createElement("div");
-  d.style.textAlign="center";
-  body.append(d);
   let c=document.createElement("canvas");
   c.width="1000";
   c.height="1000";
   c.style.display="block";
-  c.style.margin="0 auto";
-  d.append(c);
+  body.append(c);
   return c.getContext("2d");
 })();
-ctx.translate(CSIZE,CSIZE);
-ctx.lineWidth=2;
 
 onresize=()=>{ 
-  let D=Math.min(window.innerWidth,window.innerHeight); 
-  ctx.canvas.style.width=D+"px";
-  ctx.canvas.style.height=D+"px";
+//  let D=Math.min(window.innerWidth,window.innerHeight); 
+//  ctx.canvas.style.width=D+"px";
+//  ctx.canvas.style.height=D+"px";
+  ctx.canvas.width=window.innerWidth;
+  ctx.canvas.height=window.innerHeight;
+  XD=window.innerWidth/2;
+  YD=window.innerHeight/2;
+  ctx.translate(XD,YD);
+  ctx.lineWidth=2;
 }
 onresize();
 
@@ -50,7 +52,7 @@ var coprime=(a,b)=>{
   return 0;
 }
 
-const PC=getRandomInt(10,250);
+var PC=getRandomInt(10,250);
 console.log(PC);
 
 var Curve=function() {
@@ -82,15 +84,13 @@ const getY=(z)=>{
   return (1-frac)*curves[curveSet].getY(z)+frac*curves[c2].getY(z); 
 }
 
-const PT=function(a,rp) {
+var PT=function(a,rp) {
   this.a=a;
-  this.fx=()=>{ return (CSIZE-100)*getX(this.a); }
-  this.fy=()=>{ return (CSIZE-100)*getY(this.a); }
+  this.fx=()=>{ return (XD-100)*getX(this.a); }
+  this.fy=()=>{ return (YD-100)*getY(this.a); }
   this.x=this.fx();
   this.y=this.fy();
   this.lines=[];
-  //this.maxr=CSIZE-rp;
-  //this.r=CSIZE-rp;
   this.maxr=90;
   this.r=90;
   //this.motion=0.001*(1-2*Math.random())*(CSIZE/rp);
@@ -101,8 +101,6 @@ const PT=function(a,rp) {
     this.a+=this.motion;
     this.x=this.fx();
     this.y=this.fy();
-  }
-  this.setA=(idx)=>{
   }
 }
 
@@ -132,6 +130,7 @@ var Color=function(op) {
   this.getHSLDark=()=>{ 
     return"hsl("+Math.floor(this.hue)%360+","+this.sat+20+"%,"+this.lum+10+"%)";
   }
+/*
   this.ff=1+(1-2*Math.random())/5;
   this.transit=()=>{
     //let t=performance.now()/40;
@@ -139,52 +138,69 @@ var Color=function(op) {
     this.hue=this.hx+this.ff*t;
     this.hsl="hsl("+Math.floor(this.hue)%360+","+this.sat+"%,"+this.lum+"%)";
   }
+*/
 }
 
 var getBlack=(op)=>{ return"hsla(0,0%,20%,"+op+")"; }
 
-const randomColor=()=>{
-  return "hsl("+getRandomInt(0,360)+","
-                +(50+20*Math.random())+"%,"
-                +(50+20*Math.random())+"%)";
-}
 var hues=[];
-var chues=[];
 for (let i=0; i<getRandomInt(3,16); i++) { 
   hues.push(new Color()); 
-  chues.push(new Color(true)); 
 }
 
 var draw=()=>{
   ctx.fillStyle="hsla(0,0%,0%,0.03)";
-  ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  ctx.fillRect(-XD,-YD,2*XD,2*YD);
 //  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-    for (let i=0; i<points.length; i++) {
-      ctx.beginPath();
-      ctx.arc(points[i].x,points[i].y,points[i].r,0,TP);
-      ctx.closePath();
-      ctx.strokeStyle=hues[i%hues.length].getHSLA(0.5);
-      ctx.stroke();
+  for (let i=0; i<points.length; i++) {
+    ctx.beginPath();
+    ctx.arc(points[i].x,points[i].y,points[i].r,0,TP);
+    ctx.closePath();
+    ctx.strokeStyle=hues[i%hues.length].getHSLA(0.5);
+    ctx.stroke();
 //      ctx.fillStyle=hues[i%hues.length].getHSLA(1);
 //      ctx.fill();
 
-ctx.beginPath();
-ctx.arc(points[i].x,points[i].y,points[i].r/4,0,TP);
-ctx.closePath();
-ctx.fillStyle=hues[i%hues.length].getHSLDark();
-ctx.fill();
-    }
+    ctx.beginPath();
+    ctx.arc(points[i].x,points[i].y,points[i].r/4,0,TP);
+    ctx.closePath();
+    ctx.fillStyle=hues[i%hues.length].getHSLDark();
+    ctx.fill();
   }
+}
+
+var reset=()=>{
+  PC=getRandomInt(10,250);
+  points=[];
+  lines=[];
+  for (let i=0; i<PC; i++) addPoint(i);
+  hues=[];
+  for (let i=0; i<getRandomInt(3,16); i++) hues.push(new Color()); 
+  curves[0].randomize();
+  curves[1].randomize();
+}
 
 var S=0;
+var op=1;
 var t=0;
-var ct=0;
 var stopped=true;
 var pause=0;
 var pauseCount=0;
 var frac=0;
 var animate=(ts)=>{
   if (stopped) return;
+  if (S==0) {
+    //if (Math.random()<0.001)  S=1;
+    if (pauseCount%5==4) {  S=1; pauseCount=0; }
+  } else if (S==1) {
+    op-=0.02;
+    if (op<0) { op=0; reset(); ctx.clearRect(-XD,-YD,2*XD,2*YD); S=2; }
+    ctx.canvas.style.opacity=op;
+  } else if (S==2) {
+    op+=0.02;
+    if (op>1) { op=1; S=0; }
+    ctx.canvas.style.opacity=op;
+  }
   t+=0.004;
   if (pause<2) {
     pause+=0.002;
