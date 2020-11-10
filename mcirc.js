@@ -53,7 +53,7 @@ var coprime=(a,b)=>{
 }
 
 var PC=getRandomInt(10,250);
-console.log(PC);
+//console.log(PC);
 
 var Curve=function() {
   this.ax=1;
@@ -67,7 +67,7 @@ var Curve=function() {
     if (cop>0 && PC%cop==0) {
       this.ay=this.ax+2;
     }
-console.log(this.ax+" "+this.ay);
+//console.log(this.ax+" "+this.ay);
   }
   this.randomize();
 }
