@@ -1,10 +1,8 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-const EM=location.href.endsWith("em");
 
 const TP=2*Math.PI;
-const HR2=Math.pow(2,0.5)/2;
 const CSIZE=400;
 
 const ctx=(()=>{
@@ -20,7 +18,7 @@ const ctx=(()=>{
 ctx.translate(CSIZE,CSIZE);
 
 onresize=()=>{ 
-  let D=Math.min(window.innerWidth,window.innerHeight)-40; 
+  let D=Math.min(window.innerWidth,window.innerHeight)-24; 
   ctx.canvas.style.width=D+"px";
   ctx.canvas.style.height=D+"px";
 }
@@ -44,19 +42,13 @@ var hues=[];
 const COLCOUNT=100;
 for (let i=0; i<COLCOUNT; i++) {
   let bh=getRandomInt(0,360);
-  //bh=(bh+getRandomInt(60,120))%360;
-  //bh=(bh++)%360;
-  //bh=getRandomInt(-50,50);
   let sat=50+20*Math.random();
   let lum=50+20*Math.random();
-  //hues.push("hsl("+bh+",70%,60%)");  // fill
-  //hues.push("hsl("+bh+","+sat+"%,"+lum+"%)");  // fill
-if (i%2==0) {
-  hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.7)");
-} else {
-  hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.9)");
-}
-  //hues.push(bh);  // fill
+  if (i%2==0) {
+    hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.7)");
+  } else {
+    hues.push("hsla("+bh+","+sat+"%,"+lum+"%,0.9)");
+  }
 }
 
 var Curve=function() {
@@ -85,7 +77,6 @@ var Curve=function() {
     this.px=[()=>{ return rx; },Math.sin][getRandomInt(0,2)];
     let ry=-1+2*Math.random();
     this.py=[()=>{ return ry; },Math.cos][getRandomInt(0,2)];
-//console.log(this.px.call(null,0)+" "+this.py.call(null,0));
   }
   this.randomizeFactors=()=>{
     this.mx=[];
@@ -93,8 +84,6 @@ var Curve=function() {
     this.cx=getRandomInt(1,8);
     this.cy=getRandomInt(1,8);
     let multipliers=[-1,1,-2,2,-3,3,-4,4,-5,5];
-    let sc={};
-    multipliers.forEach((mu)=>{ sc[mu]=0; });
     for (let i=0; i<this.cx; i++) {
       this.fx[i]=[-1,1][getRandomInt(0,2)];
       this.mx[i]=multipliers[getRandomInt(0,8,true)];
@@ -102,12 +91,11 @@ var Curve=function() {
     for (let i=0; i<this.cy; i++) {
       this.fy[i]=[-1,1][getRandomInt(0,2)];
       this.my[i]=multipliers[getRandomInt(0,8,true)];
-      sc[this.my[i]]+=this.fy[i];
     }
     this.setSizeFactor();
   }
   this.randomize=()=>{
-    this.type=[0,0,0,2,2,1,3,4,5,6][getRandomInt(0,10)];
+    this.type=[0,0,0,0,1,2,3,4,5,6][getRandomInt(0,10)];
     //this.type=[0,6][getRandomInt(0,2)];
 //console.log(this.type);
     //this.type=6;
@@ -217,7 +205,6 @@ var setPoints=()=>{
 var frame=false;
 var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   for (let w=0; w<W; w++) {
     //if (q[w][0].b && q[w+1][0].b && q[w2][0].b) continue;
     if (q[w][0].b && q[w+1][0].b) continue;
@@ -269,7 +256,6 @@ var animate=(ts)=>{
       pFrac=0;
       pTime=0;
       SH=0;
-      if (EM) stopped=true;
     }
   }
   if (SH>1) {
@@ -292,7 +278,6 @@ var animate=(ts)=>{
       }
       cTime=0;
       SH=0;
-      if (EM) stopped=true;
     }
   }
   setPoints();
