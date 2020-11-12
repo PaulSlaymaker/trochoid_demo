@@ -6,7 +6,6 @@ body.style.margin="0";
 
 // these for random float?:
 // normalize v
-// disperse to radius or random
 // square tile? 16?
 
 const TP=2*Math.PI;
@@ -30,12 +29,14 @@ var getRandomInt=(min,max,low)=>{
   }
 }
 
+/*
 var randomColor=()=>{
   let h=getRandomInt(0,360);
   let s=70+20*Math.random();
   let l=70+20*Math.random();
   return "hsl("+h+","+s+"%,"+l+"%)";
 }
+*/
 
 var D=400;
 onresize=function() { 
@@ -47,39 +48,42 @@ onresize=function() {
   setPoints();
 }
 
-var F1=17;
-var F2=29;
-var Z=1;
+var F1=23;
+var F2=31;
+var Z=-1;
 var R;
 var pts=[]
 
 var TSCP={
-  "1,5":20,"1,7":42,"1,9":72,"1,11":110,"1,13":156,"1,15":210,"1,17":272,"1,19":342,"1,21":420,"1,23":506,"1,25":600,"1,27":702,"1,29":812,
-  "3,7":12,"3,11":72,"3,13":50,"3,17":182,"3,19":112,"3,23":340,"3,25":198,"3,29":546,
-  "5,9":44,"5,11":18,"5,13":56,"5,17":156,"5,19":266,"5,21":80,"5,23":198,"5,27":418,"5,29":648,
-  "7,11":20,"7,13":102,"7,15":24,"7,17":170,"7,19":132,"7,23":272,"7,25":162,"7,27":580,"7,29":110,
-  "9,13":68,"9,17":184,"9,19":30,"9,23":98,"9,25":240,"9,29":420,
-  "11,15":28,"11,17":30,"11,19":152,"11,21":290,"11,23":36,"11,25":182,"11,27":496,"11,29":522,
-  "13,17":92,"13,19":162,"13,21":104,"13,23":110,"13,25":420,"13,27":42,"13,29":464,
-  "15,19":36,"15,23":40,"15,29":574,
-  "17,21":116,"17,23":42,"17,25":296,"17,27":310,"17,29":324,
-  "19,23":44,"19,25":222,"19,27":232,
-  "21,25":140
+  "1,5":20,"1,7":42,"1,9":72,"1,11":110,"1,13":156,"1,15":210,"1,17":272,"1,19":342,"1,21":420,"1,23":506,"1,25":600,"1,27":702,"1,29":812,"1,31":930,
+  "3,7":12,"3,11":72,"3,13":50,"3,17":182,"3,19":112,"3,23":340,"3,25":198,"3,29":546,"3,31":308,
+  "5,9":44,"5,11":18,"5,13":56,"5,17":156,"5,19":266,"5,21":80,"5,23":198,"5,27":418,"5,29":648,"5,31":182,
+  "7,11":20,"7,13":102,"7,15":24,"7,17":170,"7,19":132,"7,23":272,"7,25":162,"7,27":580,"7,29":110,"7,31":648,
+  "9,13":68,"9,17":184,"9,19":30,"9,23":98,"9,25":240,"9,29":420,"9,31":682,
+  "11,15":28,"11,17":30,"11,19":152,"11,21":290,"11,23":36,"11,25":182,"11,27":496,"11,29":522,"11,31":380,
+  "13,17":92,"13,19":162,"13,21":104,"13,23":110,"13,25":420,"13,27":42,"13,29":464,"13,31":486,
+  "15,19":36,"15,23":40,"15,29":574,"15,31":48,
+  "17,21":116,"17,23":42,"17,25":296,"17,27":310,"17,29":324,"17,31":434,
+  "19,23":44,"19,25":222,"19,27":232,"19,29":50,"19,31":252,
+  "21,25":140,"21,29":152,"21,31":470,
+  "23,27":52
 };
 var TSCN={
-  "1,5":6,"1,7":8,"1,9":10,"1,11":12,"1,13":14,"1,15":16,"1,17":18,"1,19":20,"1,21":22,"1,23":24,"1,25":26,"1,27":28,"1,29":30,
-  "3,7":30,"3,11":42,"3,13":112,"3,17":100,"3,19":242,"3,23":182,"3,25":420,"3,29":288,
-  "5,9":14,"5,11":80,"5,13":90,"5,17":110,"5,19":72,"5,21":338,"5,23":308,"5,27":288,"5,29":170,"7,29":684,
-  "7,11":54,"7,13":20,"7,15":154,"7,17":72,"7,19":182,"7,23":210,"7,25":416,"7,27":102,
-  "9,13":22,"9,17":26,"9,19":252,"9,23":352,"9,25":306,"9,29":342,
-  "11,15":78,"11,17":140,"11,19":90,"11,21":32,"11,23":374,"11,25":324,"11,27":114,"11,29":200,
-  "13,17":30,"13,19":32,"13,21":170,"13,23":252,"13,25":38,"13,27":520,"13,29":210,
-  "15,19":102,"15,23":266,"15,29":44,
-  "17,21":38,"17,23":200,"17,25":42,"17,27":132,"17,29":230,
-  "19,23":126,"19,25":44,"19,27":138,
-  "21,25":46
+  "1,5":6,"1,7":8,"1,9":10,"1,11":12,"1,13":14,"1,15":16,"1,17":18,"1,19":20,"1,21":22,"1,23":24,"1,25":26,"1,27":28,"1,29":30,"1,31":32,
+  "3,7":30,"3,11":42,"3,13":112,"3,17":100,"3,19":242,"3,23":182,"3,25":420,"3,29":288,"3,31":646,
+  "5,9":14,"5,11":80,"5,13":90,"5,17":110,"5,19":72,"5,21":338,"5,23":308,"5,27":288,"5,29":170,"5,31":756,
+  "7,11":54,"7,13":20,"7,15":154,"7,17":72,"7,19":182,"7,23":210,"7,25":416,"7,27":102,"7,29":684,"7,31":266,
+  "9,13":22,"9,17":26,"9,19":252,"9,23":352,"9,25":306,"9,29":342,"9,31":200,
+  "11,15":78,"11,17":140,"11,19":90,"11,21":32,"11,23":374,"11,25":324,"11,27":114,"11,29":200,"11,31":462,
+  "13,17":30,"13,19":32,"13,21":170,"13,23":252,"13,25":38,"13,27":520,"13,29":210,"13,31":308,
+  "15,19":102,"15,23":266,"15,29":44,"15,31":690,
+  "17,21":38,"17,23":200,"17,25":42,"17,27":132,"17,29":230,"17,31":240,
+  "19,23":126,"19,25":44,"19,27":138,"19,29":432,"19,31":350,
+  "21,25":46,"21,29":250,"21,31":52,
+  "23,27":150,"23,31":378
 };
 
+var pKeys=Object.keys(TSCP);
 var nKeys=Object.keys(TSCN);
 nKeys.sort((a,b)=>{
   //let rl=Math.abs(2-(F2-Z*F1)/(F2+Z*F1-2));  // opt 2, rl=0
@@ -93,25 +97,12 @@ nKeys.sort((a,b)=>{
   let bf2=parseInt(be[2]);
   let brl=Math.abs(2-(bf2+bf1)/(bf2-bf1-2));  // opt 2, rl=0;
   return arl-brl;
-/*
-let z=-1;
-console.log(af1+" "+af2);
-console.log("RL1 "+(2-(af2-z*af1)/(af2+z*af1-2)));
-console.log("RL2 "+rl);
-debugger;
-*/
 });
-var pKeys=Object.keys(TSCP);
 
 var randomizeF=()=>{
   Z=[-1,1][getRandomInt(0,2,true)];
-  //let keys=(Z==1)?pKeys:nKeys;
-  let key;
-  if (Z==1) {
-    key=pKeys[getRandomInt(0,pKeys.length)];
-  } else {
-    key=nKeys[getRandomInt(0,nKeys.length,true)];
-  }
+  let keys=Z==1?pKeys:nKeys;
+  let key=keys[getRandomInt(0,keys.length,true)];
   let a=/(\d*),(\d*)/.exec(key);
   F1=parseInt(a[1]);
   F2=parseInt(a[2]);
@@ -134,11 +125,10 @@ var setPoints=()=>{
     let key=F1+","+F2;
     let fTable=(Z==1)?TSCP:TSCN;
     let t3=fTable[key];
-    if (t3===undefined) t3=10;
+if (t3===undefined) t3=10;
+//debugger;
     for (let i=0; i<tsh; i++) {
       let pa=[i,i+1,t3+i,t3-1+i];
-      //tis.push(new TileSet(generateTiles(pa,0)));
-      //tis.push(new TileSet(generateTiles(pa,1)));
       tis.push(new TileSet(pa,0));
       tis.push(new TileSet(pa,1));
     }
@@ -163,14 +153,12 @@ var Tile=function(p1,p2,p3,p4) {
     ctx.lineTo(fpx+(1-f)*this.v[3].x,fpy+(1-f)*this.v[3].y);
     ctx.closePath();
     ctx.stroke();
-    // random, set it pts or (x*x*y)%R,(x*y*y)%R, etc.
   }
   this.drawR=(frac)=>{
     //let f=Math.pow(frac,0.8);
     let f=frac;
     let r=R;
     let fpzx=R*f*Math.cos(F2*this.v[0].z)
-// +-Z
     ctx.beginPath();
     ctx.moveTo(fpzx+(1-f)*this.v[0].x,Z*r*f*Math.sin(F1*this.v[0].z)+(1-f)*this.v[0].y);
     ctx.lineTo(fpzx+(1-f)*this.v[1].x,Z*r*f*Math.sin(F1*this.v[0].z)+(1-f)*this.v[1].y);
@@ -179,10 +167,8 @@ var Tile=function(p1,p2,p3,p4) {
     ctx.closePath();
     ctx.stroke();
   }
-
   this.drawC=(frac)=>{
     let f=frac;
-    //let f=Math.pow(frac,0.8)/1.2;
     ctx.beginPath();
     ctx.moveTo(this.v[0].x,this.v[0].y);
     ctx.lineTo((1-f)*this.v[1].x+f*this.v[0].x,(1-f)*this.v[1].y+f*this.v[0].y);
@@ -191,7 +177,6 @@ var Tile=function(p1,p2,p3,p4) {
     ctx.closePath();
     ctx.stroke();
   }
-
   this.drawC2=(frac)=>{
     let f=frac;
     ctx.beginPath();
@@ -204,37 +189,27 @@ var Tile=function(p1,p2,p3,p4) {
     ctx.closePath();
     ctx.stroke();
   }
-
   this.drawF=(frac)=>{
     let f=frac/2;
-    //let f=(Math.pow(frac,1.3)+Math.pow(frac,0.9))/3.97;
     ctx.beginPath();
     ctx.moveTo(this.v[0].x,this.v[0].y);
     ctx.lineTo((1-f)*this.v[1].x+f*this.v[3].x,(1-f)*this.v[1].y+f*this.v[3].y);
-    //ctx.lineTo(this.v[1].x,this.v[1].y);
     ctx.lineTo(this.v[2].x,this.v[2].y);
     ctx.lineTo((1-f)*this.v[3].x+f*this.v[1].x,(1-f)*this.v[3].y+f*this.v[1].y);
-    //ctx.lineTo(this.v[3].x,this.v[3].y);
     ctx.closePath();
-ctx.strokeStyle="hsla(0,0%,0%,"+(1-frac)+")";
+    ctx.strokeStyle="hsla(0,0%,0%,"+(1-frac)+")";
     ctx.stroke();
   }
-  //this.draw=[this.drawC,this.drawF][dt];
   this.draw=this.drawX;
   this.shift=()=>{ this.v.push(this.v.shift()); }
   this.setDraw=(d)=>{
-    //this.draw=[this.drawC,this.drawF][d];
     this.draw=[this.drawC,this.drawF,this.drawX,this.drawR,this.drawC2][d];
     //this.draw=this.drawR;
   }
 }
 
-//var TileSet=function(tp) {
 var TileSet=function(c,alt) {
-  //this.tiles=tp;
   this.tiles=[];
-//  this.color2="red";
-//  this.color=randomColor();
   this.hue=0;
   this.hue2=getRandomInt(0,360);
   this.sat=0;
@@ -264,7 +239,6 @@ var TileSet=function(c,alt) {
     }
   }
   this.randomizeTransition=(dt)=>{
-    //let dt=getRandomInt(0,4);
     this.tiles.forEach((ti)=>{ ti.setDraw(dt) });
   }
 /*
@@ -305,7 +279,6 @@ debugger;
   }
   this.drawTiles=()=>{
     if (state%3==1) {
-    //if (false) {
       //let h=frac*this.hue2+(1-frac)*this.hue;
       let h=(this.hue+frac*(this.hue2-this.hue+360)%360);
       let s=frac*this.sat2+(1-frac)*this.sat;
@@ -321,7 +294,6 @@ debugger;
       } else {
         ctx.fillStyle="hsl("+this.hue+","+this.sat+"%,"+this.lum+"%)";
       }
-      //ctx.fillStyle=this.color;
       for (let tile of this.tiles) {
 	tile.draw(this.getFrac());
 	ctx.fill();
@@ -350,39 +322,9 @@ var generateTiles=(c,alt)=>{
 
 var tileSets=[];
 
-/*
-var ct=[];
-var randomizePattern=()=>{
-  ct=[
-    // 2 color
-    [[0,0],[1,1],[0,0]],  
-    // 3 color
-    [[0,0],[1,1],[0,2]],
-    [[0,0],[1,1],[2,2]],
-    [[0,0],[1,2],[0,0]],
-    [[0,1],[2,2],[0,1]],
-    [[0,1],[2,2],[1,0]],
-    [[0,1],[2,2],[0,0]],
-    //[[0,1],[2,2],[1,1]],
-    // 4 color
-    [[0,0],[1,1],[2,3]],
-    [[0,0],[1,2],[3,3]],
-    [[0,1],[2,2],[3,3]],
-//    [[0,1],[2,3],[1,1]],
-//    [[0,1],[2,3],[0,1]],
-//    [[0,1],[2,3],[1,0]],
-  ][getRandomInt(0,10)];
-}
-*/
-
 var draw=()=>{
   ctx.clearRect(-D/2,-D/2,D,D);
   for (let ts of tileSets) ts.drawTiles();
-/*
-  for (let i=tileSets.length-1; i>=0; i--) {
-    tileSets[i].drawTiles();
-  }
-*/
 }
 
 var drawO=()=>{
@@ -407,27 +349,16 @@ var randomizeTransition=()=>{
 var transitColors=()=>{
   for (let tset of tileSets) {
     tset.hue=tset.hue2;
-    tset.hue2=getRandomInt(0,360);
+    //tset.hue2=getRandomInt(0,360);
+    tset.hue2=(tset.hue+getRandomInt(0,180))%360;
     tset.sat=tset.sat2;
     tset.sat2=70+20*Math.random();
     tset.lum=tset.lum2;
     tset.lum2=70+20*Math.random();
   }
-/*
-  for (let tset of tileSets) {
-    tset.color=tset.color2;
-//    tset.randomizeFlip();
-  }
-*/
-/*
-  let fillColor=[];
-  for (let i=0; i<4; i++) fillColor.push(randomColor());
-  for (let i=0; i<tileSets.length; i++) { 
-    tileSets[i].color2=fillColor[ct[((i-i%2)/2)%3][i%2]]; 
-  }
-*/
 }
 
+/*
 var order=[0,1,2,3,4,5];
 var shuffle=()=>{
   let no=[];
@@ -436,6 +367,7 @@ var shuffle=()=>{
   } while (order.length>0);
   order=no;
 }
+*/
 
 var pauseTS=1000;
 var pause=(ts)=>{
@@ -459,7 +391,7 @@ var animate=(ts)=>{
   let progress=ts-time;
   let af=animate;
   if (state%3==1) {
-    duration=8000;
+    duration=6000;
   } else {
     duration=2000;
   }
@@ -469,9 +401,9 @@ var animate=(ts)=>{
   } else {
     time=0;
     frac=0;
-    let active=0;
     state++;
   /* 
+    let active=0;
     if (active==0) {
       //setCount=(++setCount)%tileSets.length;
       setCount++;
@@ -486,30 +418,30 @@ var animate=(ts)=>{
     }
 */
     draw();
-
-    //if (state==1) {
     if (state%3==1) {
-      pauseTS=performance.now()+800;
-//console.log("RL "+2*(F2-Z*F1)/(F2+Z*F1-2));
+      pauseTS=performance.now()+300;
     } else if (state%3==2) {
-      pauseTS=performance.now()+800;
+      pauseTS=performance.now()+300;
     } else {
       randomizeF();
       setPoints();
       transitColors();
     //for (let tset of tileSets) { tset.shiftTiles(); }
-	    //randomizePattern();
       pauseTS=performance.now()+300;
     }
     af=pause;
     randomizeTransition();
   }
-  //draw();
   requestAnimationFrame(af);
 }
 
 var start=()=>{
   if (stopped) {
+    if (frac>0) {
+      time=performance.now()-frac*duration;
+    } else {
+      time=0;
+    }
     requestAnimationFrame(animate);
     stopped=false;
   } else {
@@ -518,6 +450,7 @@ var start=()=>{
 }
 ctx.canvas.addEventListener("click", start, false);
 
+/*
 body.append(
   (()=>{
     var getStdRange=(min,max,step)=>{
@@ -555,14 +488,14 @@ body.append(
     return d;
   })(),
 );
+*/
 
 onresize();
 
-//randomizePattern();
+//      randomizeF();
+//      setPoints();
 transitColors();
 //for (let tset of tileSets) { tset.shiftTiles(); tset.shiftTiles(); }
 //for (let tset of tileSets) { tset.shiftTiles(); }
-shuffle();
-//draw(0);
-console.log("RL "+2*(F2-Z*F1)/(F2+Z*F1-2));
+//console.log("RL "+2*(F2-Z*F1)/(F2+Z*F1-2));
 start();
