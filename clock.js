@@ -1,6 +1,5 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
-//const face=document.getElementById("face");
 const TP=2*Math.PI;
 
 const getRandomInt=(min,max,low)=>{
@@ -13,10 +12,8 @@ const getRandomInt=(min,max,low)=>{
 
 const PT=function(x,y) { this.x=x; this.y=y; }
 
-const W=8;
-const C=60;  // 1.3
-//const W=5;
-//const C=8;  // 1.3
+const W=6;  // even
+const C=60;
 
 var width=window.innerWidth/C;
 var height=window.innerHeight/W;
@@ -65,6 +62,16 @@ var Color=function(op) {
   }
 */
   this.getHSL=()=>{ return this.hsl; }
+  this.dark=()=>{
+    this.sat=0.8*this.sat;
+    this.lum=0.8*this.lum;
+    this.hsl="hsl("+Math.floor(this.hue)%360+","+this.sat+"%,"+this.lum+"%)";
+  }
+  this.light=()=>{
+    this.sat=1.25*this.sat;
+    this.lum=1.25*this.lum;
+    this.hsl="hsl("+Math.floor(this.hue)%360+","+this.sat+"%,"+this.lum+"%)";
+  }
   this.hsl="hsl("+Math.floor(this.hue)%360+","+this.sat+"%,"+this.lum+"%)";
 /*
   this.getBrightHSL=(f)=>{ 
@@ -77,7 +84,6 @@ var Color=function(op) {
 
 var hues=[];
 var chues=[];
-var invert=false;
 var setColors=()=>{
   hues=[];
   chues=[];
@@ -108,28 +114,35 @@ var Div=function(pt1,pt2,pt3,pt4,w,c) {
   body.append(this.el);
   this.setTime=()=>{
     let d=new Date();
+/*
     if (w==0) {
       if (d.getSeconds()==(c+15)%60) this.setClock();
       else this.setBackground();
     } else if (w==1) {
+
+    } else if (w==1) {
       if (d.getSeconds()==(c+14)%60) this.setClock(); 
       else if (d.getSeconds()==(c+15)%60) this.setClock();
       else this.setBackground();
-    } else if (w==2) {
-      if (d.getSeconds()==(c+15)%60) this.setClock();
+*/
+    if (w==0) {
+      if (d.getSeconds()==(c+15)%60) {
+        this.setClock();
+//        secondDiv.set(X0+D*(this.pt2.x+this.pt4.x)/2,Y0+D*(this.pt2.y+pt4.y)/2,d.getSeconds());
+     }
       else this.setBackground();
-    } else if (w==3) {
+    } else if (w==1) {
       if (d.getMinutes()==(c+14)%60) this.setClock();
       else if (d.getMinutes()==(c+15)%60) this.setClock();
       else this.setBackground();
-    } else if (w==4) {
+    } else if (w==2) {
       if (d.getMinutes()==(c+15)%60) this.setClock();
       else this.setBackground();
-    } else if (w==5) {
+    } else if (w==3) {
       if (d.getHours()%12*5+Math.floor(d.getMinutes()/12)==(c+14)%60) this.setClock();
       else if (d.getHours()%12*5+Math.floor(d.getMinutes()/12)==(c+15)%60) this.setClock();
       else this.setBackground();
-    } else if (w==6) {
+    } else if (w==4) {
       if (d.getHours()%12*5+Math.floor(d.getMinutes()/12)==(c+15)%60) this.setClock();
       else this.setBackground();
     }
@@ -151,7 +164,6 @@ var Div=function(pt1,pt2,pt3,pt4,w,c) {
     this.el.style.left=X0+D*minx+"px";
     this.el.style.width=D*(diffx)+"px";
     this.el.style.height=D*(diffy)+"px";
-//this.el.style.opacity=1-(Math.pow(this.pt1.x,2)+Math.pow(this.pt1.y,2))/(W*W);
     let poly="polygon("
       poly+=100*((this.pt1.x-minx)/diffx)+"% "+100*((this.pt1.y-miny)/diffy)+"%,"
            +100*((this.pt2.x-minx)/diffx)+"% "+100*((this.pt2.y-miny)/diffy)+"%,"
@@ -160,19 +172,40 @@ var Div=function(pt1,pt2,pt3,pt4,w,c) {
     this.el.style.clipPath=poly;
     this.setTime();
   }
-  this.setBackground=()=>{ 
-    if (invert) this.el.style.background=chues[w].getHSL(); 
-    else this.el.style.background=hues[w].getHSL(); 
-  }
-  this.setClock=()=>{ 
-    if (invert) this.el.style.background=hues[w].getHSL(); 
-    else this.el.style.background=chues[w].getHSL(); 
-  }
+  this.setBackground=()=>{ this.el.style.background=hues[w].getHSL(); }
+  this.setClock=()=>{ this.el.style.background=chues[w].getHSL(); }
 }
+
+/*
+const secondDiv=(()=>{
+  let d=document.createElement("div");
+  d.style.color="black";
+  //d.style.border="1px solid white";
+  d.style.borderRadius="50%";
+  d.style.padding="12px";
+//  d.style.width="3vh";
+//  d.style.height="3vh";
+  d.style.letterSpacing="3px";
+  d.style.zIndex=2;
+  body.append(d);
+  return {
+    "el":d,
+    "set":(x,y,s)=>{
+      d.style.left=x-d.offsetWidth/2+"px";
+      d.style.top=y-d.offsetHeight/2+"px";
+      d.style.background=chues[0].getHSL();
+      d.textContent=s;
+      if (s<10) d.style.letterSpacing="5px";
+      d.style.letterSpacing="normal";
+      //d.style.left=x+"px";
+      //d.style.top=y+"px";
+    }
+  };
+})();
+*/
 
 const twelve=(()=>{
   let d=document.createElement("div");
-  d.style.left=0;
   d.style.width="100%";
   d.style.textAlign="center";
   d.classList.add("dial");
@@ -183,7 +216,6 @@ const twelve=(()=>{
 
 const three=(()=>{
   let d=document.createElement("div");
-  d.style.left=0;
   d.classList.add("dial");
   d.textContent="3";
   body.append(d);
@@ -192,7 +224,6 @@ const three=(()=>{
 
 const six=(()=>{
   let d=document.createElement("div");
-  d.style.left=0;
   d.style.width="100%";
   d.style.textAlign="center";
   d.classList.add("dial");
@@ -203,7 +234,6 @@ const six=(()=>{
 
 const nine=(()=>{
   let d=document.createElement("div");
-  d.style.left=0;
   d.style.textAlign="right";
   d.classList.add("dial");
   d.textContent="9";
@@ -308,17 +338,14 @@ var transit=()=>{
     hues[i].transit();
     chues[i].transit();
   }
-//console.log(Math.floor(chues[0].hue)%360);
   setPoints();
   draw();
 }
 
-var draw=()=>{ for (let i=0; i<divs.length; i++) { divs[i].set(); } }
+var draw=()=>{ 
+  for (let i=0; i<divs.length; i++) { divs[i].set(); } 
+}
 
-let d=new Date();
-var second=d.getSeconds();
-var minute=d.getMinutes();
-var hrm=d.getHours()%12*5+Math.floor(minute/12);
 var stopped=false;
 var frac=0;
 var time=0;
@@ -329,6 +356,7 @@ var animate=(ts)=>{
   requestAnimationFrame(animate);
 }
 
+var invert=11;
 var start=()=>{
 /*
   if (stopped) {
@@ -339,13 +367,18 @@ var start=()=>{
     invert=!invert;
   }
 */
-    invert=!invert;
+    //invert=!invert;
+  if (invert++%12<6) {
+    for (let i=0; i<W; i++) { chues[i].dark(); hues[i].light(); }
+  } else {
+    for (let i=0; i<W; i++) { chues[i].light(); hues[i].dark(); }
+  }
+  
 }
 body.addEventListener("click", start, false);
 
 onresize();
 
-//setPoints();
-draw();
+//draw();
 requestAnimationFrame(animate);
 //start();
