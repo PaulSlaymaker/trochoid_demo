@@ -81,7 +81,7 @@ onresize=function() {
 //  ctx.globalCompositeOperation="xor";
   ctx.fillStyle="hsl("+getRandomInt(0,360)+",80%,70%)";
   ctx.strokeStyle="hsl("+getRandomInt(0,360)+",90%,20%)";
-  ctx.lineWidth="6";
+  ctx.lineWidth="4";
   cancelAnimationFrame(AF);
   setPoints();
   stopped=true;
