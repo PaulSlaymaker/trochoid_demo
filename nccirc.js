@@ -61,14 +61,22 @@ var B=[];
 var generateB=()=>{
   let b=[];
   let hue=getRandomInt(0,360);
-  let c=["hsl("+hue+",90%,70%)"];
-  c.push("hsl("+(hue+getRandomInt(90,180))+",90%,70%)");
+  let c1=["hsl("+hue+",90%,70%)","hsl("+(hue+72)+",80%,30%)"];
+  let c2=["hsl("+(hue+144)+",90%,70%)","hsl("+(hue+216)+",80%,30%)"];
+  let c=[c1,c2];
+  //c.push("hsl("+(hue+getRandomInt(90,180))+",90%,70%)");
+  let tf=[true,false];
+  let dot=[tf[getRandomInt(0,2)],tf[getRandomInt(0,2)]];
+  let hrat=[getRandomInt(4,7),getRandomInt(4,7)];
   let offset=TP*Math.random();
   for (let i=0; i<Count; i++) {
     let desync=(1-2*Math.random())/50;
     //b.push(new Ball(i*TP/Count+desync,c[i%2])); // dispersed
     //b.push(new Ball(i*TP/Count,c[i%2])); // dispersed
-    b.push(new Ball((offset+i*2.05*rad)%TP,c[i%2])); // inline
+    let ball=new Ball((offset+i*2.05*rad)%TP,c[i%2]); // inline
+    ball.dot=dot[i%2];
+    ball.hr=hrat[i%2];
+    b.push(ball);
   }
   return b;
 }
@@ -120,15 +128,28 @@ var draw=()=> {
     ctx.beginPath();
     ctx.moveTo(RR+B[i].x,B[i].y);
     ctx.arc(B[i].x,B[i].y,RR,0,TP);
-    ctx.fillStyle=B[i].color;
+    ctx.fillStyle=B[i].color[0];
     ctx.stroke();
-    ctx.fill();
     ctx.closePath();
+    ctx.fill();
+    if (B[i].dot) {
+      ctx.beginPath();
+      ctx.arc(B[i].x,B[i].y,RR/B[i].hr,0,TP);
+      ctx.fillStyle=B[i].color[1];
+      ctx.closePath();
+      ctx.fill();
+    }
   }
+  let ra=0.025*R;
+  ctx.beginPath();
+  ctx.moveTo(ra,0);
+  ctx.arc(0,0,ra,0,TP);
+  ctx.fillStyle="#133";
+  ctx.fill();
 }
 
 var reset=(m)=>{
-  console.log("reset "+m);
+//  console.log("reset "+m);
   cancelAnimationFrame(AF);
   stopped=true;
   start();
@@ -177,7 +198,7 @@ var collide=()=>{
 if (del>maxdel) { 
   maxdel=del; 
   if (maxdel>rad/4) {
-console.log("restarted");
+//console.log("restarted");
 //debugger;
     reset("del");
     return false;
@@ -240,7 +261,7 @@ do {
     //if (counter%2==1) console.log("adj "+counter);
   counter++; 
 } while (adjust());
-if (counter>1) console.log("adjusted "+counter);
+//if (counter>1) console.log("adjusted "+counter);
   }
   ctx.clearRect(-canvas.width/2,-canvas.height/2,canvas.width,canvas.height);
   draw();
@@ -264,7 +285,7 @@ if (counter>1) console.log("adjusted "+counter);
 var start=()=>{
   if (stopped) {
     stopped=false;
-    tsStyle="hsl("+getRandomInt(0,360)+",70%,30%)";
+    tsStyle="hsl("+getRandomInt(0,360)+",60%,40%)";
     maxdel=0;
     Count=getRandomInt(5,25);
     R=canvas.width/(2*(1+Math.sin(TP/(4*(Count+1)))));
