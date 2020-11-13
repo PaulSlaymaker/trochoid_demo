@@ -191,7 +191,7 @@ var animate=(ts)=>{
   if (stopped) return;
   if (S==0) {
     //if (Math.random()<0.001)  S=1;
-    if (pauseCount%5==4) {  S=1; pauseCount=0; }
+    if (pauseCount%4==3) {  S=1; pauseCount=0; }
   } else if (S==1) {
     op-=0.02;
     if (op<0) { op=0; reset(); ctx.clearRect(-XD,-YD,2*XD,2*YD); S=2; }
@@ -202,7 +202,7 @@ var animate=(ts)=>{
     ctx.canvas.style.opacity=op;
   }
   t+=0.004;
-  if (pause<2) {
+  if (pause<1) {
     pause+=0.002;
   } else {
     frac+=0.002;  // make ratio of 1, ie: 1,2,5 
