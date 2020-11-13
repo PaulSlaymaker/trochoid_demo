@@ -59,6 +59,7 @@ var Term=function(polType,mult,factor) {
   this.sign=1;
   this.getValue=(t)=>{ 
     return this.sign*this.factor*PolarType[this.polType](this.mult*t);
+    //return Math.pow(this.sign*this.factor*PolarType[this.polType](this.mult*t),3)/50;
   }
   this.factorCall=(inp)=>{ 
     let f=parseFloat(inp.value); 
@@ -117,13 +118,24 @@ var Curve=function(c) {
               this.ty1,this.ty3,this.ty5,this.ty7,this.ty9];
   this.randomize=()=>{ 
     counter++;
-    if (counter%8==0) {
+/*
+    if (counter%2==0) {
+      this.tx9.factor=this.tx7.factor=this.tx5.factor=this.tx3.factor=this.tx1.factor=0;
+      this.ty7.factor=this.ty5.factor=this.ty3.factor=this.ty1.factor=0;
+      this.ty9.factor=10;
+    } else 
+*/
+if (counter%8==0) {
       this.tx9.factor=this.tx5.factor=this.tx3.factor=this.tx1.factor=0;
       this.ty7.factor=this.ty5.factor=this.ty3.factor=0;
+/*
       this.tx7.factor=10;
       this.ty1.factor=getRandomInt(0,11);
       this.ty9.factor=10-this.ty1.factor;
-      return;
+*/
+      this.tx7.factor=3;
+      this.ty1.factor=getRandomInt(0,4);
+      this.ty9.factor=3-this.ty1.factor;
     } else if (counter%7==0) {
       this.tx7.factor=this.tx5.factor=this.tx3.factor=0;
       this.ty7.factor=this.ty5.factor=this.ty3.factor=0;
@@ -138,7 +150,6 @@ var Curve=function(c) {
 	this.tx9.factor=0;
 	this.ty9.factor=0;
       }
-      return;
     } else if (counter%6==0) {
       this.tx7.factor=this.tx5.factor=this.tx3.factor=0;
       this.ty7.factor=this.ty5.factor=this.ty3.factor=0;
@@ -147,62 +158,60 @@ var Curve=function(c) {
       this.ty1.factor=getRandomInt(4,7);
       this.ty9.factor=10-this.ty1.factor;
       this.tx9.mult=this.ty9.mult=[9,11,13,15][getRandomInt(0,4)];
-      return;
     } else {
-
-    for (let i in this.xTerms) {
-      if (Math.random()<0.3+i/10) {
-	this.xTerms[i].factor=0;
-      } else {
-	this.xTerms[i].factor=[1,2,3,4,5][getRandomInt(0,5)]; 
+      for (let i in this.xTerms) {
+	if (Math.random()<0.3+i/10) {
+	  this.xTerms[i].factor=0;
+	} else {
+	  this.xTerms[i].factor=[1,2,3,4,5][getRandomInt(0,5)]; 
+	}
+	if (Math.random()<0.07) { this.xTerms[i].sign*=-1; }
       }
-      if (Math.random()<0.07) { this.xTerms[i].sign*=-1; }
-    }
-    for (let i in this.yTerms) {
-      if (Math.random()<0.3+i/10) {
-	this.yTerms[i].factor=0;
-      } else {
-	this.yTerms[i].factor=[1,2,3,4,5][getRandomInt(0,5)]; 
+      for (let i in this.yTerms) {
+	if (Math.random()<0.3+i/10) {
+	  this.yTerms[i].factor=0;
+	} else {
+	  this.yTerms[i].factor=[1,2,3,4,5][getRandomInt(0,5)]; 
+	}
+	if (Math.random()<0.07) { this.yTerms[i].sign*=-1; }
       }
-      if (Math.random()<0.07) { this.yTerms[i].sign*=-1; }
+      let ex=this.tx1.factor+this.tx3.factor+this.tx5.factor+this.tx7.factor+this.tx9.factor;
+      if (ex<1) {
+	this.xTerms[getRandomInt(0,5)].factor=9;
+      } else if (ex<2) {
+	this.xTerms.forEach((te)=>{ te.factor*=8; });
+      } else if (ex<3) {
+	this.xTerms.forEach((te)=>{ te.factor*=4; });
+      } else if (ex<4) {
+	this.xTerms.forEach((te)=>{ te.factor*=2; });
+      } else if (ex<5) {
+	this.xTerms.forEach((te)=>{ if (te.factor>0) te.factor+=2; });
+      } else if (ex<6) {
+	this.xTerms.forEach((te)=>{ if (te.factor>0) te.factor+=1; });
+      } else if (ex>16) {
+	for (let i=0; i<6; i++) { if (this.terms[i].factor>1) this.terms[i].factor-=2; }
+      } else if (ex>12) {
+	for (let i=0; i<6; i++) { if (this.terms[i].factor>0) this.terms[i].factor-=1; }
+      }
+      let ey=this.ty1.factor+this.ty3.factor+this.ty5.factor+this.ty7.factor+this.ty9.factor;
+      if (ey<1) {
+	this.terms[getRandomInt(5,10)].factor=9;
+      } else if (ey<2) {
+	for (let i=5; i<10; i++) { this.terms[i].factor*=8; }
+      } else if (ey<3) {
+	for (let i=5; i<10; i++) { this.terms[i].factor*=4; }
+      } else if (ey<4) {
+	for (let i=5; i<10; i++) { this.terms[i].factor*=2; }
+      } else if (ey<5) {
+	this.yTerms.forEach((te)=>{ if (te.factor>0) te.factor+=2; });
+      } else if (ey<6) {
+	this.yTerms.forEach((te)=>{if (te.factor>0) te.factor+=1; });
+      } else if (ey>16) {
+	for (let i=5; i<10; i++) { if (this.terms[i].factor>1) this.terms[i].factor-=2; }
+      } else if (ey>12) {
+	for (let i=5; i<10; i++) { if (this.terms[i].factor>0) this.terms[i].factor-=1; }
+      }
     }
-    let ex=this.tx1.factor+this.tx3.factor+this.tx5.factor+this.tx7.factor+this.tx9.factor;
-    if (ex<1) {
-      this.xTerms[getRandomInt(0,5)].factor=9;
-    } else if (ex<2) {
-      this.xTerms.forEach((te)=>{ te.factor*=8; });
-    } else if (ex<3) {
-      this.xTerms.forEach((te)=>{ te.factor*=4; });
-    } else if (ex<4) {
-      this.xTerms.forEach((te)=>{ te.factor*=2; });
-    } else if (ex<5) {
-      this.xTerms.forEach((te)=>{ if (te.factor>0) te.factor+=2; });
-    } else if (ex<6) {
-      this.xTerms.forEach((te)=>{ if (te.factor>0) te.factor+=1; });
-    } else if (ex>16) {
-      for (let i=0; i<6; i++) { if (this.terms[i].factor>1) this.terms[i].factor-=2; }
-    } else if (ex>12) {
-      for (let i=0; i<6; i++) { if (this.terms[i].factor>0) this.terms[i].factor-=1; }
-    }
-    let ey=this.ty1.factor+this.ty3.factor+this.ty5.factor+this.ty7.factor+this.ty9.factor;
-    if (ey<1) {
-      this.terms[getRandomInt(5,10)].factor=9;
-    } else if (ey<2) {
-      for (let i=5; i<10; i++) { this.terms[i].factor*=8; }
-    } else if (ey<3) {
-      for (let i=5; i<10; i++) { this.terms[i].factor*=4; }
-    } else if (ey<4) {
-      for (let i=5; i<10; i++) { this.terms[i].factor*=2; }
-    } else if (ey<5) {
-      this.yTerms.forEach((te)=>{ if (te.factor>0) te.factor+=2; });
-    } else if (ey<6) {
-      this.yTerms.forEach((te)=>{if (te.factor>0) te.factor+=1; });
-    } else if (ey>16) {
-      for (let i=5; i<10; i++) { if (this.terms[i].factor>1) this.terms[i].factor-=2; }
-    } else if (ey>12) {
-      for (let i=5; i<10; i++) { if (this.terms[i].factor>0) this.terms[i].factor-=1; }
-    }
-  }
   }
   this.getX=(t)=>{ 
     return this.tx1.getValue(t)
@@ -361,6 +370,7 @@ var draw=(fin)=>{
     drawCH();
     equation.write();
   }
+
   ctx.beginPath();
   let j=q%Z;
   let f=fracs[j];
@@ -368,9 +378,9 @@ var draw=(fin)=>{
   let y=(1-f)*curve2.pts[0].y+f*curve1.pts[0].y;
   ctx.moveTo(scale*x,scale*y);
   for (let i=1; i<Z; i+=1) {
-//let j=(i+100)%Z/2;
-j=(fracFactor*i+q)%Z;
-//let j=i;
+    //let j=(i+100)%Z/2;
+    j=(fracFactor*i+q)%Z;
+    //let j=i;
     if (j<Z/2) {
       f=fracs[j];
     } else {
@@ -378,6 +388,28 @@ j=(fracFactor*i+q)%Z;
     }
     x=(1-f)*curve2.pts[i].x+f*curve1.pts[i].x;
     y=(1-f)*curve2.pts[i].y+f*curve1.pts[i].y;
+    ctx.lineTo(scale*x,scale*y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  j=q%Z;
+  f=fracs[j];
+  y=(1-f)*curve2.pts[0].x+f*curve1.pts[0].x;
+  x=(1-f)*curve2.pts[0].y+f*curve1.pts[0].y;
+  ctx.moveTo(scale*x,scale*y);
+  for (let i=1; i<Z; i+=1) {
+    //let j=(i+100)%Z/2;
+    j=(fracFactor*i+q)%Z;
+    //let j=i;
+    if (j<Z/2) {
+      f=fracs[j];
+    } else {
+      f=fracs[Z-1-j];
+    }
+    y=(1-f)*curve2.pts[i].x+f*curve1.pts[i].x;
+    x=(1-f)*curve2.pts[i].y+f*curve1.pts[i].y;
     ctx.lineTo(scale*x,scale*y);
   }
   ctx.closePath();
@@ -421,7 +453,8 @@ var pause=(ts)=>{
   } else {
     transit();
     q=[0,fCount][getRandomInt(0,2)];
-    fracFactor=[2,4,1,3][getRandomInt(0,4,true)];
+    //fracFactor=[2,4,1,3][getRandomInt(0,4,true)];
+    fracFactor=[2,4][getRandomInt(0,2)];
     requestAnimationFrame(animate);
   }
 }
@@ -476,9 +509,7 @@ var animate=(ts)=>{
       return;
     }
     pauseTS=performance.now()+600;
-    //pauseTS=performance.now()+1800;
     requestAnimationFrame(pause);
-    //requestAnimationFrame(animate);
   }
 }
 
