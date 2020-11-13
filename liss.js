@@ -165,7 +165,6 @@ if (Math.random()<0.4) {
     } else if (ey>12) {
       for (let i=6; i<12; i++) { if (this.terms[i].factor>0) this.terms[i].factor-=1; }
     }
-console.log(ex+"\t"+ey);
   }
   this.getX=(t)=>{ 
     return this.tx1.getValue(t)
@@ -300,6 +299,7 @@ var cbLoc=(p1,p2,frac)=>{
   return e1+e2+e3+e4;
 }
 
+var Z=500;
 var draw=(frac, fin)=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   if (fin) {
@@ -311,7 +311,7 @@ var draw=(frac, fin)=>{
   let x=cbLoc(curve2.getX(0),curve1.getX(0),frac);
   let y=cbLoc(curve2.getY(0),curve1.getY(0),frac);
   ctx.moveTo(scale*x,scale*y);
-  for (let t=0; t<=Math.PI*2; t+=Math.PI/500) {
+  for (let t=0; t<=Math.PI*2; t+=2*Math.PI/Z) {
     x=cbLoc(curve2.getX(t),curve1.getX(t),frac);
     y=cbLoc(curve2.getY(t),curve1.getY(t),frac);
     ctx.lineTo(scale*x,scale*y);
@@ -458,7 +458,7 @@ var control=(term)=>{
 	  return rV;
 	})(),
 	(()=>{
-	  let r=getStdRange(1,15,1);
+	  let r=getStdRange(1,21,1);
 	  r.oninput=(event)=>{
 	    term.multCall(r); 
 	    c.setReport();
