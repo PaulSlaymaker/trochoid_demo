@@ -118,7 +118,6 @@ const sp={
   //this.dFrac=1;
   nnSet:function() {
     let pd=0;
-    //for (let i in sp.b) {
     for (let i=0; i<sp.b.length; i++) {
       let o1=sp.b[i];
       for (let j=i+1; j<sp.b.length; j++) {
@@ -284,4 +283,4 @@ onresize();
 
 init();
 
-function log(e) { console.log(Date().substring(16,25)+e); }
+//function log(e) { console.log(Date().substring(16,25)+e); }
