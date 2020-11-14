@@ -48,8 +48,8 @@ var C=72;
 var pointSet=0;
 var colorSet=0;
 var f1=0;
-var s1=1,s2=1,s3=3;
-var c1=1,c2=1,c3=3;
+var s1=1,s2=1,s3=3,s4=1;
+var c1=1,c2=1,c3=3,c4=1;
 
 var VSide={
   pts:[[],[]],
@@ -57,8 +57,8 @@ var VSide={
     for (let i=0; i<C; i++) {
       let t=i*TP/C;
       VSide.pts[pointSet][i]={
-        "x":f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)),
-        "y":16*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t))
+        "x":f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)+Math.sin(s4*t)),
+        "y":12*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)+Math.cos(c4*t))
       };
     }
   }
@@ -71,10 +71,10 @@ var ISide={
     let q=z/2;
     for (let i=0; i<C; i++) {
       let t=i*TP/C;
-      let x=z*16*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t))
-           +(1/z)*f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t));
-      let y=z*f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t))
-           -(1/z)*16*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t));
+      let x=z*12*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)+Math.cos(c4*t))
+           +(1/z)*f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)+Math.sin(s4*t));
+      let y=z*f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)+Math.sin(s4*t))
+           -(1/z)*12*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)+Math.cos(c4*t));
       ISide.pts[pointSet][i]={"x":q*x,"y":q*y};
     }
   }
@@ -85,10 +85,10 @@ var DSide={
   let q=z/2;
     for (let i=0; i<C; i++) {
       let t=i*TP/C;
-      let x=z*16*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t))
-           -(1/z)*f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t));
-      let y=z*f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t))
-           +(1/z)*16*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t));
+      let x=z*12*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)+Math.cos(c4*t))
+           -(1/z)*f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)+Math.sin(s4*t));
+      let y=z*f1*(Math.sin(s1*t)+Math.sin(s2*t)+Math.sin(s3*t)+Math.sin(s4*t))
+           +(1/z)*12*(Math.cos(c1*t)+Math.cos(c2*t)+Math.cos(c3*t)+Math.cos(c4*t));
       DSide.pts[pointSet][i]={"x":q*x,"y":q*y};
     }
   }
@@ -110,12 +110,17 @@ const transit=()=>{
   pointSet=++pointSet%2;
   f1=50*Math.random();
   //f1=5*Math.random();
-  s1=2*getRandomInt(0,5,true)+1;
-  s2=2*getRandomInt(0,5,true)+1;
-  s3=2*getRandomInt(0,5,true)+1;
-  c1=2*getRandomInt(0,5,true)+1;
-  c2=2*getRandomInt(0,5,true)+1;
-  c3=2*getRandomInt(0,5,true)+1;
+  if (pointSet==0) {
+    s1=2*getRandomInt(-4,4)+1;
+    s2=2*getRandomInt(-4,4)+1;
+    c1=2*getRandomInt(-4,4)+1;
+    c2=2*getRandomInt(-4,4)+1;
+  } else {
+    s3=2*getRandomInt(-4,4)+1;
+    s4=2*getRandomInt(-4,4)+1;
+    c3=2*getRandomInt(-4,4)+1;
+    c4=2*getRandomInt(-4,4)+1;
+  }
   VSide.setPoints();
   ISide.setPoints();
   DSide.setPoints();
