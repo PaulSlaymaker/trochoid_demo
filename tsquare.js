@@ -52,9 +52,22 @@ var colorSet=0;
 var f1=0;
 var s1=1,s2=1,s3=3,s4=1,s5=1,s6=1;
 var c1=1,c2=1,c3=3,c4=1;
+var s=[],s2=[],c=[],c2=[];
 
 var VSide={
   pts:[[],[]],
+/*
+  getX:(t)=>{
+    let v=0;
+    for (let i in s) v+=Math.sin(s[i]*t);
+    return v;
+  },
+  getY:(t)=>{
+    let v=0;
+    for (let i in c) v+=Math.cos(c[i]*t);
+    return v;
+  },
+*/
   setPoints:()=>{
     if (state==AR || state==AL) {
       VSide.setPointsA();
@@ -80,6 +93,18 @@ var VSide={
       };
     }
   }
+}
+
+const getX=(t)=>{
+  let v=0;
+  for (let i in s) v+=Math.sin(s[i]*t);
+  return v;
+}
+
+const getY=(t)=>{
+  let v=0;
+  for (let i in c) v+=Math.cos(c[i]*t);
+  return v;
 }
 
 var HSide={
@@ -123,47 +148,69 @@ const transitColor=()=>{
   width[colorSet]=getRandomInt(4,16,true);
 }
 
-var dir=1;
 const transit=()=>{
   pointSet=++pointSet%2;
   if (state==AL) {
-    if (dir==1) {
-      transitMR(true);
-      state=ML;
-    } else {
-      transitAR();
-      state=AR;
-    }
+    transitMR(true);
+    state=ML;
+    HSide.setPoints();
+    VSide.setPoints();
+    pointSet=++pointSet%2;
+    transitMR();
+    state=MR;
+    HSide.setPoints();
+    VSide.setPoints();
   } else if (state==ML) {
-    if (dir==1) {
-      transitMR();
-      state=MR;
-    } else {
-      transitAR(true);
-      state=AL;
-    }
+    transitAR(true);
+    state=AL;
+    //HSide.setPoints();
+    //VSide.setPoints();
+    pointSet=++pointSet%2;
+    transitAR();
+    state=AR;
   } else if (state==MR) {
     if (Math.random()<0.2) {
       state=ML;
       transitMR(true);
-      dir=-1;
     } else {
       transitMR();
     }
+    HSide.setPoints();
+    VSide.setPoints();
   }  else {
     if (Math.random()<0.2) {
       state=AL;
       transitAR(true);
-      dir=1;
     } else {
       transitAR();
     }
   }
-  HSide.setPoints();
-  VSide.setPoints();
+//  HSide.setPoints();
+//  VSide.setPoints();
 }
 
 const transitAR=(line)=>{
+  //let fx=2+50*Math.random();
+  let fx=2+80*Math.random();
+  s=[];
+  c=[];
+  let n=getRandomInt(1,10);
+  for (let i=0; i<n; i++) {
+    s[i]=2*getRandomInt(-3,3)+1;
+    c[i]=2*getRandomInt(-3,3)+1;
+  }
+  let inc=TP/C;
+  for (let i=0; i<C; i++) {
+    let t=i*inc;
+    let x=(line?0:fx*getX(t)/n);
+    //let x=fx*VSide.getX(t)/n;
+    let y=80*getY(t)/n;
+    VSide.pts[pointSet][i]={"x":x,"y":y};
+    HSide.pts[pointSet][i]={"x":y,"y":x};
+  }
+}
+
+const transitARO=(line)=>{
   if (line) {
     f1=0;
     c1=2*getRandomInt(-3,3)+1;
@@ -190,11 +237,34 @@ const transitAR=(line)=>{
   }
 }
 
+const transitMR2=(line)=>{
+  s=[];
+  s2=[];
+  c=[];
+  c2=[];
+  let n=getRandomInt(1,5);
+  for (let i=0; i<n; i++) {
+    s[i]=getRandomInt(-3,4);
+    s2[i]=s[i]+2*getRandomInt(-2,2)+1;
+/*
+    c[i]=2*getRandomInt(-3,3)+1;
+	this.mx[i]=getRandomInt(-3,4);
+	this.mx2[i]=this.mx[i]+2*getRandomInt(-2,2)+1;
+	if (this.mx2[i]==0) this.mx2[i]=2;
+	this.my[i]=getRandomInt(-3,4);
+	//this.my[i]=this.mx[i];
+	this.my2[i]=this.my[i]+2*getRandomInt(-2,3);
+	if (this.my2[i]==0) this.my2[i]=2;
+*/
+
+  }
+}
+
 const transitMR=(line)=>{
   if (line) { 
     s2=s4=s6=0;
-    c1=2*getRandomInt(-1,-1);
-    c2=c1+2*getRandomInt(-2,1)+1;
+    c1=2*getRandomInt(-1,2);
+    c2=c1+2*getRandomInt(-2,2)+1;
 /*
     c1=getRandomInt(-3,3);
     c2=c1+2*getRandomInt(-2,1)+1;
@@ -207,15 +277,17 @@ const transitMR=(line)=>{
 */
   } else {
     if (pointSet==0) {
-      c1=getRandomInt(-3,3);
-      c2=c1+2*getRandomInt(-2,1)+1;
-      s1=getRandomInt(-3,3);
-      s2=s1+2*getRandomInt(-1,1);
+      c1=getRandomInt(-3,4);
+      c2=c1+2*getRandomInt(-2,2)+1;
+      if (c2==0) c2=2;
+      s1=getRandomInt(-3,4);
+      s2=s1+2*getRandomInt(-1,2);
+      if (s2==0) s2=2;
     } else {
-      s3=getRandomInt(-3,3);
-      s4=s3+2*getRandomInt(-1,1);
-      s5=getRandomInt(-3,3);
-      s6=s5+2*getRandomInt(-1,1);
+      s3=getRandomInt(-3,4);
+      s4=s3+2*getRandomInt(-1,2);
+      s5=getRandomInt(-3,4);
+      s6=s5+2*getRandomInt(-1,2);
     }
   }
 }
@@ -289,17 +361,17 @@ var setColors=()=>{
   let j=(colorSet+1)%2;
   let k=colorSet;
   let h=(bkg[j].hue+cFrac*(bkg[k].hue-bkg[j].hue+360))%360;
-  let s=cFrac*bkg[k].sat+(1-cFrac)*bkg[j].sat;
+  let sat=cFrac*bkg[k].sat+(1-cFrac)*bkg[j].sat;
   let l=cFrac*bkg[k].lum+(1-cFrac)*bkg[j].lum;
-  ctx.canvas.style.background="hsl("+h+","+s+"%,"+l+"%)";
+  ctx.canvas.style.background="hsl("+h+","+sat+"%,"+l+"%)";
   h=(fill[j].hue+cFrac*(fill[k].hue-fill[j].hue+360)%360);
-  s=cFrac*fill[k].sat+(1-cFrac)*fill[j].sat;
+  sat=cFrac*fill[k].sat+(1-cFrac)*fill[j].sat;
   l=cFrac*fill[k].lum+(1-cFrac)*fill[j].lum;
-  ctx.fillStyle="hsl("+h+","+s+"%,"+l+"%)";
+  ctx.fillStyle="hsl("+h+","+sat+"%,"+l+"%)";
   h=(stroke[j].hue+cFrac*(stroke[k].hue-stroke[j].hue+360)%360);
-  s=cFrac*stroke[k].sat+(1-cFrac)*stroke[j].sat;
+  sat=cFrac*stroke[k].sat+(1-cFrac)*stroke[j].sat;
   l=cFrac*stroke[k].lum+(1-cFrac)*stroke[j].lum;
-  ctx.strokeStyle="hsl("+h+","+s+"%,"+l+"%)";
+  ctx.strokeStyle="hsl("+h+","+sat+"%,"+l+"%)";
   ctx.lineWidth=cFrac*width[k]+(1-cFrac)*width[j];
 }
 
@@ -308,7 +380,7 @@ var draw=()=>{
   let f=cuFrac();
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   ctx.beginPath();
-  for (let s of sides) s.draw(f);
+  for (let sde of sides) sde.draw(f);
   ctx.closePath();
   ctx.stroke();
   ctx.fill("evenodd");
