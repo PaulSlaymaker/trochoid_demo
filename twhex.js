@@ -211,7 +211,7 @@ var animate=(ts)=>{
   setLocs();
   draw();
   if (S==0) {
-    if (Math.random()<0.002)  S=1;
+    if (Math.random()<0.001)  S=1;
   } else if (S==1) {
     op-=0.03;
     if (op<0) {
