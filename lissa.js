@@ -11,7 +11,6 @@ var canvas=(()=>{
   let c=document.createElement("canvas");
   c.width="800";
   c.height="800";
-  c.onclick=()=>start();
   let co=document.createElement("div");
   co.style.textAlign="center";
   co.append(c);
@@ -292,14 +291,13 @@ const transit=()=>{
 }
 
 const resetTimes=()=>{
-  if (frac>0) {
-//    stx=performance.now()-frac*duration;
+//  if (frac>0) {
     stx=performance.now()-frac*duration;
     for (let i=0, stp=(duration-durF)/fCount; i<fCount; i++) {
       stxs[i]=stx+i*stp;
     }
-  }
-  else { stx=0; }
+//  }
+//  else { stx=0; }
   if (colorFrac>0) colorTime=performance.now()-colorFrac*colorDuration;
   else colorTime=0;
 }
@@ -314,6 +312,7 @@ var start=()=>{
     stopped=true;
   }
 }
+body.addEventListener("click", start, false);
 
 var pauseTS=1400;
 var pause=(ts)=>{
@@ -321,6 +320,7 @@ var pause=(ts)=>{
   if (ts<pauseTS) {
     requestAnimationFrame(pause);
   } else {
+    if (EM) stopped=true;
     transit();
     fracFactor=[2,4][getRandomInt(0,2)];
     requestAnimationFrame(animate);
@@ -369,10 +369,11 @@ var animate=(ts)=>{
 //    requestAnimationFrame(animate);
   } else {
     stx=0;
+    frac=0;
     pauseTS=performance.now()+(Math.random()<0.05)?60:0;
     af=pause;
     //requestAnimationFrame(pause);
-    if (EM) stopped=true;
+    //if (EM) stopped=true;
   }
   if (!colorTime) colorTime=ts;
   progress=ts-colorTime;
@@ -397,4 +398,4 @@ transit();
 transit();
 
 draw();
-requestAnimationFrame(pause);
+requestAnimationFrame(animate);
