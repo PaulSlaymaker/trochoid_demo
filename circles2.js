@@ -141,7 +141,7 @@ var setCurve=()=>{
   curve.randomize();
   pts[ps]=[];
   let maxs=0.01;
-  for (let t=0; t<=Math.PI*2; t+=TP/Z) {
+  for (let t=0; t<Math.PI*2-0.001; t+=TP/Z) {
     let x=curve.getX(t);
     let y=curve.getY(t);
     pts[ps].push({"x":x,"y":y});
@@ -333,7 +333,7 @@ var maxr=TP*CSIZE/Z;
 var async=false;
 var reset=()=>{
   //Z=12*getRandomInt(1,17);
-  Z=4*getRandomInt(10,60);
+  Z=4*getRandomInt(30,60);
   maxr=TP*CSIZE/Z;
   hue=getRandomInt(0,360);
   //if (Z%8!=0 && Math.random()<0.5) async=true;
