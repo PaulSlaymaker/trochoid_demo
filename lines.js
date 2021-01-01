@@ -45,24 +45,24 @@ var cuFrac=(frac)=>{
 }
 
 var curve={
-  f:[1,1,1,1,1],
+  f:[1,1,1,1,1,1],
   randomize:()=>{ 
     let mult=[,,,,
-      [1,5,9,13,17,21,25,29,33],,
-      [1,7,13,19,25,31],
-      [1,8,15,22,29],
-      [1,9,17,25,33],
-      [1,10,19,28],
-      [1,11,21,31],
-      [1,12,23],
-      [1,13,25],
-      [1,14,27],
-      [1,15,29],
-      [1,16,31],
-      [1,17,33],
-      [1,18]
+      [5,1,9,13,17,21,25],,
+      [7,1,13,19,25],
+      [8,1,15,22,29],
+      [9,1,17,25],
+      [10,1,19,28],
+      [11,1,21,31],
+      [12,1,23],
+      [13,1,25],
+      [14,1,27],
+      [15,1,29],
+      [16,1,31],
+//      [17,1,33],
+//      [1,18]
     ];
-    for (let i=0; i<5; i++) curve.f[i]=mult[V][getRandomInt(0,mult[V].length,true)];
+    for (let i=0; i<6; i++) curve.f[i]=mult[V][getRandomInt(0,mult[V].length,true)];
   },
   getX:(t)=>{ 
     let x=0;
@@ -235,7 +235,7 @@ var hue=getRandomInt(0,360);
 var maxr=TP*CSIZE/Z;
 var reset=()=>{
   //V=[4,6,7,8,9,10,11,12,13,14,15,16,17][getRandomInt(0,13)];
-  V=[8,7,9,6,10,4,11,12,13,14,15,16,17][getRandomInt(0,13,true)];
+  V=[8,7,9,6,10,4,11,12,13,14,15,16][getRandomInt(0,13,true)];
   if (V==4) Z=4*getRandomInt(30,70);
   else if (V==6) Z=6*getRandomInt(20,40);
   else if (V==7) Z=7*getRandomInt(20,30);
@@ -246,9 +246,9 @@ var reset=()=>{
   else if (V==12) Z=12*getRandomInt(10,20);
   else if (V==13) Z=13*getRandomInt(10,20);
   else if (V==14) Z=14*getRandomInt(10,20);
-  else if (V==15) Z=15*getRandomInt(10,15);
-  else if (V==16) Z=16*getRandomInt(10,15);
-  else Z=17*getRandomInt(10,15);
+//  else if (V==15) Z=15*getRandomInt(10,15);
+//  else if (V==16) Z=16*getRandomInt(10,15);
+  else Z=15*getRandomInt(10,20);
   maxr=TP*CSIZE/Z;
   hue=getRandomInt(0,360);
   D2=getRandomInt(20,60);
