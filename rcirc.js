@@ -140,7 +140,7 @@ ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
     ctx.arc(points[i].x,points[i].y,r,0,TP);
     ctx.closePath();
     //ctx.fillStyle="hsl("+(hue+360*r/80)+",80%,70%)"; // fade
-    ctx.fillStyle="hsl("+points[i].hue+",90%,70%)"; 
+    ctx.fillStyle="hsl("+points[i].hue+",92%,60%)"; 
     ctx.fill();
   }
 }
