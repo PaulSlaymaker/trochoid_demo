@@ -1,11 +1,11 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
-//const CYCLE=720;
-const CYCLE=360;  // must be divisible by number of segments time t increment times 2 and by 12
-//const CYCLE=240;
+//const CYCLE=360;  // must be divisible by number of segments time t increment times 2 and by 12
+const CYCLE=240;
 //const CYCLE=144;
 
 var trackCtx=(()=>{
@@ -60,10 +60,9 @@ var getRandomInt=(min,max,low)=>{
 }
 
 var Circle=function(xp,yp,rp,rd,cycDisp) {  // x center, y center, radius, rotation direction, unit x displacement in cycle units
-  this.x=xp; // need any members?:Yes, (never modified) x,y clash with calced x,y
+  this.x=xp;
   this.y=yp;
   this.r=rp;
-  //this.j=[];
   this.drawTrack=(width,color)=>{
     trackCtx.lineWidth=width;
     trackCtx.strokeStyle=color;
@@ -73,7 +72,7 @@ var Circle=function(xp,yp,rp,rd,cycDisp) {  // x center, y center, radius, rotat
     trackCtx.closePath();
     trackCtx.stroke();
   }
-  this.drawSegment=(o)=>{	// t==0 for reverse circle is at TP/2 from drawing point
+  this.drawSegment=(o)=>{
     let t2=(t+o)%CYCLE;
     ctx.beginPath();
     let a=rd*TP*(cycDisp+t2)/CYCLE;
@@ -91,19 +90,14 @@ var Circle=function(xp,yp,rp,rd,cycDisp) {  // x center, y center, radius, rotat
     let y=yp+rp*Math.sin(a);
     ctx.moveTo(x,y);
     ctx.arc(xp,yp,rp,a,rd*TP*(cycDisp+junc.entryAngle)/CYCLE,rd==1);
-//let z=(cycDisp+junc.entryAngle)/CYCLE;
-//    ctx.arc(xp,yp,rp,a,rd*TP*z,rd==1);
     ctx.stroke();
   }
   this.drawExit=(o,junc)=>{
-//if (junctions[1]==junc) debugger;
     let t2=(t+o)%CYCLE;
     ctx.beginPath();
     let a=rd*TP*(cycDisp+t2)/CYCLE;
-    ctx.moveTo(junc.x,junc.y);  // junc specific, non changing
-    let z=rd*TP*(cycDisp+junc.entryAngle)/CYCLE;
-    //ctx.arc(xp,yp,rp,rd*TP*cycDisp/CYCLE,a-rd*trail,rd==1);
-    ctx.arc(xp,yp,rp,z,a-rd*trail,rd==1);
+    ctx.moveTo(junc.x,junc.y);  // junc specific, non-changing
+    ctx.arc(xp,yp,rp,rd*TP*(cycDisp+junc.entryAngle)/CYCLE,a-rd*trail,rd==1);
     ctx.stroke();
   }
 }
@@ -115,8 +109,6 @@ var trail=TP/4-TP/12;	// quarter segments
 var Junction=function(p1,p2,angle) {  // angle p1-based, p2 angle=CYCLE-angle
   this.x=p1.x+p1.r*Math.cos(angle/CYCLE*TP);
   this.y=p1.y+p1.r*Math.sin(angle/CYCLE*TP);
-this.p1=p1;
-this.p2=p2;
   this.cycAngle=angle;	// cycle units
   this.entryAngle=angle;
   this.exitAngle=(CYCLE/4-TI+angle)%CYCLE;	// 1/4 cycle: 4 segments
@@ -125,7 +117,6 @@ this.p2=p2;
     if (p1==seg.p1) {
       if (t2==this.entryAngle) {
         if (seg.ts) {
-          // change segment.junc false->junction, seg.p1/p2 convention?
           seg.p1=p2;
           seg.p2=p1;
           return this;
@@ -161,10 +152,7 @@ var path=[
   new Circle(R,R,R,1,CYCLE/2),
   new Circle(-R,R,R,-1,0)
 ];
-//var path=[new Circle(-R,-R,R,1,0,0), new Circle(0.6*R,-R,0.6*R,-1,TP/2,CYCLE/2), new Circle(-R,R,R,-1,0,0)];
-//var path=[new Circle(-R,0,R,1), new Circle(-0.6*R,0,0.6*R,1)];
 
-//var junctions=[new Junction(path[0],path[1],0)];
 var junctions=[
   new Junction(path[0],path[1],0), 
   new Junction(path[0],path[3],CYCLE/4),
@@ -197,7 +185,6 @@ var Segment=function(offset,color,p) {
     ctx.strokeStyle=this.color;
     if (this.junc) {
       this.p1.drawEntry(this.o, this.junc);
-//if (this.p2==path[2] || this.p1==path[2]) return;
       this.p2.drawExit(this.o, this.junc);
     } else {
       this.p1.drawSegment(this.o);
@@ -231,11 +218,11 @@ for (let i=0; i<segments.length; i++) {
 
 var t=0;
 
-var W=54;
-ctx.lineWidth=W-8;
+var W=72;
+ctx.lineWidth=W-10;
 
-path.forEach((p)=>{ p.drawTrack(W,"#EEE") });
-path.forEach((p)=>{ p.drawTrack(W-8,"black") });
+path.forEach((p)=>{ p.drawTrack(W,"#DDD") });
+path.forEach((p)=>{ p.drawTrack(W-10,"black") });
 
 var stopped=true;
 var start=()=>{
@@ -268,6 +255,7 @@ var animate=(ts)=>{
     }
   }
   drawX2();
+  if (EM && t%400==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
