@@ -213,7 +213,7 @@ var draw=(frac, fin)=>{
     ctx.closePath();
 //  ctx.stroke();
 //  ctx.fillStyle="hsl("+(hue+120*r/maxr)+",80%,70%)"; // fade
-    ctx.fillStyle="hsl("+(hue+240*r/maxr)+",80%,70%)";
+    ctx.fillStyle="hsl("+(hue+240*r/maxr)+",95%,55%)";
     ctx.fill();
   }
 }
