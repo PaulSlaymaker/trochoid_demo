@@ -255,7 +255,7 @@ var animate=(ts)=>{
     }
   }
   drawX2();
-  if (EM && t%400==0) stopped=true;
+  if (EM && t%300==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
