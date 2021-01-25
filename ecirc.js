@@ -122,7 +122,7 @@ var draw=()=>{
       ctx.lineTo(curves[i].points[j].x,curves[i].points[j].y);
     }
     ctx.closePath();
-    let lw=2+10*Math.pow(curves[i].r/CSIZE,4);
+    let lw=2+40*Math.pow(curves[i].r/CSIZE,6);
     ctx.lineWidth=lw;
     let op=Math.pow(1-curves[i].r/CSIZE,0.5);
     let hue=huex+270*Math.pow(curves[i].r/CSIZE,2)%360;
