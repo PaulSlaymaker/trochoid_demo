@@ -49,15 +49,11 @@ var checkSwitch=(b)=>{
     if (c==b.c) continue;
     let dx=b.x-c.x;
     if (Math.abs(Math.pow(Math.pow(dx,2)+Math.pow(b.y-c.y,2),0.5)-c.r)<0.4) {
-//      if (Math.random()<0.5) {
-        b.c=c;
-        //b.o=[-1,1][getRandomInt(0,2)]*Math.atan((b.y-c.y)/dx);
-        b.o=Math.atan((b.y-c.y)/dx);
-        //b.s=1.8+(0.3-0.6*Math.random());
-        b.dir=[-1,1][getRandomInt(0,2)];
-        //b.o=Math.atan((Math.abs(b.y)-Math.abs(c.y))/(Math.abs((b.x)-Math.abs(c.x))));
-       if (dx<0) b.o+=TP/2;
-       break;
+      b.c=c;
+      b.o=Math.atan((b.y-c.y)/dx);
+      b.dir=[-1,1][getRandomInt(0,2)];
+      if (dx<0) b.o+=TP/2;
+      break;
     }
   }
 }
@@ -86,17 +82,10 @@ var Ball=function(circ) {
 
 var Circle=function() {
   let mc=CSIZE-2*WIDTH;
-  //this.x=Math.min(WIDTH/2,mc*(1-2*Math.random()));
   this.x1=mc*(1-2*Math.random());
   this.x2=mc*(1-2*Math.random());
   this.y1=mc*(1-2*Math.random());
   this.y2=mc*(1-2*Math.random());
-  //this.r=Math.min(mc-Math.abs(this.x),mc-Math.abs(this.y));
-  //this.r=Math.max(WIDTH,Math.min(mc-Math.abs(this.x),mc-Math.abs(this.y)));
-  //this.r=Math.min(Math.max(WIDTH,Math.min(mc-Math.abs(this.x))),
-  //                Math.max(WIDTH,Math.min(mc-Math.abs(this.y)))
-  //               );
-
   this.setDimensions=()=>{
     this.x=(1-frac)*this.x1+frac*this.x2;
     this.y=(1-frac)*this.y1+frac*this.y2;
@@ -140,7 +129,6 @@ var draw=()=>{
   ctx.lineWidth=WIDTH-12;
   ctx.stroke();
   balls.forEach((b)=>{ b.draw(); });
-  //ball.draw();
 }
 
 var transit=()=>{
@@ -170,7 +158,7 @@ body.addEventListener("click", start, false);
 var state=0;
 var time=0;
 var frac=0;
-var duration=70000;
+var duration=50000;
 var animate=(ts)=>{
   if (stopped) return;
   if (!time) { time=ts; }
