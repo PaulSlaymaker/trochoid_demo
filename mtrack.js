@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=600;
 const WIDTH=60;
@@ -159,6 +160,7 @@ var state=0;
 var time=0;
 var frac=0;
 var duration=50000;
+var t=0;
 var animate=(ts)=>{
   if (stopped) return;
   if (!time) { time=ts; }
@@ -171,9 +173,9 @@ var animate=(ts)=>{
     transit();
   }
   circles.forEach((c)=>{ c.setDimensions(); });
-  t+=0.002;
   balls.forEach((b)=>{ b.move(); });
   draw();
+  if (EM && ++t%300==0) stopped=true;
   requestAnimationFrame(animate);
 }
 

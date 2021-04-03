@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=600;
 
@@ -125,7 +126,7 @@ var draw=()=>{
   branch([new Line(0,0)]);
 }
 
-var stopped=true;
+var stopped=EM;
 var start=()=>{
   if (stopped) {
     stopped=false;
@@ -150,6 +151,7 @@ var animate=(ts)=>{
       let g=[];
       for (let k=1; k<16; k++) if (c%(k*200)==0) g.push(k);
       osc[i]=200*g[getRandomInt(0,g.length)];
+      if (EM) stopped=true;
     } else t[i]+=rot[i]*Math.sin(c*TP/osc[i]);
     //t[i]+=rot[i]*Math.sin(osc[i]*c);
     if (c%hDur[i]==0) {

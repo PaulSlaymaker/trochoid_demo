@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=600;
 
@@ -106,10 +107,12 @@ function DrawPath(pp) {
     ctx2.arc(x,y,10,0,TP);
     ctx2.fillStyle=this.color;
     ctx2.fill();
+/*
     ctx.beginPath();
     ctx.moveTo(x+12,y);
     ctx.arc(x,y,12,0,TP);
     ctx.fill();
+*/
     this.past.push([x,y]);
     if (this.past.length>16) {
       let pt=this.past.shift();
@@ -211,6 +214,12 @@ var setPaths=()=>{
       p.juncs[i]=juns.get(p.points[i]);
     }
   });
+  paths.forEach((p)=>{	// add junction array at each of 6 path points
+    for (let i=0; i<6; i++) {
+      if (p.juncs[i]==undefined) continue;
+      p.juncs[i].sort((a,b)=>{ a.level-b.level; } );
+    }
+  });
   let rpn=getRandomInt(0,paths.length);
   let s=Math.round(paths.length/DCOUNT);
   for (let i=0; i<DCOUNT; i++) {
@@ -230,7 +239,7 @@ var draw=()=>{
       if (dp[p].d<0) idx=6-idx;
       let junctionPathsArray=dp[p].path.juncs[idx];
       if (junctionPathsArray!=undefined) {
-	var p2=junctionPathsArray[getRandomInt(0,junctionPathsArray.length)];
+        var p2=junctionPathsArray[getRandomInt(0,junctionPathsArray.length,true)];
 	if (p2!=dp[p].path) {
 	  if (p2.points[idx]!=dp[p].path.points[idx]) {	// reverse direction
 	    dp[p].d=-dp[p].d;
@@ -251,11 +260,18 @@ var draw=()=>{
 	}	// path change
       }	// junction available
 if (p==0) {
-  if (drawCount++>280) {
+  drawCount++;
+  if (drawCount>300) {
+/*
+  if (drawCount>4) {
+    ctx2.fillStyle="hsla(0,0%,0%,0.04)";
+    ctx2.fillRect(-CSIZE,-CSIZE,CSIZE*2,CSIZE*2)
+*/
     drawCount=0;
     ctx2.clearRect(-CSIZE,-CSIZE,CSIZE*2,CSIZE*2)
     setColors();
-  };
+    dp.forEach((ddp)=>{ ddp.past=[]; });
+  }
 }
     } // movement reached hex point
   } // end dpath array
@@ -271,14 +287,12 @@ var start=()=>{
   }
 }
 
+var t=0;
 var animate=(ts)=>{
   if (stopped) return;
-  dp.forEach((drawP)=>{ 
-    drawP.move();
-//    drawP.c=++drawP.c%drawP.path.rate; 
-//    drawP.t=drawP.d*drawP.c/drawP.path.rate*TP;
-  });
+  dp.forEach((drawP)=>{ drawP.move(); });
   draw();
+  if (EM && ++t%500==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
