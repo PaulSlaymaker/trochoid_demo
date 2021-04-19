@@ -1,7 +1,6 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
-const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=600;
 
@@ -75,17 +74,6 @@ function CPath(xp,yp,lp) {
   this.arcs=[false,false,false,false,false,false];
   this.getX=(t)=>{ return this.x+this.r*Math.cos(t); }
   this.getY=(t)=>{ return this.y+this.r*Math.sin(t); }
-/*
-  this.draw=()=>{
-    ctx2.beginPath();
-    ctx2.moveTo(this.x+this.r-3,this.y);
-    ctx2.arc(this.x,this.y,this.r-3,0,TP);
-    ctx2.moveTo(this.x+this.r-3,-this.y);
-    ctx2.arc(this.x,-this.y,this.r-3,0,TP);
-    ctx2.fillStyle="#600";
-    ctx2.fill();
-  }
-*/
   this.fillColor=(ix)=>{
     if (this.level==3) return;
     this.arcs[ix]=true;
@@ -116,7 +104,6 @@ function DrawPath(pp) {
   this.c=0;
   this.d=1;
   this.t=0;
-  //this.color="blue";
   this.move=()=>{
     this.c=++this.c%this.path.rate; 
     this.t=this.d*this.c/this.path.rate*TP;
@@ -210,9 +197,9 @@ var sortJunctions=()=>{
     let ztt=[0,1,2,3];
     let sa=[];
     do {
-      sa.push(ztt.splice(getRandomInt(0,ztt.length),1)[0]);
+      sa.push(ztt.splice(getRandomInt(0,ztt.length,true),1)[0]);
     } while (ztt.length>0);
-//console.log(sa);
+console.log(sa);
     return sa;
   })();
   paths.forEach((p)=>{	// add junction array at each of 6 path points
