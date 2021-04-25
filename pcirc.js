@@ -217,7 +217,9 @@ var setPaths=()=>{
   paths.forEach((p)=>{	// add junction array at each of 6 path points
     for (let i=0; i<6; i++) {
       if (p.juncs[i]==undefined) continue;
-      p.juncs[i].sort((a,b)=>{ a.level-b.level; } );
+      p.juncs[i].sort((a,b)=>{ 
+        return b.level-a.level; 
+      });
     }
   });
   let rpn=getRandomInt(0,paths.length);
@@ -261,12 +263,7 @@ var draw=()=>{
       }	// junction available
 if (p==0) {
   drawCount++;
-  if (drawCount>300) {
-/*
-  if (drawCount>4) {
-    ctx2.fillStyle="hsla(0,0%,0%,0.04)";
-    ctx2.fillRect(-CSIZE,-CSIZE,CSIZE*2,CSIZE*2)
-*/
+  if (drawCount>100) {
     drawCount=0;
     ctx2.clearRect(-CSIZE,-CSIZE,CSIZE*2,CSIZE*2)
     setColors();
