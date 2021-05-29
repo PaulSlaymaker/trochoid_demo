@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=600;
 
@@ -203,6 +204,7 @@ var gtransform=[
   (r)=>{ let d=1-r/300; return "rotateX(-"+r+"deg) rotateY("+r+"deg) scale("+d+")" }, 
 ];
 
+var t=0;
 var S=0;
 var rot=0;
 var GT=0;
@@ -230,6 +232,7 @@ var animate=(ts)=>{
     if (rot<0) { rot=0; S=0; }
     ctx.canvas.style.transform=gtransform[GT](rot);
   }
+  if (EM && ++t%300==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
