@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=600;
 
@@ -227,7 +228,7 @@ var sortJunctions=()=>{
     do {
       sa.push(ztt.splice(getRandomInt(0,ztt.length,true),1)[0]);
     } while (ztt.length>0);
-console.log(sa);
+//console.log(sa);
     return sa;
   })();
   paths.forEach((p)=>{	// add junction array at each of 6 path points
@@ -323,6 +324,7 @@ var animate=(ts)=>{
   if (stopped) return;
   drawPath.move();
   draw();
+  if (EM && ++t%1000==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
