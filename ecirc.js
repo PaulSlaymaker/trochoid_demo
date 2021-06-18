@@ -182,4 +182,6 @@ var animate=(ts)=>{
 }
 
 onresize();
-start();
+if (EM) draw();
+else start();
+//start();
