@@ -151,7 +151,7 @@ var setSpur=()=>{
   }
   setN();
   while (testOver()) setN();
-console.log(n1+" "+n2);
+//console.log(n1+" "+n2);
   rf1=R/Math.sin(TP/(2*n1));
   rf2=R/Math.sin(TP/(2*n2));
   RF=(rf1+rf2)/2;
@@ -248,5 +248,5 @@ var start=()=>{
 body.addEventListener("click", start, false);
 
 onresize();
-start();
-//draw();
+if (EM) draw();
+else start();
