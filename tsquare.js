@@ -477,4 +477,5 @@ ctx.canvas.addEventListener("click", start, false);
 onresize();
 transit();
 transit();
-start();
+if (EM) draw();
+else start();
