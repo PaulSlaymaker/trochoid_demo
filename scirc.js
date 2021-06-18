@@ -174,4 +174,5 @@ var animate=(ts)=>{
 
 onresize();
 sets.forEach((s)=>{ s.transit(); s.transit(); });
-start();
+if (EM) draw();
+else start();
