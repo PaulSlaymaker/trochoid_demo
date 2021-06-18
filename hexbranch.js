@@ -126,7 +126,7 @@ var draw=()=>{
   branch([new Line(0,0)]);
 }
 
-var stopped=EM;
+var stopped=true;
 var start=()=>{
   if (stopped) {
     stopped=false;
@@ -184,4 +184,5 @@ onresize();
 setHues();
 setColors();
 setRotation();
-start();
+if (EM) draw();
+else start();
