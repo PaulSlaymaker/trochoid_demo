@@ -481,5 +481,5 @@ onresize();
 setPoints();
 setTiles();
 transitColors();
-//draw();
-start();
+if (EM) { state=1; draw(); }
+else start();
