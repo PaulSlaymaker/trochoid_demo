@@ -198,5 +198,5 @@ var reset=()=>{
 
 onresize();
 reset();
-//draw(1);
-start();
+if (EM) draw();
+else start();
