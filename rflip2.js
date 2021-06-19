@@ -2,6 +2,7 @@
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 body.style.display="grid";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -26,13 +27,23 @@ var getRandomInt=(min,max,low)=>{
   }
 }
 
+/*
+var test=()=>{
+var ZZ=[0,0,0];
+for (let i=0; i<100; i++) {
+  ZZ[Math.floor(3*Math.random())]++;
+}
+console.log(ZZ);
+}
+*/
+
 onresize=function() { 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
   ctx.canvas.style.width=D+"px";
   ctx.canvas.style.height=D+"px";
 }
 
-var Tile=function(p1,p2,p3,p4,i,ts) {
+var Tile=function(p1,p2,p3,p4,i) {
   this.v=[p1,p2,p3,p4];
   this.draw=(f)=>{
     ctx.beginPath();
@@ -164,7 +175,7 @@ var setTiles=(v)=>{
         pts[1+c*2*W+l],
         pts[dist],
         pts[s2],
-        i, tileSets[2*l+c%2]
+        i
       ));
     }
   }
@@ -212,6 +223,7 @@ var animate=(ts)=>{
   if (t<100) {
     O=Math.max(0.05,O-=0.01);
   } else if (t>700) {
+    if (EM && t==701) stopped=true;
     O=Math.min(1,O+=0.01);
     if (t==800) {
       transit();
@@ -233,5 +245,5 @@ ctx.canvas.addEventListener("click", start, false);
 
 onresize();
 transit();
-//draw();
+//if (EM) draw();
 start();
