@@ -356,5 +356,5 @@ onresize();
 reset();
 transit();
 transit();
-//draw(1);
-start();
+if (EM) draw();
+else start();
