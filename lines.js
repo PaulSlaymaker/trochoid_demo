@@ -125,7 +125,7 @@ let ddiff=D1-D2;
     ctx.lineTo(points[lines[i].j].x,points[lines[i].j].y);
     ctx.closePath();
 let q=(ddiff/2-Math.abs(lines[i].d-(D1+D2)/2))/ddiff/2;
-    ctx.strokeStyle="hsla("+(hue+360*lines[i].d/(ddiff))+",80%,70%,"+q+")";
+    ctx.strokeStyle="hsla("+(hue+360*lines[i].d/(ddiff))+",90%,70%,"+q+")";
     ctx.stroke();
   }
 }
@@ -261,5 +261,4 @@ reset();
 transit();
 transit();
 //setMon();
-//draw(1);
 start();
