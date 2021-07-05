@@ -55,10 +55,10 @@ var setColors=()=>{
 
 let arc=new Path2D();
 let r1=TP*Math.random();
-let r2=r1+Math.random();
+//let r2=r1+Math.random();
 arc.arc(0,0,200,0,TP/2);
 r1=TP*Math.random();
-r2=r1+Math.random();
+//r2=r1+Math.random();
 ctx.strokeStyle="yellow";
 //ctx.fillStyle="hsla(0,0%,0%,0.03)";
 ctx.fillStyle="hsla(0,0%,0%,0.4)";
@@ -67,8 +67,8 @@ var f=[];
 
 //var C=2*getRandomInt(1,17);
 //var C=2*getRandomInt(1,12);
-var C=2;
-var W=5;
+var C=4;
+var W=12;
 
 {
   let b=Math.floor(C/3);
@@ -79,10 +79,11 @@ var W=5;
     W=b+S*getRandomInt(0,b-2,true);
   }
   //W=Math.min(27,W);
-  W=Math.min(7,W);
+  W=Math.min(9,W);
 }
 
 var r=[];
+var r2=[];
 /*
 var r=[getRandomInt(20,360),getRandomInt(20,360),
   getRandomInt(20,360),
@@ -90,17 +91,39 @@ var r=[getRandomInt(20,360),getRandomInt(20,360),
   getRandomInt(20,360)
 ];
 */
-var setRadii=()=>{
+var setRadiiO=()=>{
   r=[];
   r2=[];
   for (let i=0; i<W; i++) {
-    r.push(getRandomInt(20,380));
-    r2.push(getRandomInt(20,380));
+    r.push(getRandomInt(0,380));
+    r2.push(getRandomInt(0,380));
   }
   r.sort((a,b)=>{ return a-b; });
   r2.sort((a,b)=>{ return a-b; });
 }
-setRadii();
+var setRadiiO2=()=>{
+  for (let i=0; i<r2.length; i++) r[i]=r2[i];
+  r2=[];
+  for (let i=0; i<W+1; i++) {
+//    r.push(getRandomInt(0,380));
+    r2.push(getRandomInt(0,380));
+  }
+//  r.sort((a,b)=>{ return a-b; });
+  r2.sort((a,b)=>{ return a-b; });
+}
+
+var setRadii=()=>{
+  let rr=[];
+  for (let i=0; i<W+1; i++) {
+    rr.push(getRandomInt(0,380));
+  }
+//  r.sort((a,b)=>{ return a-b; });
+  rr.sort((a,b)=>{ return a-b; });
+  return rr;
+}
+r=setRadii();
+r2=setRadii();
+
 
 function Point(x,y) {
   this.x=x;
@@ -108,11 +131,11 @@ function Point(x,y) {
 }
 
 var getRadius=(idx)=>{
-  return r1[idx]*Math.sin(t/RATE)+r2[idx]*Math.cos(t/RATE);
+  return r[idx]*Math.pow(Math.cos(t2/RATE*TP/8),2)+r2[idx]*Math.pow(Math.sin(t2/RATE*TP/8),2);
 }
 
-const RATE=400;
-//const RATE=80;
+//const RATE=400;
+const RATE=120;
 var QQ=0;
 
 var pts=[];
@@ -120,11 +143,11 @@ var pts=[];
 var setPoints=()=>{
   let Q=(1+Math.cos(t/RATE*TP))/4;
   pts=[];
-let QZ=QQQ[C];
+//let QZ=QQQ[C];
   for (let j=0; j<W+2; j++) {
     let cr=[];
+let rr=getRadius(j);
     for (let i=0; i<C+1; i++) {
-//let rr=getRadius(j);
       if (j%2==0) { 
 	if (j==0) {
 	    cr.push(new Point(0,0));
@@ -135,13 +158,15 @@ let QZ=QQQ[C];
         //let q=i+0.5+QQ;
 //let q=i+0.5+QZ;
 let q=i;
-	    cr.push(new Point(r[j-1]*Math.sin(q*TP/C),r[j-1]*Math.cos(q*TP/C)));
+	    //cr.push(new Point(r[j-1]*Math.sin(q*TP/C),r[j-1]*Math.cos(q*TP/C)));
+	    cr.push(new Point(rr*Math.sin(q*TP/C),rr*Math.cos(q*TP/C)));
 	}
       } else {
         let q=((i%2==0)?i-Q:i+Q);
 //        q+=QQ;
 q-=0.5;
-        cr.push(new Point(r[j-1]*Math.sin(q*TP/C),r[j-1]*Math.cos(q*TP/C)));
+        //cr.push(new Point(r[j-1]*Math.sin(q*TP/C),r[j-1]*Math.cos(q*TP/C)));
+        cr.push(new Point(rr*Math.sin(q*TP/C),rr*Math.cos(q*TP/C)));
       }
     }
     pts.push(cr);
@@ -151,7 +176,8 @@ q-=0.5;
 var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   setPoints();
-  for (let j=0; j<W; j++) {
+  //for (let j=0; j<W; j++) {
+  for (let j=W-1; j>=0; j--) {
     let pa=new Path2D();
     //let pa=[new Path2D(),new Path2D()];
     for (let i=0; i<C; i++) {
@@ -220,21 +246,58 @@ var pause=(ts)=>{
 }
 
 //var QQQ={2:0,4:0.5,8:0,16:0.5,32:0,64:0.5};
-var QQQ={2:-0.5,4:-0.5,8:-0.5,16:-0.5,32:-0.5,64:-0.5,128:-0.5};
+//var QQQ={2:-0.5,4:-0.5,8:-0.5,16:-0.5,32:-0.5,64:-0.5,128:-0.5};
 
 var EXP=true;
 var t=0;
+var t2=0;
 var stopped=true;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
+  t2++;
 if (t%(RATE/2)==0) {
 //  stopped=true;
   if (QQ==0) QQ=0.5;
   else QQ=0;
   t=0;
-  if (C<100) C*=2;
-//  else C/=2;
+if (EXP && C==64) {
+  C*=2;
+  EXP=false;
+}
+if (!EXP && C==4) {
+  C/=2;
+  EXP=true;
+}
+ if (EXP) {
+    C*=2;
+  } else {
+    t=RATE/2;
+    C/=2;
+  }
+/*
+  if (C<100) {
+    C*=2;
+  } else {
+    t=RATE/2;
+    C/=2;
+  }
+*/
+}
+if (t2%(2*RATE)==0) { 
+//let ss=r; r=r2; r2=ss; 
+//r=r2.slice();
+//r2=ss.slice();
+//console.log(t2+" "+getRadius(7));
+//if (t2%(4*RATE)==0) debugger;  // cmin, r
+//else debugger;	// cmax, r2
+if (t2%(4*RATE)==0) r2=setRadii();
+else r=setRadii();
+//console.log(r[2]);
+//console.log(r2[2]);
+//stopped=true;
+//if (t2%(4*RATE)==0) setRadii();
+//setRadii();
 }
 //if (t%RATE==0) stopped=true;
 //if (t%RATE==RATE/2) stopped=true;
@@ -256,3 +319,4 @@ onresize();
 //draw();
 setColors();
 start();
+console.log(t2+" "+getRadius(7));
