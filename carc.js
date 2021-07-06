@@ -2,7 +2,7 @@
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
 const TP=2*Math.PI;
-const CSIZE=600;
+const CSIZE=400;
 
 var ctx=(()=>{
   let c=document.createElement("canvas");
@@ -33,15 +33,13 @@ var getRandomInt=(min,max,low)=>{
 }
 
 function Arc(i) {
-this.r1=0;
-this.r2=0;
-this.lw1=0;
-this.lw2=0;
+  this.r1=0;
+  this.r2=0;
+  this.lw1=0;
+  this.lw2=0;
   this.arc=(3-getRandomInt(1,3,true))/3;
   this.t=Math.random();
-  this.inc=(1+Math.random())*[-1,1][getRandomInt(0,2)]/3;
-  //this.color="hsla("+getRandomInt(0,360)+",100%,50%,0.2)";
-  //this.color=colors[i%colors.length];
+  this.inc=(1+Math.random())*[-1,1][getRandomInt(0,2)]/6;
   this.cIdx=i%hues.length;
 }
 
@@ -67,21 +65,23 @@ var setArcs=()=>{
   let rs=[];
   let count=getRandomInt(4,arcs.length+1);
   //for (let i=0; i<arcs.length+1; i++) rs.push(getRandomInt(32,CSIZE));
-  for (let i=0; i<count+1; i++) rs.push(getRandomInt(32,CSIZE));
+  for (let i=0; i<count+1; i++) rs.push(getRandomInt(60,CSIZE,getRandomInt(0,1)));
   rs.sort((a,b)=>{ return a-b; });
   for (let i=0; i<arcs.length; i++) {
     arcs[i].r2=(rs[i+1]+rs[i])/2;
-    arcs[i].lw2=Math.max(3,(rs[i+1]-rs[i])-1);
+    //arcs[i].lw2=Math.max(3,(rs[i+1]-rs[i])-1);
+    arcs[i].lw2=Math.min(60,Math.max(3,(rs[i+1]-rs[i])-1));
     if (i>rs.length-2) {
-	arcs[i].r2=[CSIZE,1][getRandomInt(0,2)];
-	arcs[i].lw2=0.1;
+      //arcs[i].r2=[CSIZE,1][getRandomInt(0,2)];  // perimeter location not used
+      arcs[i].r2=1;
+      arcs[i].lw2=0.1;
     }
   }
 }
 
 var arcs=(()=>{
   let a=[];
-  for (let i=0; i<30; i++) a.push(new Arc(i));
+  for (let i=0; i<32; i++) a.push(new Arc(i));
   return a;
 })();
 
@@ -92,8 +92,11 @@ var draw=()=>{
     a.t+=a.inc/r;
     ctx.beginPath();
     ctx.arc(0,0,r,a.t*TP,(a.t+a.arc)*TP);
-    ctx.lineWidth=(1-frac)*a.lw1+frac*a.lw2;
-    ctx.strokeStyle="hsla("+hues[a.cIdx]+",100%,60%,0.7)";
+    let ZZ=(1-frac)*a.lw1+frac*a.lw2;
+    //ctx.lineWidth=(1-frac)*a.lw1+frac*a.lw2;
+    ctx.lineWidth=ZZ;
+    ctx.strokeStyle="hsla("+hues[a.cIdx]+",100%,50%,0.8)";
+    ctx.setLineDash([2*ZZ,1.6*ZZ,ZZ/TP,1.6*ZZ]);
     ctx.stroke();
   });
 }
@@ -121,12 +124,12 @@ body.addEventListener("click", start, false);
 var S=0;
 var c=0;
 var time=0;
-var duration=3000;
+var duration=6000;
 var frac=0;
 var animate=(ts)=>{
   if (stopped) return;
   if (c%40==0) for (let i=0; i<hues.length; i++) hues[i]=++hues[i]%360;
-  if (++c>400) S=1;
+  if (++c>600) S=1;
   if (S==1) {
     if (!time) time=ts;
     let progress=ts-time;
