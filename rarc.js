@@ -16,7 +16,6 @@ const ctx=(()=>{
   d.append(c);
   return c.getContext("2d");
 })();
-ctx.translate(CSIZE,CSIZE);
 
 var getRandomInt=(min,max,low)=>{
   if (low) {
@@ -31,16 +30,17 @@ onresize=function() {
   ctx.canvas.style.width=D+"px";
   ctx.canvas.style.height=D+"px";
 }
+ctx.translate(CSIZE,CSIZE);
+ctx.strokeStyle="silver";
+ctx.lineWidth=0.3;
 
 var colors=[];
 var setColors=()=>{
   colors=[];
   let hue=getRandomInt(0,360);
   let hd=getRandomInt(90,270);
-  //let n=getRandomInt(3,33);
   for (let i=0; i<W; i++) {
     let sat=80+20*Math.random();
-    //let lum=60+20*Math.random();
     let lum=50+30*Math.random();
     colors.push("hsl("+((hue+i*hd)%360)+","+sat+"%,"+lum+"%)");
   }
@@ -53,77 +53,62 @@ var setColors=()=>{
   })();
 }
 
-let arc=new Path2D();
-let r1=TP*Math.random();
-//let r2=r1+Math.random();
-arc.arc(0,0,200,0,TP/2);
-r1=TP*Math.random();
-//r2=r1+Math.random();
-ctx.strokeStyle="yellow";
-//ctx.fillStyle="hsla(0,0%,0%,0.03)";
-ctx.fillStyle="hsla(0,0%,0%,0.4)";
-
-var f=[];
-
-//var C=2*getRandomInt(1,17);
-//var C=2*getRandomInt(1,12);
-var C=4;
-var W=12;
-
-{
-  let b=Math.floor(C/3);
-  let S=[-1,1][getRandomInt(0,2)];
-  if (b<3) {
-    W==2;
-  } else {
-    W=b+S*getRandomInt(0,b-2,true);
-  }
-  //W=Math.min(27,W);
-  W=Math.min(9,W);
-}
+var C=[8,16,32][getRandomInt(0,3)];
+var CMIN=2;
+//var C=16;
+var W=[17,19,21][getRandomInt(0,3)];
 
 var r=[];
 var r2=[];
-/*
-var r=[getRandomInt(20,360),getRandomInt(20,360),
-  getRandomInt(20,360),
-  getRandomInt(20,360),
-  getRandomInt(20,360)
-];
-*/
-var setRadiiO=()=>{
-  r=[];
-  r2=[];
-  for (let i=0; i<W; i++) {
-    r.push(getRandomInt(0,380));
-    r2.push(getRandomInt(0,380));
-  }
-  r.sort((a,b)=>{ return a-b; });
-  r2.sort((a,b)=>{ return a-b; });
-}
-var setRadiiO2=()=>{
-  for (let i=0; i<r2.length; i++) r[i]=r2[i];
-  r2=[];
-  for (let i=0; i<W+1; i++) {
-//    r.push(getRandomInt(0,380));
-    r2.push(getRandomInt(0,380));
-  }
-//  r.sort((a,b)=>{ return a-b; });
-  r2.sort((a,b)=>{ return a-b; });
+for (let i=0; i<W+2; i++) {
+  r[i]=Math.min(CSIZE,i*CSIZE/W);
+  r2[i]=Math.min(CSIZE,i*CSIZE/W);
 }
 
+/*
 var setRadii=()=>{
   let rr=[];
-  for (let i=0; i<W+1; i++) {
-    rr.push(getRandomInt(0,380));
+  for (let i=0; i<W+1; i++) {	// +1 fixme
+    rr.push(getRandomInt(0,CSIZE,getRandomInt(0,2)));
   }
-//  r.sort((a,b)=>{ return a-b; });
   rr.sort((a,b)=>{ return a-b; });
+  rr[W+1]=CSIZE;
   return rr;
 }
-r=setRadii();
-r2=setRadii();
+*/
 
+var setRadiiT=()=>{
+  let rr=[];
+  for (let i=0; i<W-2; i++) {
+    if (i && Math.random()<0.6) rr[i]=rr[i-1];
+    else if (Math.random()<0.3) rr[i]=r2[i];
+    else if (Math.random()<0.3) rr[i]=r[i];
+    else rr[i]=getRandomInt(0,CSIZE,getRandomInt(0,2));
+  }
+  rr.sort((a,b)=>{ return a-b; });
+  rr.unshift(0);
+  rr[W-2]=CSIZE;
+  rr[W-1]=CSIZE;
+  rr[W]=CSIZE;
+  rr[W+1]=CSIZE;
+  return rr;
+}
+
+var setRadiiC=()=>{
+  let rr=[];
+  for (let i=0; i<W-2; i++) {
+    if (i && Math.random()<0.6) rr[i]=rr[i-1];
+    else if (Math.random()<0.3) rr[i]=r2[i];
+    else if (Math.random()<0.3) rr[i]=r[i];
+    else rr[i]=getRandomInt(0,CSIZE,getRandomInt(0,2));
+  }
+  rr.sort((a,b)=>{ return a-b; });
+  rr.unshift(0);
+  rr.unshift(0);
+  rr.unshift(0);
+  rr[W+1]=CSIZE;
+  return rr;
+}
 
 function Point(x,y) {
   this.x=x;
@@ -131,40 +116,28 @@ function Point(x,y) {
 }
 
 var getRadius=(idx)=>{
-  return r[idx]*Math.pow(Math.cos(t2/RATE*TP/8),2)+r2[idx]*Math.pow(Math.sin(t2/RATE*TP/8),2);
+  return r[idx]*Math.pow(Math.cos(t2/RATE2*TP),2)+r2[idx]*Math.pow(Math.sin(t2/RATE2*TP),2);
 }
 
-//const RATE=400;
-const RATE=120;
-var QQ=0;
+const RATE=800;
+const RATE2=960;
 
 var pts=[];
-//var Q=Math.random();
 var setPoints=()=>{
   let Q=(1+Math.cos(t/RATE*TP))/4;
   pts=[];
-//let QZ=QQQ[C];
   for (let j=0; j<W+2; j++) {
     let cr=[];
-let rr=getRadius(j);
+    let rr=getRadius(j);
     for (let i=0; i<C+1; i++) {
       if (j%2==0) { 
 	if (j==0) {
-	    cr.push(new Point(0,0));
+          cr.push(new Point(0,0));
 	} else {
-	//    let q=(i%2==0)?i-Q:i+Q;
-        //let q=((i%2==0)?i+Q:i-Q)+0.5;
-        //let q=i+0.5;
-        //let q=i+0.5+QQ;
-//let q=i+0.5+QZ;
-let q=i;
-	    //cr.push(new Point(r[j-1]*Math.sin(q*TP/C),r[j-1]*Math.cos(q*TP/C)));
-	    cr.push(new Point(rr*Math.sin(q*TP/C),rr*Math.cos(q*TP/C)));
+	  cr.push(new Point(rr*Math.sin(i*TP/C),rr*Math.cos(i*TP/C)));
 	}
       } else {
-        let q=((i%2==0)?i-Q:i+Q);
-//        q+=QQ;
-q-=0.5;
+        let q=((i%2==0)?i-Q:i+Q)-0.5;
         //cr.push(new Point(r[j-1]*Math.sin(q*TP/C),r[j-1]*Math.cos(q*TP/C)));
         cr.push(new Point(rr*Math.sin(q*TP/C),rr*Math.cos(q*TP/C)));
       }
@@ -173,80 +146,32 @@ q-=0.5;
   }
 }
 
+var B=getRandomInt(0,W);
+
 var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   setPoints();
-  //for (let j=0; j<W; j++) {
   for (let j=W-1; j>=0; j--) {
-    let pa=new Path2D();
-    //let pa=[new Path2D(),new Path2D()];
+    if (j==B) continue;
+    let p=new Path2D();
     for (let i=0; i<C; i++) {
-      //let p=pa[j%2];
-      let p=pa;
       if (j%2) {
 	p.moveTo(pts[j][i+1].x,pts[j][i+1].y);
 	p.lineTo(pts[j+1][i].x,pts[j+1][i].y);
 	p.lineTo(pts[j+2][i+1].x,pts[j+2][i+1].y);
-//	p.lineTo(pts[j+1][i+1].x,pts[j+1][i+1].y);
       } else {
 	p.moveTo(pts[j][i].x,pts[j][i].y);
 	p.lineTo(pts[j+1][i].x,pts[j+1][i].y);
 	p.lineTo(pts[j+2][i].x,pts[j+2][i].y);
-//	p.lineTo(pts[j+1][i+1].x,pts[j+1][i+1].y);
       }
       p.lineTo(pts[j+1][i+1].x,pts[j+1][i+1].y);
       p.closePath();
     }
-    ctx.fillStyle=colors[j];
-    //ctx.fill(pa[j]);
-    ctx.fill(pa);
-//    ctx.fillStyle=colors[1];
-//    ctx.fill(pa[1]);
+    ctx.fillStyle=colors[j%colors.length];
+    ctx.fill(p);
+    ctx.stroke(p);
   }
 }
-
-/*
-var drawO=()=>{
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  setPoints();
-//  ctx.beginPath();
-  let pa=[new Path2D(),new Path2D()];
-  for (let i=0; i<C; i++) {
-    //ctx.moveTo(0,0);
-    let p=pa[i%2];
-    p.moveTo(pts[0][i].x,pts[0][i].y);
-    p.lineTo(pts[1][i].x,pts[1][i].y);
-    p.lineTo(pts[2][i].x,pts[2][i].y);
-    p.lineTo(pts[1][i+1].x,pts[1][i+1].y);
-    p.closePath();
-  }
-  ctx.fillStyle="red";
-  ctx.fill(pa[0]);
-  ctx.fillStyle="blue";
-  ctx.fill(pa[1]);
-//  ctx.stroke(pa[0]);
-//  ctx.stroke(pa[1]);
-}
-*/
-
-var pauseTS=0;
-var pauseDuration=1000;
-var pause=(ts)=>{
-  if (stopped) return;
-  if (pauseTS==0) pauseTS=ts+1000
-  if (ts<pauseTS) {
-    t++;
-    draw();
-    requestAnimationFrame(pause);
-  } else {
-    pauseTS=0;
-    t=0;
-    requestAnimationFrame(animate);
-  }
-}
-
-//var QQQ={2:0,4:0.5,8:0,16:0.5,32:0,64:0.5};
-//var QQQ={2:-0.5,4:-0.5,8:-0.5,16:-0.5,32:-0.5,64:-0.5,128:-0.5};
 
 var EXP=true;
 var t=0;
@@ -256,67 +181,87 @@ var animate=(ts)=>{
   if (stopped) return;
   t++;
   t2++;
-if (t%(RATE/2)==0) {
-//  stopped=true;
-  if (QQ==0) QQ=0.5;
-  else QQ=0;
-  t=0;
-if (EXP && C==64) {
-  C*=2;
-  EXP=false;
-}
-if (!EXP && C==4) {
-  C/=2;
-  EXP=true;
-}
- if (EXP) {
-    C*=2;
-  } else {
-    t=RATE/2;
-    C/=2;
+  if (t%(RATE/2)==0) {
+    t=0;
+    if (EXP) {
+      if (C==64) {
+        t=RATE/2;
+        EXP=false;
+      } else if (C==CMIN) {
+          C*=2;
+      } else {
+        if (Math.random()<0.5) {
+          C*=2;
+        } else {
+          t=RATE/2;
+          EXP=false;
+        }
+      }
+    } else {
+      if (C==CMIN) {
+        EXP=true;
+        if (C==2) setColors(); // only when C==2
+      } else {
+        if (Math.random()<0.5) {
+          EXP=true;
+        } else {
+          t=RATE/2;
+          C/=2;
+        }
+      }
+    }
   }
-/*
-  if (C<100) {
-    C*=2;
+
+if (t2%(RATE2/4)==0) {
+  if (t2%(RATE2/2)==0) {
+    r2=setRadiiC();
+    let cr=[];
+    for (let i=0; i<C+1; i++) cr.push(new Point(0,0));
+    pts.pop();
+    pts.unshift(cr);
+    colors.unshift(colors.pop());
+    pts.pop();
+    pts.unshift(cr);
+    colors.unshift(colors.pop());
+    r.pop(); r.unshift(0);
+    r.pop(); r.unshift(0);
+B=(B+2)%W;
   } else {
-    t=RATE/2;
-    C/=2;
+    r=setRadiiT();
+//    r=setRadii();
   }
-*/
 }
-if (t2%(2*RATE)==0) { 
-//let ss=r; r=r2; r2=ss; 
-//r=r2.slice();
-//r2=ss.slice();
-//console.log(t2+" "+getRadius(7));
-//if (t2%(4*RATE)==0) debugger;  // cmin, r
-//else debugger;	// cmax, r2
-if (t2%(4*RATE)==0) r2=setRadii();
-else r=setRadii();
-//console.log(r[2]);
-//console.log(r2[2]);
-//stopped=true;
-//if (t2%(4*RATE)==0) setRadii();
-//setRadii();
-}
-//if (t%RATE==0) stopped=true;
-//if (t%RATE==RATE/2) stopped=true;
+
   draw();
   requestAnimationFrame(animate);
 }
 
+var mode=0;
 var start=()=>{
+  mode=++mode%3;
+  if (mode==0) {
+    stopped=true;
+  } else if (mode==1) {
+    stopped=false;
+    requestAnimationFrame(animate);
+  } else {
+    setColors();
+  }
+/*
   if (stopped) {
     stopped=false;
     requestAnimationFrame(animate);
   } else {
     stopped=true;
   }
+*/
 }
 ctx.canvas.addEventListener("click", start, false);
 
 onresize();
 //draw();
 setColors();
+
+r=setRadiiT();
+r2=setRadiiC();
 start();
-console.log(t2+" "+getRadius(7));
