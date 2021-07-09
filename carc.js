@@ -65,7 +65,7 @@ var setArcs=()=>{
   let rs=[];
   let count=getRandomInt(4,arcs.length+1);
   //for (let i=0; i<arcs.length+1; i++) rs.push(getRandomInt(32,CSIZE));
-  for (let i=0; i<count+1; i++) rs.push(getRandomInt(60,CSIZE,getRandomInt(0,1)));
+  for (let i=0; i<count+1; i++) rs.push(getRandomInt(60,CSIZE,getRandomInt(0,2)));
   rs.sort((a,b)=>{ return a-b; });
   for (let i=0; i<arcs.length; i++) {
     arcs[i].r2=(rs[i+1]+rs[i])/2;
