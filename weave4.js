@@ -1,7 +1,6 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-body.style.display="grid";
 const CSIZE=400;
 
 const ctx=(()=>{
@@ -71,8 +70,6 @@ var setColorIndexes=()=>{
 setColors();
 setColorIndexes();
 
-//var restCount=0;
-
 function Line(vh,x,y,r) {
   this.vh=vh;
   this.x=x;
@@ -120,12 +117,12 @@ this.color=gradient;
       this.o=-this.o;
       if (this.vh=="h") this.color=colors[cindexh[this.r]];
       else this.color=colors[cindexv[this.r]];
+//if (this.p) this.color=pattern;
     }
     if (t>this.delay) {
       this.o+=this.inc;
       if (this.inc!=0 && Math.abs(this.o)<0.1) {
 	this.inc=0;
-//	restCount++;
 	this.o=0;
       }
     }
@@ -156,6 +153,26 @@ ctx.shadowColor="black";
 ctx.lineWidth=WIDTH;
 ctx.shadowBlur=WIDTH/4;
 //ctx.globalCompositeOperation = "destination-over";
+
+/*
+const patternCanvas = document.createElement('canvas');
+const patternContext = patternCanvas.getContext('2d');
+patternCanvas.width = CSIZE;
+patternCanvas.height = WIDTH;
+// Give the pattern a background color and draw an arc
+patternContext.fillStyle = '#fec';
+patternContext.strokeStyle = 'red';
+//patternContext.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
+patternContext.moveTo(0,0);
+patternContext.lineTo(2*CSIZE,0);
+patternContext.lineWidth=2*WIDTH;
+patternContext.moveTo(WIDTH/4,WIDTH/4);
+patternContext.arc(WIDTH/4, WIDTH/2, WIDTH/4, 0,2*Math.PI);
+patternContext.stroke();
+const pattern = ctx.createPattern(patternCanvas, 'repeat');
+linesh[0].color=pattern;
+*/
+linesh[0].p=true;
 
 //var SOL=3*WIDTH/4;
 var SOL=2;
@@ -234,18 +251,14 @@ var pause=(ts)=>{
 
 var t=0;
 var stopped=true;
-var duration=2000;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
   linesh.forEach((l)=>{ l.move(); });
   linesv.forEach((l)=>{ l.move(); });
   draw();
-  //if (restCount==2*(COUNT-2)) {
   if (t>400) {
     randomizeLines();
-//    restCount=0;
-//console.log(t);
     t=0;
     setColors();
     setColorIndexes();
@@ -271,7 +284,7 @@ let grid2=new Path2D();
 let SE=2*CSIZE/COUNT;
 for (let i=0; i<COUNT; i++) { 
   for (let j=0; j<COUNT; j++) { 
-    if ((i+j)%2==0) {
+    if ((i+j)%2==1) {
       grid1.rect(-CSIZE+i*SE, -CSIZE+j*SE, SE, SE);
     } else {
       grid2.rect(-CSIZE+i*SE, -CSIZE+j*SE, SE, SE);
