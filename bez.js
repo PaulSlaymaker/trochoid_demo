@@ -34,23 +34,15 @@ const getRandomInt=(min,max,low)=>{
   }
 }
 
-var Color=function(f) {
-  this.hue=getRandomInt(0,360);
-  this.sat;
-  this.lum;
-  this.randomize=()=>{
-    this.hue=(this.hue+getRandomInt(0,180))%360;
-    this.sat=60+35*Math.random();
-    //this.lum=40+40*Math.random();
-    this.lum=40+f*40;
-  }
-  this.randomize();
-  this.getHSLString=()=>{
-    return "hsl("+this.hue+","+this.sat+"%,"+this.lum+"%)";
-  }
+var chue=getRandomInt(0,360);
+var getHSLString=(f)=>{
+  let hue=(chue+getRandomInt(0,90))%360;
+  let sat=60+35*Math.random();
+  let lum=40+f*40;
+  return "hsl("+hue+","+sat+"%,"+lum+"%)";
 }
 
-const DUR=20000;
+const DUR=24000;
 var Growth=function(df) {
   this.time=-getRandomInt(0,DUR);
   this.randomize=()=>{
@@ -58,15 +50,16 @@ var Growth=function(df) {
     let a=TP*Math.random();
     this.X=Math.round(320*Math.pow(Math.random(),0.5)*Math.cos(a));
     let ry=250*Math.pow(Math.random(),0.5);
-    //this.X=Math.round(rx*Math.cos(a));
     this.Y=Math.round(-100+ry*Math.sin(a));	// up 160 for 240?
     this.Xpf=Math.random();
     this.Ypf=Math.random();
-    this.sColor=new Color(df).getHSLString();
-    this.fColor=new Color(df).getHSLString();
+    //this.sColor=new Color(df).getHSLString();
+    //this.fColor=new Color(df).getHSLString();
+    this.sColor=getHSLString(df);
+    this.fColor=getHSLString(df);
     this.kinex=getRandomInt(1,8)*[-1,1][getRandomInt(0,2)];
     this.kiney=getRandomInt(1,8)*[-1,1][getRandomInt(0,2)];
-    this.duration=DUR+Math.round(Math.random()*4000);
+    this.duration=DUR-Math.round(Math.random()*4000);
   }
   this.randomize();
   this.grow=(ts)=>{
@@ -106,7 +99,7 @@ var Growth=function(df) {
     let w=2+pt.f*16;
     fruit.moveTo(pt.x+w,pt.y);
     fruit.arc(pt.x,pt.y,w,0,TP);
-    ctx.strokeStyle="black";
+    ctx.strokeStyle="gray";
     ctx.lineWidth=1;
 //ctx.shadowBlur=40;
     ctx.stroke(fruit);
@@ -135,8 +128,14 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
+var t=0;
 var animate=(ts)=>{
   if (stopped) return;
+  if (!t) t=ts;
+  if (ts-t>DUR) {
+    chue=getRandomInt(0,360);
+    t=0;
+  }
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   for (let i=0; i<growth.length; i++) {
     growth[i].grow(ts);
@@ -145,5 +144,4 @@ var animate=(ts)=>{
 }
 
 onresize();
-
 start();
