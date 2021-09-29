@@ -33,67 +33,10 @@ const getRandomInt=(min,max,low)=>{
   }
 }
 
-const COUNT=7;
-
-var getLanes=()=>{
-  let s=[];
-  for (let i=0; i<COUNT-1; i++) {
-    if (blocked) {
-      //let v=Math.round(block*((CSIZE-20)*0.5*[-1,1][getRandomInt(0,2)])/block);
-      let v=Math.round(block*((CSIZE-20)*[-1,1][getRandomInt(0,2)])/block);
-      s.push(v);
-    } else s.push(getRandomInt(-CSIZE+20,CSIZE-20));
-  }
-  s.sort((a,b)=>{ return a-b; });
-  s.unshift(-CSIZE+20);
-  s.push(CSIZE-20);
-  return s;
-}
-
-var lanesx=getLanes();
-var lanesy=getLanes();
-
-var locType="eqr";
-var blocked=false;
-var block=1;
-
-var getSet=(uy)=>{
-  let s=[];
-  let d=2*(CSIZE-20)/(COUNT-1);
-  for (let i=0; i<COUNT-1; i++) {
-if (locType=="lanes") {
-  if (uy) s.push(Math.round(lanesy[i]+(lanesy[i+1]-lanesy[i])*Math.random()));
-  else s.push(Math.round(lanesx[i]+(lanesx[i+1]-lanesx[i])*Math.random()));
-} else if (locType=="blanes") {
-  if (uy) s.push(Math.round(lanesy[i]+(lanesy[i+1]-lanesy[i])*0.5));
-  else s.push(Math.round(lanesx[i]+(lanesx[i+1]-lanesx[i])*0.5));
-} else if (locType=="even") {
-  if (blocked) {
-    let v=block*Math.round((-CSIZE+20+i*d+d*0.5)/block);
-    s.push(Math.round(v));
-  } else s.push(Math.round(-CSIZE+20+i*d+d*0.5));
-  //s.push(Math.round(-CSIZE+20+i*d+d*fa));
-  //let fa=[0,0.5,1][getRandomInt(0,3)];
-//let fa=[1,10,20,40,80,120][getRandomInt(0,6)];
-} else {
-  if (blocked) {
-    //let v=block*Math.round((-CSIZE+20+i*d+d*Math.random())/block);
-    let v=block*Math.round((-CSIZE+20+i*d+d*Math.random())/block);
-    s.push(Math.round(v));
-  } else {
-    s.push(Math.round(-CSIZE+20+i*d+d*Math.random()));
-  }
-}
-  }
-  s.sort((a,b)=>{ return a-b; });
-  s.unshift(-CSIZE+20);
-  s.push(CSIZE-20);
-  return s;
-}
-
 var getRadii=()=>{
+//  if (Math.random()<0.3) return getBlockedRadii();
   let s=[];
-  let d=EDGE/W;
+  //let d=EDGE/W;
   for (let i=0; i<W; i++) {
     //s.push(Math.round(i*d+d*Math.random()));
     s.push(Math.round(EDGE*Math.random()));
@@ -104,10 +47,26 @@ var getRadii=()=>{
   return s;
 }
 
+var getBlockedRadii=()=>{
+  let s=[];
+  let block=EDGE/getRandomInt(2,W);
+  let d=EDGE/W; 	// could be random array
+  for (let i=0; i<W; i++) {
+    let v=block*Math.round((i*d+d*Math.random())/block);
+    s.push(Math.round(v));
+  }
+  s.unshift(0);
+  s.push(EDGE);
+  return s;
+}
+
 var getAngles=()=>{
+if (Math.random()<0.1) {
+return getAngles2();
+}
   let s=[];
   let d=TP/C;
-  let inactive=Math.random()<0.5;
+  let inactive=Math.random()<0.7;
   for (let i=0; i<W; i++) {
 //if (Math.random()<0.9) s.push(0);
 if (inactive) s.push(0);
@@ -115,6 +74,17 @@ else
     s.push((3-6*Math.random())/C);  // ca. +/-TP/C/2
   }
   s.unshift(0);
+  s.push(0);
+  return s;
+}
+
+var getAngles2=()=>{
+  let s=[];
+  let p=W/C*[-1,1][getRandomInt(0,1)]*Math.random();
+  for (let i=0; i<W+1; i++) {
+    let az=i*TP/(W+1);
+    s.push(p*Math.sin(az));
+  }
   s.push(0);
   return s;
 }
@@ -169,60 +139,8 @@ var drawQuad=(q)=>{
     let cx=frac*q.pts[a].x+(1-frac)*q.pts2[a].x;
     let cy=frac*q.pts[a].y+(1-frac)*q.pts2[a].y;
     ctx.bezierCurveTo(cx,cy,cx,cy,
-/*
-      frac*q.pts[a].x+(1-frac)*q.pts2[a].x,
-      frac*q.pts[a].y+(1-frac)*q.pts2[a].y,
-      frac*q.pts[a].x+(1-frac)*q.pts2[a].x,
-      frac*q.pts[a].y+(1-frac)*q.pts2[a].y,
-*/
       (cx+frac*q.pts[b].x+(1-frac)*q.pts2[b].x)/2,
-    (
-      cy+
-      //frac*q.pts[a].y+(1-frac)*q.pts2[a].y+   
-      frac*q.pts[b].y+(1-frac)*q.pts2[b].y   
-    )/2
-    );
-  }
-}
-
-var drawBox=(vertArray)=>{
-  ctx.beginPath();
-  ctx.moveTo(vertArray[0].x,vertArray[0].y);
-  for (let i=1; i<4; i++) {
-    ctx.lineTo(vertArray[i].x,vertArray[i].y);
-//ctx.arc(vertArray[i].x,vertArray[i].y,20,0,TP);
-  }
-  ctx.closePath();
-}
-
-var drawPolyFrac=(vertArray)=>{
-  ctx.beginPath();
-  ctx.moveTo(
-    ( 
-      frac*vertArray[0].x+(1-frac)*vertArray[0].x2+   
-      frac*vertArray[1].x+(1-frac)*vertArray[1].x2   
-    )/2,
-    (
-      frac*vertArray[0].y+(1-frac)*vertArray[0].y2+   
-      frac*vertArray[1].y+(1-frac)*vertArray[1].y2   
-    )/2
-  );
-  for (let i=0; i<4; i++) {
-    let a=(i+1)%4;
-    let b=(i+2)%4;
-    ctx.bezierCurveTo(
-      frac*vertArray[a].x+(1-frac)*vertArray[a].x2,
-      frac*vertArray[a].y+(1-frac)*vertArray[a].y2,
-      frac*vertArray[a].x+(1-frac)*vertArray[a].x2,
-      frac*vertArray[a].y+(1-frac)*vertArray[a].y2,
-      ( 
-	frac*vertArray[a].x+(1-frac)*vertArray[a].x2+   
-	frac*vertArray[b].x+(1-frac)*vertArray[b].x2   
-      )/2,
-    (
-      frac*vertArray[a].y+(1-frac)*vertArray[a].y2+   
-      frac*vertArray[b].y+(1-frac)*vertArray[b].y2   
-    )/2
+      (cy+frac*q.pts[b].y+(1-frac)*q.pts2[b].y)/2
     );
   }
 }
@@ -230,7 +148,7 @@ var drawPolyFrac=(vertArray)=>{
 const EDGE=CSIZE-20;
 
 var C=2*getRandomInt(3,8);
-var W=getRandomInt(3,8);
+var W=getRandomInt(3,9);
 
 var quads2=[];
 for (let j=0; j<W; j++) {
@@ -244,29 +162,37 @@ var pts=[];
 var setPoints=()=>{
   pts=[];
   let radii=getRadii();
-  //let radii=[getRadii(),getRadii()];
-//let o=(3-6*Math.random())/C/2;  // ca. +/-TP/C/2
-//let o=(2-4*Math.random())/C/2;  // ca. +/-TP/C/2
-let ao=getAngles();
-  //let r=EDGE/(W+2);
+  let angles=getAngles();
   for (let i=0; i<C+2; i++) {
     pts[i]=[];
     for (let j=0; j<W+2; j++) {
-      //let r=i%2?EDGE/(W+2):radii[j];
-      //let r=radii[i%2][j];
       let r=radii[j];
-      //let z=i*TP/C+j*TP/C/2;	// no rotation
-      let z=i*TP/C+j*(TP/C/2)+ao[j];
+      let z=i*TP/C+j*(TP/C/2)+angles[j];
       pts[i][j]=new Point();
-      pts[i][j].x=r*Math.cos(z);
-      pts[i][j].y=r*Math.sin(z);
+      pts[i][j].x=Math.round(r*Math.cos(z));
+      pts[i][j].y=Math.round(r*Math.sin(z));
+    }
+  }
+}
+
+var pts=[];
+var setRingPoints=()=>{
+  pts=[];
+  let r=Math.round(EDGE*Math.random()/2);
+  for (let i=0; i<C+2; i++) {
+    pts[i]=[];
+    for (let j=0; j<W+2; j++) {
+      let z=i*TP/C+j*(TP/C/2);
+      pts[i][j]=new Point();
+      pts[i][j].x=Math.round(r*Math.cos(z));
+      pts[i][j].y=Math.round(r*Math.sin(z));
     }
   }
 }
 
 var reset=()=>{
   C=2*getRandomInt(3,8);
-  W=getRandomInt(3,8);
+  W=getRandomInt(3,9);
   quads2=[];
   for (let j=0; j<W; j++) {
     quads2[j]=[];
@@ -274,8 +200,9 @@ var reset=()=>{
       quads2[j][i]=new Quad();
     }
   }
-  setPoints();
+  setRingPoints();
   setQuads2();
+RING=false;
 }
 
 var setQuads2=()=>{
@@ -297,7 +224,6 @@ var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   for (let i=0; i<C; i++) {
     for (let j=0; j<W; j++) {
-      //drawPolyFrac(quads2[j][i].pts);
       drawQuad(quads2[j][i]);
       ctx.globalAlpha=1-frac;
       ctx.fillStyle=colors2[(j+2*i)%colors2.length];
@@ -311,6 +237,7 @@ var draw=()=>{
   }
 }
 
+var RING=false;
 var transit=()=>{
   for (let i=0; i<C; i++) {
     for (let j=0; j<W; j++) {
@@ -320,7 +247,12 @@ var transit=()=>{
       }
     }
   }
+if (!RING && Math.random()<0.1) {
+  setRingPoints(); 
+  RING=true;
+} else {
   setPoints();
+}
   setQuads2();
   colors2=colors;
   if (Math.random()<0.8) {
@@ -334,7 +266,7 @@ var start=()=>{
   if (stopped) { 
     stopped=false;
     if (frac>0) {
-      let z=Math.asin(Math.pow(frac,0.25))/(TP/4);
+      let z=Math.asin(Math.pow(frac,0.5))/(TP/4);
       time=performance.now()-z*duration;
     }
     requestAnimationFrame(animate);
@@ -343,7 +275,6 @@ var start=()=>{
   }
 }
 body.addEventListener("click", start, false);
-//body.addEventListener("click", ()=>{ transit(); draw() }, false);
 
 var time=0;
 //const duration=2400;
@@ -354,6 +285,7 @@ var animate=(ts)=>{
   if (ts-time>duration) {
     frac=0;
     time=0;
+    if (RING) reset();
     transit();
   } else {
     frac=Math.pow(Math.sin(TP/4*(ts-time)/duration),2);
@@ -363,9 +295,7 @@ var animate=(ts)=>{
 }
 
 onresize();
-//transit();
 colors=getColors();
 setPoints();
 setQuads2();
 start();
-//draw();
