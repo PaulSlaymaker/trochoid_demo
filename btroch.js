@@ -34,7 +34,7 @@ const getRandomInt=(min,max,low)=>{
 }
 
 var getRadii=()=>{
-//  if (Math.random()<0.3) return getBlockedRadii();
+  if (Math.random()<0.2) return getBlockedRadii();
   let s=[];
   //let d=EDGE/W;
   for (let i=0; i<W; i++) {
@@ -66,12 +66,11 @@ return getAngles2();
 }
   let s=[];
   let d=TP/C;
-  let inactive=Math.random()<0.7;
-  for (let i=0; i<W; i++) {
-//if (Math.random()<0.9) s.push(0);
-if (inactive) s.push(0);
-else
-    s.push((3-6*Math.random())/C);  // ca. +/-TP/C/2
+  let inactive=Math.random()<0.8;
+  if (Math.random()<0.8) {
+    for (let i=0; i<W; i++) s.push(0);
+  } else {
+    for (let i=0; i<W; i++) s.push((3-6*Math.random())/C);  // ca. +/-TP/C/2
   }
   s.unshift(0);
   s.push(0);
@@ -80,7 +79,7 @@ else
 
 var getAngles2=()=>{
   let s=[];
-  let p=W/C*[-1,1][getRandomInt(0,1)]*Math.random();
+  let p=W/C*[-1,1][getRandomInt(0,1)]*Math.random()/2;
   for (let i=0; i<W+1; i++) {
     let az=i*TP/(W+1);
     s.push(p*Math.sin(az));
@@ -202,7 +201,6 @@ var reset=()=>{
   }
   setRingPoints();
   setQuads2();
-RING=false;
 }
 
 var setQuads2=()=>{
@@ -252,6 +250,7 @@ if (!RING && Math.random()<0.1) {
   RING=true;
 } else {
   setPoints();
+  RING=false;
 }
   setQuads2();
   colors2=colors;
