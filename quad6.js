@@ -56,7 +56,7 @@ var Point=function() {
   this.d=false;
 }
 
-var LineObject=function(ln,color,idx) {
+var LineObject=function(ln,idx) {
   this.line=ln;
 //  this.color=color;
   this.mi=true;
@@ -86,28 +86,11 @@ var drawLineB=(lineObject,rt)=>{
   ctx.strokeStyle=colors[lineObject.idx%colors.length];
   ctx.closePath();
   ctx.globalCompositeOperation="source-over";
-  ctx.lineWidth=Math.round(2*EDGE/COUNT)-1;
+  ctx.lineWidth=lineWidthA;
   ctx.stroke();
   ctx.globalCompositeOperation="lighter";
-  ctx.lineWidth=Math.round(2*EDGE/(COUNT+3)/6);
+  ctx.lineWidth=lineWidthB;
   ctx.stroke();
-
-/*
-//  ctx.globalCompositeOperation="source-over";
-//  ctx.lineWidth=Math.round(6*EDGE/COUNT);
-//ctx.globalCompositeOperation="source-over";
-ctx.stroke();
-//ctx.globalCompositeOperation="lighter";
-ctx.fill();
-*/
-/*
-if (!lineObject.mi) {
-  ctx.fillStyle=lineObject.color;
-ctx.globalCompositeOperation="darken";
-  ctx.fill();
-}
-*/
-
 }
 
 const EDGE=CSIZE;
@@ -132,6 +115,8 @@ if (Math.abs(xs[i])==EDGE || Math.abs(xs[j])==EDGE) pts[i][j].d=true;
 var lo=[];
 
 var COUNT=getRandomInt(50,90);
+var lineWidthA=Math.round(2*EDGE/COUNT)-1;
+var lineWidthB=Math.round(2*EDGE/(COUNT+3)/6);
 var posX=1+Math.round((COUNT-1)*Math.random());
 var posY=1+Math.round((COUNT-1)*Math.random());
 var zx=getRandomInt(1,12);
@@ -199,9 +184,11 @@ var initLine=(idx)=>{
 var lineCount;	// temp
 
 var reset=()=>{
-ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   COUNT=getRandomInt(40,90);
   setPoints();
+  lineWidthA=Math.round(2*EDGE/COUNT)-1;
+  lineWidthB=Math.round(2*EDGE/(COUNT+3)/6);
   lineCount=4*Math.round(COUNT/4/(1.3+2*Math.random()));
   lo=[];
 posX=1+Math.round((COUNT-1)*Math.random());
@@ -218,7 +205,7 @@ rndRC=Math.random()<0.5;
   if (Math.random()<0.4) TX=18-getRandomInt(2,17,true);
 console.log(TX+" "+TY+" "+randomize+" "+(COUNT/lineCount).toFixed(2));
   for (let i=0; i<lineCount; i++) {
-    lo[i]=new LineObject(initLine(i),colors[i%colors.length],i);
+    lo[i]=new LineObject(initLine(i),i);
     lo[i].rndStart=randomize;
     lo[i].twistY=TY;
     lo[i].twistX=TX;
@@ -239,10 +226,7 @@ var getSet=()=>{	// can't use
 var grow=(lineObject)=>{
   if (!lineObject.mi) return false;
   let ln=lineObject.line;
-//  if (Math.random()<0.5) ln.reverse();
-//  if (true) ln.reverse();
 //  let pst=getRandomInt(0,ln.length);
-//ln.unshift(ln.pop());
 //ln.unshift(ln.pop());
 if (lineObject.rndStart) ln.unshift(...ln.splice(getRandomInt(1,ln.length-1)));
 //ln.unshift(...ln.splice(2));
@@ -252,37 +236,15 @@ if (lineObject.rndStart) ln.unshift(...ln.splice(getRandomInt(1,ln.length-1)));
 //  let pst=getRandomInt(0,3);
 //  let pst=(lineObject.idx%2)?0:getRandomInt(0,ln.length);
 //  let pst=(lineObject.idx%2)?0:getRandomInt(0,ln.length);
-/*
-  let movex=(s1,s2,c)=>{
-    for (let i=0; i<2; i++) {
-      let pt1=pts[ln[s1][0]+c[i]][ln[s1][1]];
-      let pt2=pts[ln[s2][0]+c[i]][ln[s2][1]];
-      if (pt1.d==false && pt2.d==false) {
-	ln.splice(s2,0,[ln[s1][0]+c[i],ln[s1][1]],[ln[s2][0]+c[i],ln[s2][1]]);
-	//if (ln.length%3) ln.splice(s2,0,[ln[s1][0]+c[i],ln[s1][1]],[ln[s2][0]+c[i],ln[s2][1]]);
-	//else ln.splice(s2,0,[ln[s2][0]+c[i],ln[s2][1]],[ln[s1][0]+c[i],ln[s1][1]]);
-	pt1.d=true;
-	pt2.d=true;
-//if (!lineObject.idx%4) { ln.unshift(ln.pop()); } 
-//if (ln.length%2) ln.push(ln.shift());
-//ln.push(ln.shift());
-//ln.unshift(ln.pop());
-//ln.unshift(ln.pop());
-	return true;
-      }
-    }
-  }
-*/
   for (let p=0; p<ln.length; p++) {
     //let s1=(pst+p)%ln.length;
     let s1=p;
     let s2=(s1+1)%ln.length;
 //    let c=[[-1,1],[1,-1]][getRandomInt(0,2)];
 //    let c=(lineObject.idx%2)?[-1,-1]:[1,1];
+//    let c=(lineObject.idx%2)?[1,-1]:[-1,1];
     let c=[-1,1];
     if (ln[s1][0]==ln[s2][0]) {
-    //if (ln[s1][1]==ln[s2][1]) {
-//      if (movex(s1,s2,c)) return true;
       for (let i=0; i<2; i++) {
 	let pt1=pts[ln[s1][0]+c[i]][ln[s1][1]];
 	let pt2=pts[ln[s2][0]+c[i]][ln[s2][1]];
@@ -327,7 +289,7 @@ if (lineObject.rndStart) ln.unshift(...ln.splice(getRandomInt(1,ln.length-1)));
       }
     }
   }
-  lineObject.mi=false;  // remove wrapper
+  lineObject.mi=false;
   return false;
 }
 
@@ -407,8 +369,6 @@ var animate=(ts)=>{
 }
 
 onresize();
-
 reset();
 
-//draw();
 start();
