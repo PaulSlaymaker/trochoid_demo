@@ -38,18 +38,21 @@ var getColors=()=>{
   let c=[];
   //let colorCount=Math.random()<0.5?2:4;
   //let colorCount=[2,3,6][getRandomInt(0,3)];
-  let colorCount=getRandomInt(3,7);
-let hr=Math.round(90/colorCount);
-  //let hue=getRandomInt(0,90,true)+30;
-  let hue=30;
-  let colorSeg=Math.round(360/colorCount);
+  //let colorCount=getRandomInt(3,7);
+  let colorCount=2*getRandomInt(2,7);
+  let hr=Math.round(90/colorCount);
+  let hue=getRandomInt(0,90,true)+30;
+//  let hue=30;
   for (let i=0; i<colorCount; i++) {
     let hd=Math.round(360/colorCount)*i+getRandomInt(-hr,hr);
-    let sat=60+getRandomInt(0,31);
+    let sat=70+getRandomInt(0,21);
     //let lum=40+getRandomInt(0,41);
     //let lum=40+20*Math.pow(Math.cos((hue+60)*TP/360),2);
     let col=(hue+hd)%360;
-    let lum=Math.round(30+40*Math.pow(Math.sin((col+90)*TP/360),2));
+    let lf=Math.random();
+    //let lum=Math.round(30+50*Math.pow(Math.sin((col+90)*TP/360),2));
+    let lb=i%2?20:50;
+    let lum=Math.round(lb+30*Math.pow(Math.sin((col+90)*TP/360),2));
     c.splice(getRandomInt(0,c.length+1),0,"hsl("+col+","+sat+"%,"+lum+"%)");
   }
   return c;
@@ -60,6 +63,7 @@ let hr=Math.round(90/colorCount);
 //var radius=getRandomInt(8,16);
 //var radius=getRandomInt(4,15,true);
 //var radius=getRandomInt(3,15,true);
+//var radius=getRandomInt(3,9);
 var radius=5;
 
 var axisCount=Math.trunc(CSIZE/2/radius);
@@ -103,8 +107,8 @@ var Circle=function(x,y) {
     ];
   }
 
-  circleXSet.add(x);
-  circleYSet.add(y);
+//  circleXSet.add(x);
+//  circleYSet.add(y);
 
   this.draw=()=>{
     ctx.moveTo(this.x+radius*0.7,this.y);
@@ -113,7 +117,7 @@ var Circle=function(x,y) {
 
   this.drawHex=()=>{
 //let r2=1.06*radius;
-let r2=0.9*radius;
+let r2=0.92*radius;
     ctx.moveTo(this.x,this.y+r2);
     for (let i=1; i<6; i++) {
       let z=i*TP/6;
@@ -143,13 +147,14 @@ var Path=function(circleArray,idx) {
   this.dir=getRandomInt(0,6);
   this.dirc=getRandomInt(0,6);
   this.idx=idx;  // color only, bring color back?
+  this.adx=0;
 }
 
 var grow2=(po)=>{
   if (po.fixed) return false;
   let pa=po.ca;
   if (!po.mi) return false;
-for (let p=0; p<pa.length; p++) {
+  for (let p=0; p<pa.length; p++) {
     let pc=pa[pa.length-p-1];
     //let pc=pa[pa.length-1];
     for (let i=0; i<6; i++) {
@@ -159,10 +164,7 @@ for (let p=0; p<pa.length; p++) {
       if (!pcirc || pcirc.d) continue;  // step out pc.circ[s1].circ[s1?]
       for (let i=0; i<pcirc.ckeys.length; i++) {
         let ec=circlesMap.get(pcirc.ckeys[i].toString());
-if (ec==undefined) {
-  console.log(pcirc.ckeys[i]);
-  debugger;
-}
+//if (ec==undefined) { console.log(pcirc.ckeys[i]); debugger; }
         ec.d=true;
         pa.push(ec);
       }
@@ -216,7 +218,8 @@ var draw2=()=>{
 //  let init=center?0:1;
 //  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   for (let i=0; i<paths.length; i++) {
-    drawPathEnd(paths[i]);
+    //drawPathEnd(paths[i]);
+    drawPath(paths[i]);
   }
 }
 
@@ -229,6 +232,31 @@ var draw=()=>{
   ctx.stroke();
 }
 */
+
+var drawSymmetricPath2=(path)=>{
+if (path==undefined) debugger;
+  if (path.adx*12>=path.ca.length) return false;
+  ctx.beginPath();
+  for (let i=path.adx*12; i<path.adx*12+12; i++) {
+if (path.ca[i]==undefined) debugger;
+    path.ca[i].drawHex();
+  }
+  path.adx++;
+  if (path.idx==0) ctx.fillStyle="gray";
+  else ctx.fillStyle=colors[path.idx%colors.length];
+  ctx.fill();
+  return true;
+}
+
+var drawSymmetricPath=(path,index)=>{
+  ctx.beginPath();
+  for (let i=index; i<index+12; i++) {
+    path.ca[i].drawHex();
+  }
+  if (path.idx==0) ctx.fillStyle="gray";
+  else ctx.fillStyle=colors[path.idx%colors.length];
+  ctx.fill();
+}
 
 var drawPath=(path)=>{
   ctx.beginPath();
@@ -463,6 +491,19 @@ var initPaths=(count)=>{
       circles.splice(circles.indexOf(ec),1);
     }
   }
+//paths.sort((a,b)=>{ return a.ca.length-b.ca.length; });
+}
+
+var fillPaths=()=>{
+  var moved=false;
+let zzz=0;
+  do {
+    moved=false;
+    for (let i=0; i<paths.length; i++) {
+      moved=grow2(paths[i]) || moved;
+    }
+  } while (moved && zzz++<100000);
+console.log(zzz);
 }
 
 colors=getColors();
@@ -470,17 +511,19 @@ var reset=()=>{
 circlesMap.forEach((c)=>{ c.d=false; });
   k=getRandomInt(0,6);
   //let pathCount=getRandomInt(8,40,true);
-  let pathCount=8;
+  let pathCount=getRandomInt(8,20,true);
+  //let pathCount=8;
   initPaths(pathCount);
-  if (Math.random()<0.2) colors=getColors();
+fillPaths();
+  if (Math.random()<0.4) colors=getColors();
 //  colors=getColors();	// should be 2,3 for linklevel>1
 console.log("k "+k);
 console.log("hex per path "+Math.round((COUNT-1)/pathCount));
-duration=Math.min(100, Math.round(10000/COUNT*pathCount));
-console.log(duration);
+duration=Math.max(1, Math.round(8000/COUNT*pathCount));
+console.log("dur "+duration);
 console.log("percent init "+Math.round(100*pathCount*12/COUNT));
 //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  pidx=1;
+  pidx=4;
   step=0;
 }
 
@@ -498,6 +541,7 @@ body.addEventListener("click", start, false);
 //body.addEventListener("click", ()=>{ reset(); start(); }, false);
 
 var pidx=1;
+var pco=3;
 var step=0;
 var time=0;
 var duration=50;	// grow
@@ -534,6 +578,52 @@ var animate=(ts)=>{
     }
 */
 //  } else {
+
+
+    if (ts-time>duration) {
+      time=0;
+      let drawn=0;
+      for (let i=1; i<pidx; i++) {
+        drawn+=drawSymmetricPath2(paths[i]);
+      }
+      if (!drawn) {
+        if (pidx++>=paths.length) reset();
+      } else if (drawn<4) {
+        if (pidx<paths.length-1) pidx++; 
+      }
+    }
+
+/*
+    if (ts-time>duration) {
+      time=0;
+      let drawn=false;
+      for (let i=1; i<paths.length; i++) {
+        drawn=drawSymmetricPath2(paths[i]) || drawn;
+      }
+      if (!drawn) reset();
+    }
+*/
+
+/*
+    if (ts-time>duration) {
+      time=0;
+      let drawn=false;
+//let pco=0;
+      for (let i=0; i<paths.length; i++) {
+        if (paths[i].ca.length-1>pidx) {
+          drawSymmetricPath(paths[i],pidx);
+          drawn=true;
+        }
+//if (drawn) { if (pco++>1) continue; }
+      }
+      pidx+=12;
+      if (!drawn) reset();
+      //if (!moved) step=2;
+//      draw2();
+    }
+*/
+
+/*
     if (ts-time>duration) {
       time=0;
 //      if (!grow(path)) return;
@@ -541,18 +631,20 @@ var animate=(ts)=>{
 let pco=0;
       for (let i=0; i<paths.length; i++) {
 	moved=grow2(paths[i]) || moved;
-if (moved && pco++>2) break;
+if (moved && pco++>3) break;
       }
       //if (!moved) step=2;
       if (!moved) reset();
       draw2();
     }
+*/
+
 //  }
   requestAnimationFrame(animate);
 }
 
+onresize();
 reset();
-
 start();
 
 //paths.forEach((p)=>{ drawPath(p); });
