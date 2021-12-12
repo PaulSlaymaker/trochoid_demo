@@ -12,7 +12,7 @@ const ctx=(()=>{
   let c=document.createElement("canvas");
   c.width=2*CSIZE;
   c.height=2*CSIZE;
-c.style.outline="1px dotted red";
+//c.style.outline="1px dotted red";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -37,7 +37,6 @@ const getRandomInt=(min,max,low)=>{
 var colors=[];
 var getColors=()=>{
   let c=[];
-  //let colorCount=[2,6,4,8][getRandomInt(0,4)];
   let colorCount=getRandomInt(3,8);
   let hue=getRandomInt(0,90,true)+30;
   let colorSeg=Math.round(360/colorCount);
@@ -50,7 +49,6 @@ var getColors=()=>{
   return c;
 }
 
-//var radius=getRandomInt(16,40);
 //var radius=[12,16,20,24,30,32][getRandomInt(0,6)];	// no 15?
 //var radius=[16,20,24,30,32,40][getRandomInt(0,6)];	// no 15?
 //var radius=[8,12,16,20,24,30,32][getRandomInt(0,7)];	// no 15?
@@ -112,27 +110,33 @@ debugger;
   }
 }
 
-/*
-var draw=()=>{
-//  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  drawCircles();
+var setSymmetryV=(point)=>{
+  point.d=true;
+  let x=Math.round(point.x);
+  let y=Math.round(point.y);
+//if (x==0 || y==0) debugger;
+  return pm.get([-x,y].toString());
+  pm.get([-x,y].toString()).d=true;
+  pm.get([-x,-y].toString()).d=true;
+  pm.get([x,-y].toString()).d=true;
 }
-*/
 
-/*
-var drawCircle=(c,col)=>{  // diagnostic
-  ctx.beginPath();
-if (c==undefined) debugger;
-if (typeof c.draw != "function") debugger;
-  c.draw();
-  if (col) {
-    ctx.strokeStyle=col;
-  } else {
-    ctx.strokeStyle="yellow";
+var setSymmetryF=(point)=>{
+  let angle=Math.atan(point.y/point.x);
+  let rad=Math.pow(point.x*point.x+point.y*point.y,0.5);
+  for (let i=0; i<3; i++) {
+    let ia=2*i;
+    let z=ia*TP/6+angle; 
+    let x=Math.round(rad*Math.cos(z));
+    let y=Math.round(rad*Math.sin(z));
+    pm.get([x,y].toString()).d=true;
+    let ib=2*i+1;
+    z=ib*TP/6+angle; 
+    x=Math.round(rad*Math.cos(z));
+    y=Math.round(-rad*Math.sin(z));
+    pm.get([x,y].toString()).d=true;
   }
-  ctx.stroke();
 }
-*/
 
 colors=getColors();
 
@@ -212,10 +216,6 @@ var grow=(branch)=>{
   let ci=getRandomInt(0,earc.p2.c.length);
   let njunc=earc.p2.c[ci];
   let jsw=earc.circle==njunc.cir;
- 
-//let j0=earc.p2.c[0];
-//let j1=earc.p2.c[1];
-//let pa=j0.cir.pts[(j0.idx+dirz+6)%6];
 //  let dirz=(earc.circle==njunc.cir)?earc.dir:-earc.dir;
   let dirz=jsw?earc.dir:-earc.dir;
 
@@ -248,12 +248,11 @@ console.log("2nd");
 */
     return false;
   }
-  setSymmetry(np); //  np.d=true;
+  if (sType==4) setSymmetryV(np);
+  else setSymmetry(np); //  np.d=true;
   branch.arcs.push(new Arc(njunc.cir, njunc.idx, dirz));
   return true;
 }
-
-//let cols=["white","cyan","blue","green","yellow","red"];
 
 var getBranch=(aidx)=>{ // branch only from initial path
   let spt=arcs[aidx].p1;
@@ -262,7 +261,8 @@ var getBranch=(aidx)=>{ // branch only from initial path
   let np=spt.c[cindex].cir.pts[(spt.c[cindex].idx-arcs[aidx].dir+6)%6];
   let ars=[];
   if (!np.d) {
-    setSymmetry(np);
+    if (sType==4) setSymmetryV(np);
+    else setSymmetry(np);
     ars.push(new Arc(spt.c[cindex].cir, spt.c[cindex].idx, -arcs[aidx].dir));
   }
   return new Branch(ars);
@@ -271,27 +271,101 @@ var getBranch=(aidx)=>{ // branch only from initial path
 var arcs=[];
 var branches=[];
 
+var initBranchesV=()=>{
+  arcs.length=0;
+  branches.length=0;
+  let setD=()=>{
+    pm.forEach((p)=>{ 
+      if (Math.abs(p.x)<radius || Math.round(p.y)==0) p.d=true;
+      else p.d=false; 
+    });
+  }
+  setD();
+//  let pt1=pm.get([radius/2,Math.round(radius*sin[1])].toString());
+//  let pt2=pm.get([3*radius/2,Math.round(radius*sin[1])].toString());
+//  setSymmetryV(pt1);
+//  setSymmetryV(pt2);
+  if (Math.random()<0.5) {
+    arcs[0]=new Arc(cm.get([radius,Math.round(2*radius*sin[1])].toString()),4,1);
+  } else {
+    arcs[0]=new Arc(cm.get([2*radius,0].toString()),3,1);
+  }
+  setSymmetryV(arcs[0].p1);
+  setSymmetryV(arcs[0].p2);
+  branches[0]=new Branch(arcs);
+  while (grow(branches[0]));
+  while (branches[0].arcs.length<5) {
+console.log("small V");
+    branches[0].arcs.length=1;
+    setD();
+    setSymmetryV(arcs[0].p1);
+    setSymmetryV(arcs[0].p2);
+    while (grow(branches[0]));
+  }
+}
+
+var initBranchesF=()=>{
+  arcs.length=0;
+  branches.length=0;
+  let setD=()=>{
+    pm.forEach((p)=>{ 
+      if (Math.abs(Math.abs(p.y/p.x)-1.732)<0.1 || Math.round(p.y)==0) p.d=true;
+      else p.d=false; 
+    });
+  }
+  setD();
+/*
+  if (Math.random()<0.5) {
+    arcs[0]=new Arc(cm.get([radius,Math.round(2*radius*sin[1])].toString()),4,1);
+  } else {
+    arcs[0]=new Arc(cm.get([2*radius,0].toString()),3,1);
+  }
+*/
+/*
+  setSymmetryF(arcs[0].p1);
+  setSymmetryF(arcs[0].p2);
+  branches[0]=new Branch(arcs);
+  while (grow(branches[0]));
+*/
+/*
+  while (branches[0].arcs.length<5) {
+console.log("small V");
+    branches[0].arcs.length=1;
+    setD();
+    setSymmetryV(arcs[0].p1);
+    setSymmetryV(arcs[0].p2);
+    while (grow(branches[0]));
+  }
+*/
+}
+
 var initBranches=()=>{
   arcs.length=0;
   branches.length=0;
-  let rpt=pm.get(radius+",0");
-  let caa=rpt.c[getRandomInt(0,rpt.c.length)];
+  let setD=()=>{ pm.forEach((p)=>{ p.d=false; }); }
+  setD();
+//  let rpt=pm.get(radius+",0");
+  //let caa=rpt.c[getRandomInt(0,rpt.c.length)];
+//  setSymmetry(rpt);
+//  let pt2=caa.cir.pts[(caa.idx+dirx+6)%6];
+//  setSymmetry(pt2);
+  let c=cm.get([2*radius,0].toString());
+  //arcs.push(new Arc(caa.cir, caa.idx, dirx));
   let dirx=(Math.random()<0.5)?1:-1;
-  setSymmetry(rpt);
-  let pt2=caa.cir.pts[(caa.idx+dirx+6)%6];
-  setSymmetry(pt2);
-  arcs.push(new Arc(caa.cir, caa.idx, dirx));
+  arcs[0]=new Arc(c,3,dirx);
+  setSymmetry(arcs[0].p1);
+  setSymmetry(arcs[0].p2);
   branches[0]=new Branch(arcs);
   while (grow(branches[0]));
-
-while (branches[0].arcs.length<7) {
-console.log("small");
-//console.log(branches[0].arcs);
-  branches[0].arcs.length=1;
-  pm.forEach((p)=>{ p.d=false; });
-  setSymmetry(rpt);
-  while (grow(branches[0]));
-}
+  //while (branches[0].arcs.length<7) {
+  while (branches[0].arcs.length<6) {
+  console.log("small");
+    branches[0].arcs.length=1;
+    setD();
+    setSymmetry(arcs[0].p1);
+    setSymmetry(arcs[0].p2);
+    while (grow(branches[0]));
+  }
 }
 
 var setBranches=()=>{
@@ -314,7 +388,27 @@ var drawArcSym=(a)=>{
   ctx.stroke(p);
 }
 
-var drawEnds=(bi)=>{
+var drawArcSymV=(a)=>{
+  let p=new Path2D();
+  p.addPath(a.path,new DOMMatrix([1,0,0,1,0,0]));
+  p.addPath(a.path,new DOMMatrix([1,0,0,-1,0,0]));
+  p.addPath(a.path,new DOMMatrix([-1,0,0,-1,0,0]));
+  p.addPath(a.path,new DOMMatrix([-1,0,0,1,0,0]));
+  ctx.stroke(p);
+}
+
+var drawArcSymF=(a)=>{
+  let p=new Path2D();
+  for (let i=0; i<3; i++) {
+    let ia=2*i;
+    let ib=2*i+1;
+    p.addPath(a.path,new DOMMatrix([cos[ia],sin[ia],-sin[ia],cos[ia],0,0]));
+    p.addPath(a.path,new DOMMatrix([cos[ib],sin[ib],sin[ib],-cos[ib],0,0]));
+  }
+  ctx.stroke(p);
+}
+
+var drawEndsSym=(bi)=>{
   let end=new Path2D();
   let aa=branches[bi].arcs;
   let pt=aa[aa.length-1].p1;
@@ -327,6 +421,20 @@ var drawEnds=(bi)=>{
     p.addPath(end,dm);
     //p.addPath(end,new DOMMatrix([cos[i],sin[i],-sin[i],cos[i],0,0]));
   }
+  ctx.fillStyle=colors[1+bi%(colors.length-1)];
+  ctx.fill(p);
+}
+
+var drawEndsSymV=(bi)=>{
+  let end=new Path2D();
+  let aa=branches[bi].arcs;
+  let pt=aa[aa.length-1].p1;
+  end.arc(pt.x,pt.y,radius/1.6,0,TP);
+  let p=new Path2D();
+  p.addPath(end,new DOMMatrix([1,0,0,1,0,0]));
+  p.addPath(end,new DOMMatrix([1,0,0,-1,0,0]));
+  p.addPath(end,new DOMMatrix([-1,0,0,-1,0,0]));
+  p.addPath(end,new DOMMatrix([-1,0,0,1,0,0]));
   ctx.fillStyle=colors[1+bi%(colors.length-1)];
   ctx.fill(p);
 }
@@ -379,20 +487,25 @@ var getPrevBranchIndex=()=>{
   return false;
 }
 
+/*
 var setBranchD=()=>{	// temp
   setSymmetry(arcs[0].p1);
   for (let i=0; i<arcs.length; i++) {
     setSymmetry(arcs[i].p2);
   }
 }
+*/
+
+var sType=6;
 
 var reset=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-pm.forEach((p)=>{ p.d=false; });
-initBranches();
-//setBranchD();
-//branches.length=1;
-setBranches();
+  if (Math.random()<0.1) sType=4;
+  else sType=6;
+  if (sType==4) initBranchesV();
+  else initBranches();
+  setBranches();
+reportBranches();
   colors=getColors();
   ctx.strokeStyle=colors[0];
   ctx.lineWidth=radius/2;
@@ -428,7 +541,7 @@ var t=0;
 var pidx=0;
 var bidx=0;
 
-var reportBranches=()=>{
+var reportBranches=()=>{	// diag
   let len="";
 //  let rc="";
 ctx.fillStyle="black";
@@ -451,40 +564,42 @@ var step=0;
 var animate=()=>{
   if (stopped) return;
   t++;
-if (step==0) {
-  if (t==5) {
-    t=0;
-    drawArcSym(branches[bidx].arcs[pidx]);
-    pidx++;
-    if (pidx>=branches[bidx].arcs.length-1) {
-      drawEnds(bidx);
-      pidx=0;
-      bidx=getNextBranchIndex();
-      if (!bidx || bidx>branches.length) {
-reportBranches();
-//        stopped=true;
-step=1;
+  if (step==0) {
+    if (t==5) {
+      t=0;
+      if (sType==4) drawArcSymV(branches[bidx].arcs[pidx]);
+      else drawArcSym(branches[bidx].arcs[pidx]);
+      pidx++;
+      if (pidx>=branches[bidx].arcs.length-1) {
+        if (sType==4) drawEndsSymV(bidx);
+	else drawEndsSym(bidx);
+	pidx=0;
+	bidx=getNextBranchIndex();
+	if (!bidx || bidx>branches.length) {
+	  step=1;
+	}
       }
     }
-  }
-} else if (step==1) {
-  if (t==160) {
+  } else if (step==1) {
+    if (t==160) {
+      t=0;
+      step=2;
+    }
+  } else if (step==2) {
+    ctx.canvas.style.opacity=1-t/80;
+    ctx.canvas.style.transform="scale("+(1-t/80)+")";
+    if (t==80) {
+      t=0;
+      step=3;
+    }
+  } else {
     t=0;
-    step=2;
+    reset();
+    ctx.canvas.style.opacity=0.99;
+    ctx.canvas.style.transform="none";
+    step=0;
+  //  stopped=true;
   }
-} else if (step==2) {
-  ctx.canvas.style.opacity=1-t/80;
-  if (t==80) {
-    t=0;
-    step=3;
-  }
-} else {
-  t=0;
-  reset();
-  ctx.canvas.style.opacity=1;
-  step=0;
-//  stopped=true;
-}
   requestAnimationFrame(animate);
 }
 
