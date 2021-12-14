@@ -397,5 +397,5 @@ curve.randomize(true);
 transit();
 transit();
 
-draw();
-requestAnimationFrame(animate);
+if (EM) draw();
+else requestAnimationFrame(animate);
