@@ -3,10 +3,7 @@ const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
 const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
-
 const CSIZE=400;
-const PolarType=[Math.sin,Math.cos];
-const SCALE=40;
 
 var ctx=(()=>{
   let c=document.createElement("canvas");
