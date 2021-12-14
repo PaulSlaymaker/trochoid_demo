@@ -798,6 +798,6 @@ shiftVertices(1);
 setPoints();
 transitColors();
 transitTiles();
-draw();
-//LOG.log(true,"");
-start();
+
+if (EM) draw();
+else start();
