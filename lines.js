@@ -1,9 +1,8 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
-const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
-
+const EM=location.href.endsWith("em");
 const CSIZE=400;
 
 var ctx=(()=>{
@@ -18,8 +17,7 @@ var ctx=(()=>{
 })();
 
 ctx.translate(CSIZE,CSIZE);
-ctx.fillStyle="#AAD";
-ctx.lineWidth=4;
+ctx.lineWidth=5;
 
 onresize=function() {
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -130,6 +128,7 @@ let q=(ddiff/2-Math.abs(lines[i].d-(D1+D2)/2))/ddiff/2;
   }
 }
 
+/*
 var drawLine=(frac, fin)=>{
   setPoints(frac);
 //  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
@@ -142,6 +141,7 @@ var drawLine=(frac, fin)=>{
   ctx.strokeStyle="white";
   ctx.stroke();
 }
+*/
 
 var transit=()=>{
   ps=++ps%2;
@@ -261,4 +261,9 @@ reset();
 transit();
 transit();
 //setMon();
-start();
+
+if (EM) {
+  for (let i=0; i<8; i++) draw(0);
+} else {
+  start();
+}
