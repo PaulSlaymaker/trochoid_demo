@@ -439,5 +439,5 @@ transitCurve1();
 //curve1[1].type=4;
 transitCurve2();
 setPoints();
-//draw();
-start();
+if (EM) draw();
+else start();
