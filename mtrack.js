@@ -180,6 +180,8 @@ var animate=(ts)=>{
 }
 
 onresize();
-//draw();
 transit();
-start();
+if (EM) {
+  balls.forEach((b)=>{ b.move(); });
+  draw();
+} else start();
