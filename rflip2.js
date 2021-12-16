@@ -245,5 +245,9 @@ ctx.canvas.addEventListener("click", start, false);
 
 onresize();
 transit();
-if (EM) draw();
+if (EM) {
+  sync=true;
+  setTiles();
+  draw();
+}
 else start();
