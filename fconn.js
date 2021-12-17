@@ -2,6 +2,7 @@
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 body.style.display="grid";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -140,7 +141,7 @@ if (sym[C]==undefined) debugger;
 if (rot[C+"-"+S]==undefined) debugger;
   ROT=rot[C+"-"+S]*TP/C/2;
   ctx.rotate(ROT);
-console.log(C+" "+S);
+//console.log(C+" "+S);
 }
 
 var pts2=[];
@@ -250,7 +251,7 @@ var transitLevels=()=>{
   pts2.push(pts2.shift());
   colors.push(colors.shift());
   paths2.push(paths2.shift());
-console.log("w shift");
+//console.log("w shift");
 }
 
 var transit=()=>{
@@ -359,6 +360,7 @@ RSEG=[80,90,100,110,120][getRandomInt(0,5)];
     frac=0;
     f=0;
 //af=pause;
+if (EM) stopped=true;
   }
   paths2=setPaths2(); 
   draw();
@@ -385,4 +387,5 @@ setPoints();
 paths2=setPaths2();
 transit();
 
-start();
+if (EM) draw();
+else start();
