@@ -151,7 +151,7 @@ if (sym[C]==undefined) debugger;
 if (rot[C+"-"+S]==undefined) debugger;
   ROT=rot[C+"-"+S]*TP/C/2;
   ctx.rotate(ROT);
-console.log(C+" "+S);
+//console.log(C+" "+S);
 }
 
 var pts2=[];
