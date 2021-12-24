@@ -155,7 +155,7 @@ var setPointsRing=()=>{
 var transitPoints=()=>{
   let pa=[];
   let symmetry=sym[C][getRandomInt(0,sym[C].length,true)];
-console.log(C+" "+symmetry);
+//console.log(C+" "+symmetry);
   let z=(()=>{
     let z1=[];
     for (let i=0; i<symmetry; i++) z1.push(getRadii());
