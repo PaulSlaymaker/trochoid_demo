@@ -170,31 +170,56 @@ console.log(C+" "+symmetry);
 }
 
 var transitRing=()=>{
+  pts2.forEach((p1)=>{ p1.forEach((p2)=>{ p2.r=300; }); });
+/*
   for (let j=0; j<W; j++) { 
     for (let i=0; i<C; i++) {
       pts2[j][i].r=300;
     }
   }
+*/
 }
 
 var sine2=(idx,idr)=>{
   let idx1=(idx+1==C)?0:idx+1;
   let D=20;
+  let DT=TP/D/4;
   let p=new Path2D();
-    let x=pts2[idr][idx].getR()*Math.cos(idx*TP/C);
-    let y=pts2[idr][idx].getR()*Math.sin(idx*TP/C);
-    p.moveTo(x,y);
+  let radius=pts2[idr][idx].getR();
+  let x=radius*Math.cos(idx*TP/C);
+  let y=radius*Math.sin(idx*TP/C);
+  p.moveTo(x,y);
   for (let i=0; i<D+1; i++) {
-    //x=pts2[0][1].r*Math.cos(i/40*TP/C);
-    //y=pts2[0][1].r*Math.sin(i/40*TP/C);
-    //let r=pts2[0][0].r*Math.cos(i/40*TP/4)+pts2[0][1].r*Math.sin(i/40*TP/4);
-    let r=pts2[idr][idx].getR()*Math.pow(Math.cos(i/D*TP/4),2)+pts2[idr][idx1].getR()*Math.pow(Math.sin(i/D*TP/4),2);
+    let r=radius*Math.pow(Math.cos(i*DT),2)+pts2[idr][idx1].getR()*Math.pow(Math.sin(i/D*TP/4),2);
     //let r=(1+Math.sin(i/40*TP/4+TP/4))*pts2[0][0].r/2+(1+Math.cos(i/40*TP/4-TP/4))*pts2[0][1].r/2;
     //let r=Math.sin(i/40*TP/8+TP/4)+Math.cos(i/40*TP/8-TP/4);
     //let r=Math.sin(i/40*TP/4);
     x=r*Math.cos((i/D+idx)*TP/C);
     y=r*Math.sin((i/D+idx)*TP/C);
     p.lineTo(x,y);
+  }
+  return p;
+}
+
+var sine3=(idr)=>{
+if (idr==W-1) debugger;
+  let D=20;
+  let DT=TP/D/4;
+  let p=new Path2D();
+  for (let j=idr; j<idr+2; j++) {
+    let x=pts2[j][0].getR()*Math.cos(0);
+    let y=0; //pts2[idr][0].getR()*Math.sin(0);
+    p.moveTo(x,y);
+    for (let i=0; i<C; i++) {
+      let idx1=(i+1==C)?0:i+1;
+      let radius=pts2[j][i].getR();
+      for (let q=0; q<D+1; q++) {
+	let r=radius*Math.pow(Math.cos(q*DT),2)+pts2[j][idx1].getR()*Math.pow(Math.sin(q*DT),2);
+	x=r*Math.cos((q/D+i)*TP/C);
+	y=r*Math.sin((q/D+i)*TP/C);
+	p.lineTo(x,y);
+      }
+    }
   }
   return p;
 }
@@ -210,16 +235,26 @@ var setPaths=()=>{
   return pa;
 }
 
-/*
-var setPathsIndex=(idx)=>{
-debugger;
-  for (let j=0; j<W; j++) {
-    paths[j][idx]=sine2(idx,j);
-//    let b=(j==0)?W-1:j-1;
-//    paths[b][idx]=sine2(idx,b);
+var paths2=[];
+var setPaths2=()=>{
+  let pa=[];
+  for (let j=0; j<W-1; j++) {
+    pa[j]=sine3(j);
+  }
+  return pa;
+}
+
+var draw2=()=>{
+ctx.fillStyle="red";
+ctx.strokeStyle="gray";
+ctx.lineWidth=2;
+  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  for (let j=0; j<W-1; j++) {
+    ctx.fillStyle=colors[j%colors.length];
+  ctx.fill(paths2[j],"evenodd");
+  ctx.stroke(paths2[j]);
   }
 }
-*/
 
 var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
@@ -268,6 +303,7 @@ p.arc(0,0,RMIN,0,TP);
 ctx.strokeStyle=colors[(W+1)%colors.length];
 ctx.stroke(p);
 */
+ctx.fill();
 }
 
 var reset=()=>{
@@ -352,7 +388,9 @@ var animate=(ts)=>{
 //af=pause;
   }
   paths=setPaths(); 
+//  paths2=setPaths2(); 
   draw();
+//  draw2();
   requestAnimationFrame(af);
 }
 
