@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 
 const TP=2*Math.PI;
 const CSIZE=400;
@@ -179,7 +180,6 @@ var reset=()=>{
   COUNT=2*getRandomInt(16,60)+1;
   setPoints();
   dPoints=(()=>{ let p=[]; for (let i=1; i<(COUNT-1)/2; i+=2) p.push(i); return p; })();
-  
   lineWidthA=Math.round(2*EDGE/COUNT)-1;
   lineWidthB=Math.round(2*EDGE/(COUNT+3)/6);
   lineCount=4*Math.round(COUNT/4/(1.3+2*Math.random()));
@@ -192,21 +192,19 @@ var reset=()=>{
 let tf=posY?0.1:0.4;
   TX=(Math.random()<tf)?18-getRandomInt(2,17):0;	
   TY=(Math.random()<tf)?18-getRandomInt(2,17):0;	
-console.log(TX+" "+TY+" "+rotation);
-
+//console.log(TX+" "+TY+" "+rotation);
   for (let l=0; l<lineCount/4; l++) {
     let lines=initLineQ();
     for (let i=0; i<4; i++) {
       lo[i+4*l]=new LineObject(lines[i],i+l);
       for (let j=0; j<i; j++) lines[i].push(lines[i].shift());
-if (rotation=="right") {
-  lines[i].reverse();
-} else if (rotation=="alternate") {
-  if (i%2) lines[i].reverse();
-}
+      if (rotation=="right") {
+	lines[i].reverse();
+      } else if (rotation=="alternate") {
+	if (i%2) lines[i].reverse();
+      }
     }
   }
-
   colors=getColors();
 }
 
@@ -315,6 +313,7 @@ var animate=(ts)=>{
       time=0;
       step=3;
     }
+if (EM) stopped=true;
   } else if (step==3) {
     if (ts-time>1000) {
       time=0;
