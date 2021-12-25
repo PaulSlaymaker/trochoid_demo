@@ -54,6 +54,8 @@ var getColors=()=>{
 //var radius=[8,12,16,20,24,30,32][getRandomInt(0,7)];	// no 15?
 const radius=30;
 
+const RF=radius/Math.cos(TP/12);
+
 const cos=[1,0.5,-0.5,-1,-0.5,0.5];
 const sin=[0,0.866,0.866,0,-0.866,-0.866];
 
@@ -61,7 +63,7 @@ var Circle=function(x,y) {
   this.x=x;
   this.y=y;
   this.pts=new Array(6);
-  this.circ=[];
+//  this.circ=[];
   this.d=false;
 }
 
@@ -81,7 +83,21 @@ var Arc=function(c,a,d) {
   this.path.arc(c.x,c.y,radius,a*TP/6, (a+6+d)%6*TP/6, d==-1);
   this.p1=this.circle.pts[this.angle];
   this.p2=this.circle.pts[(this.angle+this.dir+6)%6];
-//if (!this.p1 || !this.p2) debugger;
+
+////
+/*
+  this.path2=new Path2D();
+  this.path2.moveTo(this.p1.x,this.p1.y);
+let cpx=c.x+RF*Math.cos(a*TP/6+d*TP/12);
+let cpy=c.y+RF*Math.sin(a*TP/6+d*TP/12);
+  this.path2.bezierCurveTo(cpx,cpy,cpx,cpy,this.p2.x,this.p2.y);
+*/
+////
+}
+
+var util=()=>{	// diag
+  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  ctx.lineWidth=2;
 }
 
 var Branch=function(iar) {
@@ -124,17 +140,12 @@ var setSymmetryV=(point)=>{
 var setSymmetryF=(point)=>{
   let angle=Math.atan(point.y/point.x);
   let rad=Math.pow(point.x*point.x+point.y*point.y,0.5);
-  for (let i=0; i<3; i++) {
-    let ia=2*i;
-    let z=ia*TP/6+angle; 
+  for (let i=-1; i<2; i++) {
+    let z=i*TP/6+angle; 
     let x=Math.round(rad*Math.cos(z));
     let y=Math.round(rad*Math.sin(z));
     pm.get([x,y].toString()).d=true;
-    let ib=2*i+1;
-    z=ib*TP/6+angle; 
-    x=Math.round(rad*Math.cos(z));
-    y=Math.round(-rad*Math.sin(z));
-    pm.get([x,y].toString()).d=true;
+    pm.get([-x,y].toString()).d=true;
   }
 }
 
@@ -193,7 +204,7 @@ generateHexes();
 
 var drawPoint=(p,col)=>{	// diag
 ctx.beginPath();
-ctx.arc(p.x,p.y,6,0,TP);
+ctx.arc(p.x,p.y,4,0,TP);
 if (col) ctx.fillStyle=col;
 else ctx.fillStyle="red";
 ctx.fill();
@@ -213,24 +224,15 @@ var drawCircles=()=>{
 var grow=(branch)=>{
   if (branch.arcs.length==0) return false;
   let earc=branch.arcs[branch.arcs.length-1];
-  let ci=getRandomInt(0,earc.p2.c.length);
+  let ci=1;
+  if (earc.p2.c.length==1) ci=0;
+  else ci=1-getRandomInt(0,earc.p2.c.length,lineOut);
+//  let ci=getRandomInt(0,earc.p2.c.length,true);
+
   let njunc=earc.p2.c[ci];
   let jsw=earc.circle==njunc.cir;
 //  let dirz=(earc.circle==njunc.cir)?earc.dir:-earc.dir;
   let dirz=jsw?earc.dir:-earc.dir;
-
-//if (jsw) branch.rc++;
-//else branch.rc=0;
-/*
-  let dirz=earc.dir;
-  if (earc.circle==njunc.cir) {
-//    branch.rc++;
-//if (branch.rc==4) branch.loop=true;
-  } else {
-    dirz=-dirz;
-//    branch.rc=0;
-  }
-*/
   let np=njunc.cir.pts[(njunc.idx+dirz+6)%6];
   if (np.d) {
 /*
@@ -249,6 +251,7 @@ console.log("2nd");
     return false;
   }
   if (sType==4) setSymmetryV(np);
+//else if (sType==2) setSymmetryF(np);
   else setSymmetry(np); //  np.d=true;
   branch.arcs.push(new Arc(njunc.cir, njunc.idx, dirz));
   return true;
@@ -262,6 +265,7 @@ var getBranch=(aidx)=>{ // branch only from initial path
   let ars=[];
   if (!np.d) {
     if (sType==4) setSymmetryV(np);
+else if (sType==2) setSymmetryF(np);
     else setSymmetry(np);
     ars.push(new Arc(spt.c[cindex].cir, spt.c[cindex].idx, -arcs[aidx].dir));
   }
@@ -295,7 +299,7 @@ var initBranchesV=()=>{
   branches[0]=new Branch(arcs);
   while (grow(branches[0]));
   while (branches[0].arcs.length<5) {
-console.log("small V");
+//console.log("small V");
     branches[0].arcs.length=1;
     setD();
     setSymmetryV(arcs[0].p1);
@@ -309,31 +313,28 @@ var initBranchesF=()=>{
   branches.length=0;
   let setD=()=>{
     pm.forEach((p)=>{ 
-      if (Math.abs(Math.abs(p.y/p.x)-1.732)<0.1 || Math.round(p.y)==0) p.d=true;
+      if (Math.abs(p.x)<radius) p.d=true;
       else p.d=false; 
     });
   }
   setD();
-/*
-  if (Math.random()<0.5) {
-    arcs[0]=new Arc(cm.get([radius,Math.round(2*radius*sin[1])].toString()),4,1);
-  } else {
-    arcs[0]=new Arc(cm.get([2*radius,0].toString()),3,1);
-  }
-*/
-/*
+  let c=cm.get([2*radius,0].toString());
+  let dirx=(Math.random()<0.5)?1:-1;
+  arcs[0]=new Arc(c,3,dirx);
+  arcs[1]=new Arc(c,2,dirx);
   setSymmetryF(arcs[0].p1);
   setSymmetryF(arcs[0].p2);
+  setSymmetryF(arcs[1].p2);
   branches[0]=new Branch(arcs);
   while (grow(branches[0]));
-*/
 /*
-  while (branches[0].arcs.length<5) {
-console.log("small V");
-    branches[0].arcs.length=1;
+  while (branches[0].arcs.length<4) {
+console.log("small F");
+    branches[0].arcs.length=2;
     setD();
-    setSymmetryV(arcs[0].p1);
-    setSymmetryV(arcs[0].p2);
+    setSymmetryF(arcs[0].p1);
+    setSymmetryF(arcs[0].p2);
+    setSymmetryF(arcs[1].p2);
     while (grow(branches[0]));
   }
 */
@@ -344,13 +345,7 @@ var initBranches=()=>{
   branches.length=0;
   let setD=()=>{ pm.forEach((p)=>{ p.d=false; }); }
   setD();
-//  let rpt=pm.get(radius+",0");
-  //let caa=rpt.c[getRandomInt(0,rpt.c.length)];
-//  setSymmetry(rpt);
-//  let pt2=caa.cir.pts[(caa.idx+dirx+6)%6];
-//  setSymmetry(pt2);
   let c=cm.get([2*radius,0].toString());
-  //arcs.push(new Arc(caa.cir, caa.idx, dirx));
   let dirx=(Math.random()<0.5)?1:-1;
   arcs[0]=new Arc(c,3,dirx);
   setSymmetry(arcs[0].p1);
@@ -359,7 +354,7 @@ var initBranches=()=>{
   while (grow(branches[0]));
   //while (branches[0].arcs.length<7) {
   while (branches[0].arcs.length<6) {
-  console.log("small");
+//  console.log("small");
     branches[0].arcs.length=1;
     setD();
     setSymmetry(arcs[0].p1);
@@ -397,16 +392,16 @@ var drawArcSymV=(a)=>{
   ctx.stroke(p);
 }
 
+/*
 var drawArcSymF=(a)=>{
   let p=new Path2D();
-  for (let i=0; i<3; i++) {
-    let ia=2*i;
-    let ib=2*i+1;
-    p.addPath(a.path,new DOMMatrix([cos[ia],sin[ia],-sin[ia],cos[ia],0,0]));
-    p.addPath(a.path,new DOMMatrix([cos[ib],sin[ib],sin[ib],-cos[ib],0,0]));
+  for (let i of [5,0,1]) {
+    p.addPath(a.path,new DOMMatrix([cos[i],sin[i],-sin[i],cos[i],0,0]));
+    p.addPath(a.path,new DOMMatrix([-cos[i],sin[i],sin[i],cos[i],0,0]));
   }
   ctx.stroke(p);
 }
+*/
 
 var drawEndsSym=(bi)=>{
   let end=new Path2D();
@@ -439,28 +434,22 @@ var drawEndsSymV=(bi)=>{
   ctx.fill(p);
 }
 
-/*
-var drawShrink=(bi)=>{
+var drawEndsSymF=(bi)=>{
   let end=new Path2D();
   let aa=branches[bi].arcs;
   let pt=aa[aa.length-1].p1;
-  end.arc(pt.x,pt.y,radius/1.5,0,TP);
+  end.arc(pt.x,pt.y,radius/1.6,0,TP);
   let dm=new DOMMatrix([1,0,0,1,0,0]);
   let p=new Path2D();
-  for (let i=0; i<6; i++) {
-    // don't create? modify a,b,c,d
+  for (let i=0; i<3; i++) {
     dm.a=cos[i]; dm.b=sin[i]; dm.c=-sin[i]; dm.d=cos[i];
     p.addPath(end,dm);
-    //p.addPath(end,new DOMMatrix([cos[i],sin[i],-sin[i],cos[i],0,0]));
+    dm.a=-cos[i]; dm.b=sin[i]; dm.c=sin[i]; dm.d=cos[i];
+    p.addPath(end,dm);
   }
-  ctx.fillStyle="black";
+  ctx.fillStyle=colors[1+bi%(colors.length-1)];
   ctx.fill(p);
-  let pe=new Path2D();
-  drawArcSym(aa[aa.length-3])
 }
-*/
-
-//drawCircle(cm.get("0,0"), colors[0]);  // don't use drawCircle, draw ctx directly
 
 var drawCenter=()=>{
   ctx.beginPath();
@@ -497,15 +486,17 @@ var setBranchD=()=>{	// temp
 */
 
 var sType=6;
+var lineOut=false;
 
 var reset=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  lineOut=Math.random()<0.2;
   if (Math.random()<0.1) sType=4;
   else sType=6;
   if (sType==4) initBranchesV();
   else initBranches();
   setBranches();
-reportBranches();
+//reportBranches();
   colors=getColors();
   ctx.strokeStyle=colors[0];
   ctx.lineWidth=radius/2;
@@ -568,10 +559,12 @@ var animate=()=>{
     if (t==5) {
       t=0;
       if (sType==4) drawArcSymV(branches[bidx].arcs[pidx]);
+else if (sType==2) drawArcSymF(branches[bidx].arcs[pidx]);
       else drawArcSym(branches[bidx].arcs[pidx]);
       pidx++;
       if (pidx>=branches[bidx].arcs.length-1) {
         if (sType==4) drawEndsSymV(bidx);
+else if (sType==2) drawEndsSymF(bidx);
 	else drawEndsSym(bidx);
 	pidx=0;
 	bidx=getNextBranchIndex();
@@ -587,7 +580,7 @@ var animate=()=>{
     }
   } else if (step==2) {
     ctx.canvas.style.opacity=1-t/80;
-    ctx.canvas.style.transform="scale("+(1-t/80)+")";
+//    ctx.canvas.style.transform="scale("+(1-t/80)+")";
     if (t==80) {
       t=0;
       step=3;
@@ -596,7 +589,7 @@ var animate=()=>{
     t=0;
     reset();
     ctx.canvas.style.opacity=0.99;
-    ctx.canvas.style.transform="none";
+//    ctx.canvas.style.transform="none";
     step=0;
   //  stopped=true;
   }
