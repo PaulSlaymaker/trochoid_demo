@@ -245,6 +245,11 @@ var createSquares=()=>{
     qs.push(tq);
     tq=getSymQuads();
   }
+qs.sort((a,b)=>{
+  let r1=Math.pow(a[0].point.x,2)+Math.pow(a[0].point.y,2);
+  let r2=Math.pow(b[0].point.x,2)+Math.pow(b[0].point.y,2);
+  return r1-r2;
+});
   return qs;
 };
 
@@ -274,5 +279,7 @@ var draw=()=>{
 //draw();
 colors=getColors();
 ctx.lineWidth=2;
+
 drawSquares(squareSets[0]);
+
 start();
