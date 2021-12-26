@@ -1,10 +1,11 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 
 const TP=2*Math.PI;
 const CSIZE=400;
-const SF=2*Math.sin(Math.PI/4);
+//const SF=2*Math.sin(Math.PI/4);
 
 const ctx=(()=>{
   let d=document.createElement("div");
@@ -13,7 +14,6 @@ const ctx=(()=>{
   let c=document.createElement("canvas");
   c.width=2*CSIZE;
   c.height=2*CSIZE;
-//c.style.outline="0.5px dotted red";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -429,6 +429,7 @@ var animate=(ts)=>{
 setTimeDelayAlt(false);
       //setAngleDeviations(10);
 setAngleDeviations(2);
+if (EM) stopped=true;
     }
   } else {
     //if (drawOut()==0) {
