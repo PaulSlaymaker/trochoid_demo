@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 
 const TP=2*Math.PI;
 const CSIZE=400;
@@ -160,18 +161,17 @@ var animate=(ts)=>{
       if (F1b==-F1) F1b=F1;
     }
     if (Math.random()<0.6) {
-      //F2=[-5,-3,-1,1,3,5][getRandomInt(0,6,true)];
       F2=[1,-1,3,-3,5,-5][getRandomInt(0,6,true)];
       if (F2==-F2b) F2=F2b;
     }
     if (Math.random()<0.6) {
-      //F2b=[-5,-3,-1,1,3,5][getRandomInt(0,6,true)];
       F2b=[1,-1,3,-3,5,-5][getRandomInt(0,6,true)];
       if (F2b==-F2) F2b=F2;
     }
 az=F1*F1+F1b*F1b+F2*F2+F2b*F2b+F3*F3+F3b*F3b+F4*F4+F4b*F4b;
 duration=az*4;
     t=0;
+if (EM) stopped=true;
   }
   draw();
   requestAnimationFrame(animate);
@@ -179,4 +179,5 @@ duration=az*4;
 
 onresize();
 
-start();
+if (EM) draw();
+else start();
