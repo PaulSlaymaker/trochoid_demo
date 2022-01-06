@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 
 const TP=2*Math.PI;
 const CSIZE=480;
@@ -12,13 +13,11 @@ const ctx=(()=>{
   let c=document.createElement("canvas");
   c.width=2*CSIZE;
   c.height=2*CSIZE;
-//c.style.outline="1px dotted red";
   d.append(c);
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,CSIZE);
 ctx.lineCap="round";
-//ctx.font="bold 16px sans-serif";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -577,6 +576,7 @@ else if (sType==2) drawEndsSymF(bidx);
     if (t==160) {
       t=0;
       step=2;
+      if (EM) stopped=true;
     }
   } else if (step==2) {
     ctx.canvas.style.opacity=1-t/80;
@@ -589,9 +589,7 @@ else if (sType==2) drawEndsSymF(bidx);
     t=0;
     reset();
     ctx.canvas.style.opacity=0.99;
-//    ctx.canvas.style.transform="none";
     step=0;
-  //  stopped=true;
   }
   requestAnimationFrame(animate);
 }
