@@ -19,6 +19,7 @@ c.style.outline="1px dotted silver";
 ctx.translate(CSIZE,2*CSIZE);
 ctx.textAlign="center";
 ctx.lineWidth=3;
+//ctx.setLineDash([8,8]);
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -54,77 +55,62 @@ colors=getColors();
 
 ctx.strokeStyle=colors[0];
 
-var Node=function(rs,pNode,ridx,rsdx) {
+var Node=function(pNode,ridx,rsdx) {
   this.rsdx=rsdx;
-  this.rSet=rs;	// switch to rsdx
-  this.rsO=rs[ridx];
-  this.rsi=[];  // convert to node array
+  this.rSet=RSA[rsdx];
+  this.rsO=RSA[rsdx][ridx];
+this.rsO.node=this;
   this.cna=[];  // child node array
-  this.time=0;
+  this.time=-rsdx*duration;
   this.g=false;
   if (pNode) {
-    pNode.rsi.push(ridx);
     pNode.cna.push(this);
   }
   else this.g=true;
   this.getPoint=()=>{
     return {
-      "x":this.rsO.r*Math.sin(this.rsO.a)*Math.pow(Math.sin(this.rsO.a/2),1.3),
+      //"x":this.rsO.r*Math.sin(this.rsO.a)*Math.pow(Math.sin(this.rsO.a/2),1.3),
+      //"x":this.rsO.r*Math.sin(this.rsO.a)*Math.sin(this.rsO.a/2),
+      "x":this.rsO.r*Math.sin(this.rsO.a),
       "y":this.rsO.r*(Math.cos(this.rsO.a)-1)
     };
+  }
+  this.getFrac=()=>{
+    if ((this.time+t)<0) return 0;
+    if ((this.time+t)<duration) return (this.time+t)/duration;
+    if ((this.time+t)>duration) return 1;
   }
 }
 
 var draw=()=>{
 //  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  let npath=new Path2D();
+  let n1path=new Path2D();
   let n2path=new Path2D();
   let n3path=new Path2D();
+  let npa=[n1path,n2path,n3path];
   let lpath=new Path2D();
   for (let i=0; i<nodes.length; i++) {
     let rad=nodes[i].rsO;
-    //let pt=getPoint(rad);
     let pt=nodes[i].getPoint();
-
-if (nodes[i].rsdx==1 || nodes[i].rsdx==3) {
-    n2path.arc(pt.x,pt.y,8,0,TP);
-    n2path.closePath();
-} else if (nodes[i].rSet==RS2) {
-    n3path.arc(pt.x,pt.y,8,0,TP);
-    n3path.closePath();
-} else {
-    npath.arc(pt.x,pt.y,8,0,TP);
-    npath.closePath();
+if (nodes[i].cna.length==0) {
+  npa[i%3].arc(pt.x,pt.y,7,0,TP);
+  npa[i%3].closePath();
 }
-
-/*
-  if (nodes[i].rSet==RS4) continue;
-    let rsc=RS1;
-    if (nodes[i].rSet==RS1) {
-      rsc=RS2;
-    } else if (nodes[i].rSet==RS2) {
-      rsc=RS3;
-    } else if (nodes[i].rSet==RS3) {
-      rsc=RS4;
-    }
-//    let rsc=(nodes[i].rSet==RS1)?RS2:RS1;
-*/
-
-    //let rss=nodes[i].rsi;
+//    npa[nodes[i].rsdx%3].arc(pt.x,pt.y,7,0,TP);
+//    npa[nodes[i].rsdx%3].closePath();
     let cns=nodes[i].cna;
       for (let l=0; l<cns.length; l++) {	
 //    for (let l=0; l<rss.length; l++) {	
       lpath.moveTo(pt.x,pt.y);
       // let rad2=nodes[i].cna[l].rsO;
 //      let rad2=rsc[rss[l]];
-let rad2=cns[l].rsO;
-//if (radx!=rad2) debugger;
-//let rad2=cns[l].rsO;
-      let pt2=getPoint(rad2);
-      if (nodes[i].rSet==RS0) {
-	let cpx=R1/2*Math.cos(rad2.ca);
-	let cpy=R1/2*Math.sin(rad2.ca);
-	lpath.bezierCurveTo(0,-R1/2,cpx,cpy,pt2.x,pt2.y);
+      let rad2=cns[l].rsO;
+//      let pt2=getPoint(rad2);
+let pt2=cns[l].getPoint();
+      if (nodes[i].rsdx==0) {
+	let cpx=radii[1]/2*Math.cos(rad2.ca);
+	let cpy=radii[1]/2*Math.sin(rad2.ca);
+	lpath.bezierCurveTo(0,-radii[1]/2,cpx,cpy,pt2.x,pt2.y);
       } else {
         let mp=(rad.cr+rad2.cr)/2;
 	let cpx1=mp*Math.cos(rad.ca);
@@ -138,7 +124,7 @@ let rad2=cns[l].rsO;
 //  ctx.strokeStyle=colors[0];
   ctx.stroke(lpath);
   ctx.fillStyle=colors[1];
-  ctx.fill(npath);
+  ctx.fill(n1path);
   ctx.fillStyle=colors[2];
   ctx.fill(n2path);
   ctx.fillStyle=colors[3];
@@ -146,20 +132,7 @@ let rad2=cns[l].rsO;
 //drawText2();
 }
 
-/*
-var reset=()=>{
-}
-*/
-
 var nodes=[];	// nodes are used for drawing, only?
-
-ctx.font="bold 11px sans-serif";
-var drawText=()=>{	// diag
-  //ctx.fillStyle="#BBB";
-  ctx.fillStyle="black";
-  for (let i=0; i<RS1.length; i++) ctx.fillText(i,RS1[i].x-1,RS1[i].y+2.5);
-  for (let i=0; i<RS2.length; i++) ctx.fillText(i,RS2[i].x-1,RS2[i].y+2.5);
-}
 
 var drawPoint=(x,y)=>{	// diag
   ctx.beginPath();
@@ -168,22 +141,7 @@ var drawPoint=(x,y)=>{	// diag
   ctx.fill();
 }
 
-var drawNodes2=()=>{	// diag
-  let p=new Path2D();
-  for (let i=0; i<RS2.length; i++) {
-    let pt=getPoint(RS2[i]);
-p.moveTo(pt.x,pt.y);
-    p.arc(pt.x,pt.y,10,0,TP);
-  }
-  ctx.fillStyle="yellow";
-  ctx.fill(p);
-  ctx.fillStyle="black";
-  for (let i=0; i<RS2.length; i++) {
-    let pt=getPoint(RS2[i]);
-    ctx.fillText(i,pt.x-1,pt.y+2.5);
-  }
-}
-
+ctx.font="bold 10px sans-serif";
 var drawText2=()=>{	// node indexes
   ctx.fillStyle="black";
   for (let i=0; i<nodes.length; i++) {
@@ -206,15 +164,12 @@ ctx.canvas.addEventListener("click", start, false);
 
 var stopped=true;
 var t=0;
-var f=0;
-var duration=400;
+var duration=300;
 function animate(ts) {
   if (stopped) return;
   t++;
-  f=t/duration;
-  if (t==duration) {
+  if (t==2*duration) {
     t=0;
-    f=0;
     stopped=true;
 return;
   }
@@ -222,42 +177,37 @@ return;
   requestAnimationFrame(animate);
 }
 
-const R1=90;
-const R2=190;
-const R3=290;
+const NW=8;
 
-const radii=[0,R1,R2,R3,390];
+//const radii=[0,70,150,230,310,390];
+const radii=[];
+let r=390/(NW-1);
+for (let i=0; i<NW-1; i++) {
+  radii.push(i*r);
+}
 
-const NW=5;
+const segmentCount=40;
 
 var generateCounts2=()=>{	// Math.pow(2,n) to get to 32, i.e. sum(n)==5
   let c=[1];
   c.push([2,1,3,4][getRandomInt(0,4,true)]);
-/*
-  if (c[1]==2) {
-    // 4 from  2 root of 32/2
-    // 4 from  3 root of 32/2
-    //let f1=4+(4-8*Math.random())/5;
-    let f1=4-4*Math.random()/5;	
-    c[2]=Math.round(c[1]*f1);
-    let f2=4-4*Math.random()/5;	
-    //let f2=4+(4-8*Math.random())/5;
-    c[3]=Math.round(c[2]*f2);
-    let f3=4-4*Math.random()/5;	
-    c[4]=Math.round(c[3]*f3);
-  //} else if (c[1]==1) {
-  } else {
-*/
+
     // ? from  2 root of 32/1	**increase 32 to ss
-    let ff=Math.pow(36/c[1],1/3);  // 0.5 = 1/(NW-3)
-    //let f1=ff+(ff-ff*2*Math.random())/5;	// /5 if +/- 20%
+    let ff=Math.pow(segmentCount/c[1],1/(NW-2));  // 0.5 = 1/(NW-3)
+    for (let i=0; i<NW-2; i++) {
+      let f1=ff-ff*Math.random()/5;	
+      c.push(Math.round(c[c.length-1]*f1));
+    }
+/*
     let f1=ff-ff*Math.random()/5;	
     c[2]=Math.round(c[1]*f1);
     let f2=ff-ff*Math.random()/5;	
     c[3]=Math.round(c[2]*f2);
     let f3=ff-ff*Math.random()/5;	
     c[4]=Math.round(c[3]*f3);
-//  }
+*/
+
+console.log(c);
   return c;
 }
 
@@ -271,14 +221,9 @@ var counts=[1,
 */
 
 var counts=generateCounts2();
-//var count1=counts[1];
-//var count2=counts[2];
-//var count3=counts[3];
-//var count4=counts[4];
-console.log(counts);
 
-var bSet=[[],[],[],[]];	// branchSet array covers branching arrays at each radial set
-
+var bSet=[];	// branchSet array covers branching arrays at each radial set
+for (let i=0; i<NW-1; i++) bSet.push([]);
 var setRandomBranchingN=(n)=>{
   let rb=[];
   for (let i=1; i<counts[n+1]; i++) rb.push(i); 
@@ -290,33 +235,74 @@ var setRandomBranchingN=(n)=>{
   bSet[n].sort((a,b)=>{ return a-b; });
 }
 
-var setNodes=()=>{
-  nodes=[new Node(RS0,false,0,0)];
-  for (let i=0; i<counts[1]; i++) {
-    let node=new Node(RS1,nodes[0],i,1);
-    nodes.push(node);
-//    RS1[i].node=node;	// ? just for growth timing?
-    for (let j=bSet[1][i]; j<bSet[1][i+1]; j++) {
-      let node2=new Node(RS2,node,j,2);
-      nodes.push(node2);
-//      RS2[j].node=node2;
-      for (let k=bSet[2][j]; k<bSet[2][j+1]; k++) {
-        let node3=new Node(RS3,node2,k,3);
-        nodes.push(node3);
-//        RS3[k].node=node3;
-        for (let l=bSet[3][k]; l<bSet[3][k+1]; l++) {
-          let node4=new Node(RSA[4],node3,l,4);
-          nodes.push(node4);
-//          RS4[l].node=node4;
-        }
-      }
-    }
+var bSet2=[];	// branchSet array covers branching arrays at each radial set
+for (let i=0; i<NW-1; i++) bSet2.push([]);
+var setRandomBranching2=(n)=>{
+  bSet2[n]=[];
+  let sum=0;
+  for (let i=0; i<counts[n]-1; i++) {
+    let bc=getRandomInt(0,Math.min(counts[n+1]-sum,Math.round(counts[n+1]/2)),true);
+    sum+=bc;
+    bSet2[n].splice(getRandomInt(0,bSet2[n].length+1),0,bc);
+  }
+  bSet2[n].splice(getRandomInt(0,bSet2[n].length+1),0,counts[n+1]-sum);
+}
+
+var setNN=(pn,c,w)=>{
+  if (w==NW-1) return;
+//if (bSet[w]==undefined) debugger;
+  for (let i=bSet[w][c]; i<bSet[w][c+1]; i++) { 
+//if (Math.random()<0.1) continue; // remove RAD[w+1][i]?, count--
+    let n=new Node(pn,i,w+1);
+    nodes.push(n);
+    setNN(n,i,w+1);
   }
 }
 
+var setNodes=()=>{
+  nodes=[new Node(false,0,0)];
+  for (let i=0; i<counts[1]; i++) {
+    let node=new Node(nodes[0],i,1);
+    nodes.push(node);
+    setNN(node,i,1);
+  }
+}
+
+var setNN2=(pn,w)=>{
+  if (w==NW-1) return;
+  for (let i=0; i<bSet2[w].length; i++) {
+    let n=new Node(pn,i,w);
+    nodes.push(n);
+    RSA[w].push({"node":node});	// RSA object creation here
+    setNN2(n,w+1);
+  }
+}
+
+// need RSA initialized to new Array(NW-1),
+var setNodes2=()=>{
+  nodes=[new Node(false,0,0)];
+  RSA[0]=[{"node":nodes[0]}];
+  setNN2(nodes[0],1);
+/*
+  for (let i=0; i<bSet2[1].length; i++) {
+    let node=new Node(nodes[0],i,1);
+    nodes.push(node);
+    RSA[1].push({"node":node});
+    for (let j=0; j<bSet2[2].length; j++) {
+      let node=new Node(node,j,2);
+      nodes.push(node);
+      RSA[2].push({"node":node});
+    }
+  }
+*/
+}
+
 var getPoint=(rs)=>{
+if (rs==undefined) debugger;
   return {
-    "x":rs.r*Math.sin(rs.a)*Math.pow(Math.sin(rs.a/2),1.3),
+    //"x":rs.r*Math.sin(rs.a)*Math.pow(Math.sin(rs.a/2),1.3),
+    //"x":rs.r*Math.sin(rs.a)*Math.sin(rs.a/2),
+    "x":rs.r*Math.sin(rs.a),
     "y":rs.r*(Math.cos(rs.a)-1)
   }
 }
@@ -331,40 +317,36 @@ var initRadialSets=()=>{
   return rsa;
 }
 
-setRandomBranchingN(1);
-setRandomBranchingN(2);
-setRandomBranchingN(3);
+for (let i=1; i<NW-1; i++) {
+  setRandomBranchingN(i);
+setRandomBranching2(i);
+}
+console.log(bSet2);
 
-/*
-var RSA=[
-  RS0=[{"a":0,"r":0}],
-  (()=>{ let a=[]; for (let i=0; i<count1; i++) a.push({}); return a; })(),
-  (()=>{ let a=[]; for (let i=0; i<count2; i++) a.push({}); return a; })(),
-  (()=>{ let a=[]; for (let i=0; i<count3; i++) a.push({}); return a; })(),
-  (()=>{ let a=[]; for (let i=0; i<count4; i++) a.push({}); return a; })(),
-];
-*/
 let RSA=initRadialSets();
 var RS0=RSA[0];
 var RS1=RSA[1];
 var RS2=RSA[2];
-var RS3=RSA[3];
-//var RS4=RSA[4];
 
 var setRandomTerminals=()=>{
   let extraSet=[];
-  let ss=36;	// spacing in radians/ss for full cycle,  make global const
+  let ss=segmentCount;	// spacing in radians/ss for full cycle,  make global const
   for (let i=0; i<ss; i++) extraSet.push(i);
   extraSet.sort((a,b)=>{ return Math.abs(a-ss/2)-Math.abs(b-ss/2); });
   // generate rr and sort
   for (let i=0; i<counts[counts.length-1]; i++) {
-    let ai=extraSet.splice(getRandomInt(0,extraSet.length,true),1)[0];
+    //let ai=extraSet.splice(getRandomInt(0,extraSet.length,true),1)[0];
+//let ai=extraSet.splice(getRandomInt(0,extraSet.length),1)[0];
     //RSA[RSA.length-1].a=ai*TP/ss;	// full cycle
-    //RSA[RSA.length-1]].a=TP/8+ai*3*TP/4/ss; // 3/4 cycle
     let rso=RSA[RSA.length-1][i];
-    rso.a=TP/4+ai*TP/2/ss;	// 1/2 cycle
-    let rr=radii[radii.length-1]-(radii[radii.length-1]-radii[radii.length-2])/2*Math.random();	
-    rso.r=rr;
+    //rso.a=TP/8+ai*3*TP/4/ss; // 3/4 cycle
+    //rso.a=TP/4+ai*TP/2/ss;	// 1/2 cycle
+    //rso.a=TP*3/8+ai*TP/4/ss;	// 1/4 cycle
+    //rso.a=TP/3+ai*TP/3/ss;	// 1/3 cycle
+rso.a=TP/3+i/counts[counts.length-1]*TP/3;	// non-random, 1/3 cycle
+//    let rr=radii[radii.length-1]-(radii[radii.length-1]-radii[radii.length-2])/2*Math.random();	
+//    rso.r=rr;
+rso.r=390;
     let pt=getPoint(rso);
     rso.ca=Math.atan2(pt.y,pt.x);
     rso.cr=Math.pow(pt.x*pt.x+pt.y*pt.y,0.5);
@@ -373,10 +355,19 @@ var setRandomTerminals=()=>{
 }
 
 var setRandomRSN=(n)=>{
-  for (let i=0; i<counts[n]; i++) {	// 3
-    let angle=(RSA[n+1][bSet[n][i]].a+RSA[n+1][bSet[n][i+1]-1].a)/2;
+  // use RSA[n].length TODO
+  for (let i=0; i<RSA[n].length; i++) {	// 3
+    // take arbitrary minimum angle: 0.1, TODO applies only to 1 radius  (r3 close to 0.1)
+    // multiply by counts/2 to get start
+    // fill angle by start+i*0.1; 
+    let d=0.1*400/radii[n];	// R0 never called
+    let start=TP/2-counts[n]/2*d;
+    let angle=start+i*d;
+//    let angle=(RSA[n+1][bSet[n][i]].a+RSA[n+1][bSet[n][i+1]-1].a)/2;
+
     RSA[n][i].a=angle;	// 3
-    RSA[n][i].r=radii[n]-(radii[n]-radii[n-1])/3*Math.random();	// 3 & 2
+    //RSA[n][i].r=radii[n]-(radii[n]-radii[n-1])/3*Math.random();	// 3 & 2
+RSA[n][i].r=radii[n];
     let pt=getPoint(RSA[n][i]);
     RSA[n][i].ca=Math.atan2(pt.y,pt.x);
     RSA[n][i].cr=Math.pow(pt.x*pt.x+pt.y*pt.y,0.5);
@@ -385,13 +376,33 @@ var setRandomRSN=(n)=>{
 
 setRandomTerminals();
 setNodes();
-//setRandomRS4();
+for (let i=NW-2; i>0; i--) {
+setRandomRSN(i);
+}
+/*
 setRandomRSN(3);
 setRandomRSN(2);
 setRandomRSN(1);
-//setRandomRS3();
-//setRandomRS2();
-//setRandomRS1();
+*/
+
+let RSAl=RSA[RSA.length-1];
+let amax=0;
+let da=[];
+for (let i=0; i<RSAl.length-1; i++) {
+  da.push(RSAl[i+1].a-RSAl[i].a);
+  amax=Math.max(amax,400*(RSAl[i+1].a-RSAl[i].a));
+//  console.log(RSAl[i].a);
+}
+//console.log(da);
+console.log(amax);
+
+/*
+//var showRSASeg=(ri)=>{
+  for (let i=0; i<RSA.length; i++) {
+    console.log(i+" "+radii[i]*(RSA[i][RSA[i].length-1].a-RSA[i][0].a)/counts[i]);
+  }
+//}
+*/
 
 onresize();
 
@@ -400,34 +411,59 @@ draw();
 var drwGrw=()=>{
   ctx.clearRect(-CSIZE,0,2*CSIZE,-2*CSIZE);
   let lpath=new Path2D();
+  let drawn=0;
   for (let i=0; i<nodes.length; i++) {
-    if (nodes[i].g) {
-      //let rad=nodes[i].rsO;
+    let f=nodes[i].getFrac();
+    //if (nodes[i].time+t<duration) {	// use f
+    if (f>0) {
       let pt=nodes[i].getPoint();
-
-//      let rss=nodes[i].rsi;
       let cns=nodes[i].cna;
       for (let l=0; l<cns.length; l++) {	
-//      for (let l=0; l<rss.length; l++) {	
 	lpath.moveTo(pt.x,pt.y);
-//	let rad2=rsc[rss[l]];
         let rad2=cns[l].rsO;
-	let pt2=getPoint(rad2);
+	//let pt2=getPoint(rad2);
+        let pt2=cns[l].getPoint();
 // TODO node specific f
         let x=(1-f)*pt.x+f*pt2.x;
         let y=(1-f)*pt.y+f*pt2.y;
-        if (nodes[i].rSet==RS0) {
-let fz=Math.pow(f,3);
+        let fz=Math.pow(f,3);
+        if (nodes[i].rsdx==0) {
 //let fz=f;
-	  let cpx=fz*R1/2*Math.cos((f)*rad2.ca);
-	  let cpy=fz*R1/2*Math.sin((f)*rad2.ca);
-//let cpx=R1/2*Math.cos(rad2.ca);
-//let cpy=R1/2*Math.sin(rad2.ca);
-	  lpath.bezierCurveTo(0,fz*-R1/2,cpx,cpy,x,y);
+	  let cpx=fz*radii[1]/2*Math.cos((f)*rad2.ca);
+	  let cpy=fz*radii[1]/2*Math.sin((f)*rad2.ca);
+	  lpath.bezierCurveTo(0,fz*-radii[1]/2,cpx,cpy,x,y);
         } else {
+          let rad=nodes[i].rsO;
+	  let mp=fz*(rad.cr+rad2.cr)/2;
+	  let cpx1=mp*Math.cos(rad.ca);
+	  let cpy1=mp*Math.sin(rad.ca);
+	  let cpx2=mp*Math.cos(rad2.ca);
+	  let cpy2=mp*Math.sin(rad2.ca);
+        let x=(1-f)*pt.x+f*pt2.x;
+        let y=(1-f)*pt.y+f*pt2.y;
+	  lpath.bezierCurveTo(cpx1,cpy1,cpx2,cpy2,x,y);
         }
+        drawn++;      
       }
     }	// growth nodes loop
   }
   ctx.stroke(lpath);
+  return drawn;
 }
+
+/*
+let test=[];
+let sum=0;
+for (let i=0; i<counts[NW-2]-1; i++) {
+  let bc=getRandomInt(0,Math.min(counts[NW-1]-sum,Math.round(counts[NW-1]/2)),true);
+  //let bc=getRandomInt(0,counts[NW-1]-sum,true);
+//console.log(counts[NW-1]-sum);
+  sum+=bc;
+  //test.push(bc);	// random splice
+  test.splice(getRandomInt(0,test.length+1),0,bc);
+}
+test.splice(getRandomInt(0,test.length+1),0,counts[NW-1]-sum);
+//test.push(counts[NW-1]-sum);
+console.log(test.reduce((p,c)=>{ return p+c; }, 0));
+console.log(test);
+*/
