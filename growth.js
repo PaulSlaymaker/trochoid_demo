@@ -20,6 +20,16 @@ ctx.translate(CSIZE,2*CSIZE);
 ctx.textAlign="center";
 ctx.lineWidth=3;
 //ctx.setLineDash([8,8]);
+//ctx.filter="saturate(300%)";
+//ctx.filter="grayscale(100%)";
+//ctx.filter="blur(2px)";
+/*
+ctx.globalCompositeOperation="destination-over";
+ctx.shadowColor="gray";
+ctx.shadowBlur=4;
+ctx.shadowOffsetX=1;
+ctx.shadowOffsetY=1;
+*/
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -55,14 +65,17 @@ colors=getColors();
 
 ctx.strokeStyle=colors[0];
 
-var Node=function(pNode,ridx,rsdx) {
+var Node=function(pNode,rso,rsdx) {
   this.rsdx=rsdx;
   this.rSet=RSA[rsdx];
-  this.rsO=RSA[rsdx][ridx];
+  //this.rsO=RSA[rsdx][ridx];
+  this.rsO=rso;
+if (this.rsO==undefined) debugger;
 this.rsO.node=this;
   this.cna=[];  // child node array
   this.time=-rsdx*duration;
   this.g=false;
+  this.pn=pNode;  // initial use only for prune
   if (pNode) {
     pNode.cna.push(this);
   }
@@ -80,10 +93,17 @@ this.rsO.node=this;
     if ((this.time+t)<duration) return (this.time+t)/duration;
     if ((this.time+t)>duration) return 1;
   }
+  this.getPointT=()=>{
+    if ((this.time+t)<0) return pn.getPointT();
+// fixme    if ((this.time+t)<duration) return (this.time+t)/duration;
+    if ((this.time+t)>duration) this.getPoint();
+  }
 }
 
 var draw=()=>{
+ctx.clearRect(-CSIZE,0,2*CSIZE,-2*CSIZE);
 //  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+//  ctx.beginPath();
   let n1path=new Path2D();
   let n2path=new Path2D();
   let n3path=new Path2D();
@@ -92,12 +112,14 @@ var draw=()=>{
   for (let i=0; i<nodes.length; i++) {
     let rad=nodes[i].rsO;
     let pt=nodes[i].getPoint();
-if (nodes[i].cna.length==0) {
+/*
+if (nodes[i].cna.length!=1 || nodes[i].rsdx==NW-1) {	// mark terminals
   npa[i%3].arc(pt.x,pt.y,7,0,TP);
   npa[i%3].closePath();
 }
-//    npa[nodes[i].rsdx%3].arc(pt.x,pt.y,7,0,TP);
-//    npa[nodes[i].rsdx%3].closePath();
+*/
+    npa[nodes[i].rsdx%3].arc(pt.x,pt.y,7,0,TP);
+    npa[nodes[i].rsdx%3].closePath();
     let cns=nodes[i].cna;
       for (let l=0; l<cns.length; l++) {	
 //    for (let l=0; l<rss.length; l++) {	
@@ -121,7 +143,6 @@ let pt2=cns[l].getPoint();
       }
     }
   }
-//  ctx.strokeStyle=colors[0];
   ctx.stroke(lpath);
   ctx.fillStyle=colors[1];
   ctx.fill(n1path);
@@ -143,7 +164,7 @@ var drawPoint=(x,y)=>{	// diag
 
 ctx.font="bold 10px sans-serif";
 var drawText2=()=>{	// node indexes
-  ctx.fillStyle="black";
+  ctx.fillStyle="white";
   for (let i=0; i<nodes.length; i++) {
     let rad=nodes[i].rsO;
     let pt=getPoint(rad);
@@ -182,7 +203,7 @@ const NW=8;
 //const radii=[0,70,150,230,310,390];
 const radii=[];
 let r=390/(NW-1);
-for (let i=0; i<NW-1; i++) {
+for (let i=0; i<NW; i++) {
   radii.push(i*r);
 }
 
@@ -190,10 +211,12 @@ const segmentCount=40;
 
 var generateCounts2=()=>{	// Math.pow(2,n) to get to 32, i.e. sum(n)==5
   let c=[1];
-  c.push([2,1,3,4][getRandomInt(0,4,true)]);
+  //c.push([2,1,3,4][getRandomInt(0,4,true)]);
+  c.push(getRandomInt(2,5,true));	// for NW>10
 
     // ? from  2 root of 32/1	**increase 32 to ss
     let ff=Math.pow(segmentCount/c[1],1/(NW-2));  // 0.5 = 1/(NW-3)
+console.log(ff);
     for (let i=0; i<NW-2; i++) {
       let f1=ff-ff*Math.random()/5;	
       c.push(Math.round(c[c.length-1]*f1));
@@ -207,7 +230,7 @@ var generateCounts2=()=>{	// Math.pow(2,n) to get to 32, i.e. sum(n)==5
     c[4]=Math.round(c[3]*f3);
 */
 
-console.log(c);
+console.log("counts "+c);
   return c;
 }
 
@@ -230,39 +253,42 @@ var setRandomBranchingN=(n)=>{
   bSet[n].push(0);
   bSet[n].push(counts[n+1]);
   for (let i=0; i<counts[n]-1; i++) {
+//if (Math.random()<0.1) { bSet[n].push(bSet[bSet.length-1]); } else 
     bSet[n].push(rb.splice(getRandomInt(0,rb.length),1)[0]);
   }
   bSet[n].sort((a,b)=>{ return a-b; });
 }
 
-var bSet2=[];	// branchSet array covers branching arrays at each radial set
-for (let i=0; i<NW-1; i++) bSet2.push([]);
 var setRandomBranching2=(n)=>{
-  bSet2[n]=[];
+  bSet[n]=[];
   let sum=0;
   for (let i=0; i<counts[n]-1; i++) {
-    let bc=getRandomInt(0,Math.min(counts[n+1]-sum,Math.round(counts[n+1]/2)),true);
+    //let bc=getRandomInt(0,Math.min(counts[n+1]-sum+1,Math.round(counts[n+1]/2)),true);
+    //let bc=getRandomInt(0,Math.min(counts[n+1]-sum+1,5),true);
+    let bc=getRandomInt(0,Math.min(counts[n+1]-sum+1,5));
     sum+=bc;
-    bSet2[n].splice(getRandomInt(0,bSet2[n].length+1),0,bc);
+    bSet[n].splice(getRandomInt(0,bSet[n].length+1),0,bc);
   }
-  bSet2[n].splice(getRandomInt(0,bSet2[n].length+1),0,counts[n+1]-sum);
+  bSet[n].splice(getRandomInt(0,bSet[n].length+1),0,counts[n+1]-sum);
 }
 
 var setNN=(pn,c,w)=>{
   if (w==NW-1) return;
 //if (bSet[w]==undefined) debugger;
   for (let i=bSet[w][c]; i<bSet[w][c+1]; i++) { 
-//if (Math.random()<0.1) continue; // remove RAD[w+1][i]?, count--
-    let n=new Node(pn,i,w+1);
+    //let n=new Node(pn,i,w+1);
+    let n=new Node(pn,RSA[w+1][i],w+1);
     nodes.push(n);
+//if (Math.random()<0.1) continue; // remove RAD[w+1][i]?, count--
     setNN(n,i,w+1);
   }
 }
 
 var setNodes=()=>{
-  nodes=[new Node(false,0,0)];
+  nodes=[new Node(false,RSA[0][0],0)];
   for (let i=0; i<counts[1]; i++) {
-    let node=new Node(nodes[0],i,1);
+    let node=new Node(nodes[0],RSA[1][i],1);
+    //let node=new Node(nodes[0],i,1);
     nodes.push(node);
     setNN(node,i,1);
   }
@@ -270,31 +296,55 @@ var setNodes=()=>{
 
 var setNN2=(pn,w)=>{
   if (w==NW-1) return;
-  for (let i=0; i<bSet2[w].length; i++) {
-    let n=new Node(pn,i,w);
+//  RSA[w].push(rsx);	// RSA object creation here, ? convert to idx
+  for (let i=0; i<bSet[w].length; i++) {
+    //let rsx=RSA[w][RSA[w].length-1];
+    let rso={};
+    RSA[w].push(rso);	// RSA object creation here
+    let n=new Node(pn,rso,w);
+    //rsx.push({"node":n});	// RSA object creation here
     nodes.push(n);
-    RSA[w].push({"node":node});	// RSA object creation here
     setNN2(n,w+1);
   }
 }
 
-// need RSA initialized to new Array(NW-1),
-var setNodes2=()=>{
-  nodes=[new Node(false,0,0)];
-  RSA[0]=[{"node":nodes[0]}];
-  setNN2(nodes[0],1);
-/*
-  for (let i=0; i<bSet2[1].length; i++) {
-    let node=new Node(nodes[0],i,1);
-    nodes.push(node);
-    RSA[1].push({"node":node});
-    for (let j=0; j<bSet2[2].length; j++) {
-      let node=new Node(node,j,2);
-      nodes.push(node);
-      RSA[2].push({"node":node});
-    }
+var setNN3=(pn,idx,w)=>{
+  if (w==NW-1) return;
+  for (let i=0; i<bSet[w][idx]; i++) {
+    let rso={};
+    RSA[w+1].push(rso);
+    let n=new Node(pn,rso,w+1);
+    nodes.push(n);
+    setNN3(n,i,w+1);
   }
+}
+
+var setNodes2=()=>{
+  RSA[0]=[{"a":0,"r":0}];
+  nodes=[new Node(false,RSA[0][0],0)];
+//setNN3(nodes[0],0,0);
+  for (let i=0; i<bSet[1].length; i++) {
+    let rso={}
+    RSA[1].push(rso);
+    let n=new Node(nodes[0],rso,1);
+    nodes.push(n);
+setNN3(n,i,1);
+/*
+    for (let j=0; j<bSet[1][i]; j++) {
+      let rso2={}
+      RSA[2].push(rso2);
+      //let n2=new Node(n,RSA[2][RSA[2].length-1],2);
+      let n2=new Node(n,rso2,2);
+      nodes.push(n2);
+      for (let k=0; k<bSet[2][j]; k++) {
+	let rso3={}
+	RSA[3].push(rso3);
+	let n3=new Node(n2,rso3,3);
+	nodes.push(n3);
+      }
+    }
 */
+  }
 }
 
 var getPoint=(rs)=>{
@@ -317,16 +367,60 @@ var initRadialSets=()=>{
   return rsa;
 }
 
+var initRadialSets2=()=>{
+  RSA=[];
+  //let rsa=[[{"a":0,"r":0}]];
+  for (let i=0; i<NW; i++) RSA.push([]);
+  // add deeper from bSet(2)
+}
+
 for (let i=1; i<NW-1; i++) {
   setRandomBranchingN(i);
-setRandomBranching2(i);
+//setRandomBranching2(i);
 }
-console.log(bSet2);
+//debugger;    // start switch here
 
 let RSA=initRadialSets();
 var RS0=RSA[0];
 var RS1=RSA[1];
 var RS2=RSA[2];
+
+var test=()=>{
+  counts=generateCounts2();
+//  bSet=[[1]];
+//  for (let i=0; i<NW-2; i++) bSet.push([]);
+  for (let i=0; i<NW-1; i++) {
+    setRandomBranching2(i);
+  }
+console.log(bSet);
+  initRadialSets2();
+  setNodes2();
+//debugger;
+  setRandomTerminals2();
+  for (let i=NW-2; i>0; i--) {
+    setRandomRSN(i);
+  }
+  ctx.clearRect(-CSIZE,0,2*CSIZE,-2*CSIZE);
+  draw();
+}
+
+var setRandomTerminals2=()=>{
+  let ss=segmentCount;	// spacing in radians/ss for full cycle,  make global const
+  let RST=RSA[RSA.length-1];
+  for (let i=0; i<RST.length; i++) {
+    let rso=RST[i];
+rso.a=TP/3+i/counts[counts.length-1]*TP/3;	// non-random, 1/3 cycle
+//rso.a=TP/3+i/RST.length*TP/3;	// non-random, 1/3 cycle
+//rso.r=radii[radii.length-1];
+rso.r=390;
+    let pt=getPoint(rso);
+    rso.ca=Math.atan2(pt.y,pt.x);
+    rso.cr=Math.pow(pt.x*pt.x+pt.y*pt.y,0.5);
+//    rso.ca=rso.a;
+//    rso.cr=rso.r;
+  }
+  RSA[RSA.length-1].sort((a,b)=>{ return a.a-b.a; });
+}
 
 var setRandomTerminals=()=>{
   let extraSet=[];
@@ -344,9 +438,10 @@ var setRandomTerminals=()=>{
     //rso.a=TP*3/8+ai*TP/4/ss;	// 1/4 cycle
     //rso.a=TP/3+ai*TP/3/ss;	// 1/3 cycle
 rso.a=TP/3+i/counts[counts.length-1]*TP/3;	// non-random, 1/3 cycle
-//    let rr=radii[radii.length-1]-(radii[radii.length-1]-radii[radii.length-2])/2*Math.random();	
-//    rso.r=rr;
-rso.r=390;
+//rso.a=TP/4+i/counts[counts.length-1]*TP/2;	// non-random, 1/2 cycle
+    let rr=radii[radii.length-1]-(radii[radii.length-1]-radii[radii.length-2])/2*Math.random();	
+    rso.r=rr;
+//rso.r=390;
     let pt=getPoint(rso);
     rso.ca=Math.atan2(pt.y,pt.x);
     rso.cr=Math.pow(pt.x*pt.x+pt.y*pt.y,0.5);
@@ -360,24 +455,60 @@ var setRandomRSN=(n)=>{
     // take arbitrary minimum angle: 0.1, TODO applies only to 1 radius  (r3 close to 0.1)
     // multiply by counts/2 to get start
     // fill angle by start+i*0.1; 
+//	equal minimal spacing
     let d=0.1*400/radii[n];	// R0 never called
     let start=TP/2-counts[n]/2*d;
-    let angle=start+i*d;
-//    let angle=(RSA[n+1][bSet[n][i]].a+RSA[n+1][bSet[n][i+1]-1].a)/2;
+    let angle1=start+i*d;
+    let angle2=(RSA[n+1][bSet[n][i]].a+RSA[n+1][bSet[n][i+1]-1].a)/2;
+    let angle=(angle1+3*angle2)/4;
 
     RSA[n][i].a=angle;	// 3
-    //RSA[n][i].r=radii[n]-(radii[n]-radii[n-1])/3*Math.random();	// 3 & 2
-RSA[n][i].r=radii[n];
+    RSA[n][i].r=radii[n]-(radii[n]-radii[n-1])/2*Math.random();	// 3 & 2
+//RSA[n][i].r=radii[n];
     let pt=getPoint(RSA[n][i]);
     RSA[n][i].ca=Math.atan2(pt.y,pt.x);
     RSA[n][i].cr=Math.pow(pt.x*pt.x+pt.y*pt.y,0.5);
   }
 }
 
-setRandomTerminals();
+var deleteBranch=(nde)=>{
+  nde.pn.cna.splice(0);
+  for (let i=0; i<nde.cna.length; i++) {
+    deleteBranch(nde.cna[i]);
+  }
+  console.log(nodes.splice(nodes.indexOf(nde),1));
+}
+
+var checkParent=(nd,depth)=>{
+  if (nd.pn.cna.length>1) return;
+  if (depth>2) {
+//console.log(nd.pn);
+//console.log(nd.rsdx);
+//nd.pn.cna.splice(0);
+//nodes.splice(nodes.indexOf(nd),1);
+deleteBranch(nd);
+    return;
+  }
+  checkParent(nd.pn,depth+1); 
+}
+
+var prune=()=>{
+  let cou=0;
+console.log("start "+nodes.length);
+  for (let i=0; i<nodes.length; i++) {
+    if (nodes[i].rsdx==NW-1) {
+      //console.log(nodes[i].pn.cna.length);
+      checkParent(nodes[i],0);
+    }
+  }
+console.log("end "+nodes.length);
+}
+
 setNodes();
+setRandomTerminals();
+prune();
 for (let i=NW-2; i>0; i--) {
-setRandomRSN(i);
+  setRandomRSN(i);
 }
 /*
 setRandomRSN(3);
@@ -385,6 +516,7 @@ setRandomRSN(2);
 setRandomRSN(1);
 */
 
+/*
 let RSAl=RSA[RSA.length-1];
 let amax=0;
 let da=[];
@@ -395,13 +527,6 @@ for (let i=0; i<RSAl.length-1; i++) {
 }
 //console.log(da);
 console.log(amax);
-
-/*
-//var showRSASeg=(ri)=>{
-  for (let i=0; i<RSA.length; i++) {
-    console.log(i+" "+radii[i]*(RSA[i][RSA[i].length-1].a-RSA[i][0].a)/counts[i]);
-  }
-//}
 */
 
 onresize();
@@ -450,20 +575,3 @@ var drwGrw=()=>{
   ctx.stroke(lpath);
   return drawn;
 }
-
-/*
-let test=[];
-let sum=0;
-for (let i=0; i<counts[NW-2]-1; i++) {
-  let bc=getRandomInt(0,Math.min(counts[NW-1]-sum,Math.round(counts[NW-1]/2)),true);
-  //let bc=getRandomInt(0,counts[NW-1]-sum,true);
-//console.log(counts[NW-1]-sum);
-  sum+=bc;
-  //test.push(bc);	// random splice
-  test.splice(getRandomInt(0,test.length+1),0,bc);
-}
-test.splice(getRandomInt(0,test.length+1),0,counts[NW-1]-sum);
-//test.push(counts[NW-1]-sum);
-console.log(test.reduce((p,c)=>{ return p+c; }, 0));
-console.log(test);
-*/
