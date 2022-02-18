@@ -71,9 +71,9 @@ function animate(ts) {
 //    ctx.canvas.style.opacity=(1+Math.cos(TP*t/duration))/2;
     //ctx.canvas.style.opacity=Math.pow(Math.sin(TP*t/40),2);
 //  }
-  if (t%200==0) {
+  if (t%100==0) {
     randomize();
-    if (t%100==0) {
+    if (t%200==0) {
       drawEM(ctx2);
     } else {
       drawEM(ctx);
@@ -100,12 +100,6 @@ var randomize=()=>{
   rm=Math.pow(2,getRandomInt(3,10,true));
   gm=Math.pow(2,getRandomInt(3,10,true));
   bm=Math.pow(2,getRandomInt(3,10,true));
-
-/*
-  rm=Math.pow(2,getRandomInt(2,5,true));
-  gm=Math.pow(2,getRandomInt(2,5,true));
-  bm=Math.pow(2,getRandomInt(2,5,true));
-*/
 
   rf=80+400*Math.random();
   gf=80+400*Math.random();
