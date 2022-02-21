@@ -16,9 +16,8 @@ const ctx=(()=>{
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,2*CSIZE);
-//ctx.textAlign="center";	// diag
 ctx.lineWidth=3;
-//ctx.lineCap="round";
+ctx.lineCap="round";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -55,7 +54,7 @@ colors=getColors();
 ctx.strokeStyle=colors[0];
 
 var Node=function(pNode) {
-  this.cna=[];  // child node array, should have max length?
+  this.cna=[];  // child node array
   this.pn=pNode;
   if (pNode) {
     this.rsdx=pNode.rsdx+1;
@@ -90,11 +89,6 @@ var Node=function(pNode) {
     if ((t-this.time)<duration) return (t-this.time)/duration;
     if ((t-this.time)>=duration) return 1;
   }
-  this.getFrac2=()=>{
-    if ((this.t-this.time)<0) return 0;
-    if ((this.t-this.time)<duration) return (this.t-this.time)/duration;
-    if ((this.t-this.time)>=duration) return 1;
-  }
   this.getPointT=()=>{
     let f=this.getFrac();
     if (f==0 || f==1) return this.getPoint();
@@ -112,6 +106,51 @@ var Node=function(pNode) {
     if (f==0 || f==1) return this.rsO.a;
     return (1-f)*this.rsO.a+f*this.rsO.a2;
   }
+  this.getPath=()=>{
+    let p=new Path2D();
+    let p2=new Path2D();
+    let bpt=this.pn.getPointT();
+    p.moveTo(bpt.x,bpt.y);
+    let anT=this.getAngleT();
+    let raT=this.getRadiusT();
+    let x=raT*Math.sin(anT);
+    let y=raT*Math.cos(anT);
+    p2.arc(x,y,2,0,TP);
+//let lx=0.9*raT*Math.sin(anT);
+//let ly=0.9*raT*Math.cos(anT);
+    let f=this.getFrac();
+
+    let xs1=12+1.05*raT*Math.sin(anT-0.03);
+    let ys1=-4+1.1*raT*Math.cos(anT-0.03);
+    let xs2=-12+1.05*raT*Math.sin(anT+0.03);
+    let ys2=-4+1.1*raT*Math.cos(anT+0.03);
+
+    if (this.rsdx==1) {
+      let mp=this.getRadiusT()/2;
+      let ang=this.getAngleT();
+      let cpx2=mp*Math.sin(ang);
+      let cpy2=mp*Math.cos(ang);
+      p.bezierCurveTo(0,-mp,cpx2,cpy2,x,y);
+      if (this.cna.length==0) {
+        p2.moveTo(x,y);
+        p2.bezierCurveTo(xs1,ys1,xs2,ys2,x,y);
+      }
+    } else {
+      let pa=this.pn.getAngleT();
+      let mp=(this.getRadiusT()+this.pn.getRadiusT())/2;
+      let cpx1=mp*Math.sin(pa);
+      let cpy1=mp*Math.cos(pa);
+      let ang=this.getAngleT();
+      let cpx2=mp*Math.sin(ang);
+      let cpy2=mp*Math.cos(ang);
+      p.bezierCurveTo(cpx1,cpy1,cpx2,cpy2,x,y);
+      if (this.cna.length==0) {
+	p2.moveTo(x,y);
+	p2.bezierCurveTo(xs1,ys1,xs2,ys2,x,y);
+      }
+    }
+    return {"s":p,"h":p2};
+  }
 }
 
 var drawPoint=(x,y,col)=>{	// diag
@@ -123,24 +162,12 @@ var drawPoint=(x,y,col)=>{	// diag
   ctx.fill();
 }
 
-/*
-ctx.font="bold 10px sans-serif";	// diag
-var drawText2=()=>{	// node indexes
-  ctx.fillStyle="white";
-  for (let i=0; i<nodes.length; i++) {
-    let rad=nodes[i].rsO;
-    let pt=getPoint(rad);
-    ctx.fillText(i,pt.x-1,pt.y+2.5);
-  }
-}
-*/
-
 const NW=6;
 const radii=[];
-const R=790/(NW-1);
+const R=720/(NW-1);
 for (let i=0; i<NW; i++) radii.push(i*R);
 
-const segmentCount=24;
+const segmentCount=14;
 
 var generateCounts2=()=>{	// Math.pow(2,n) to get to 32, i.e. sum(n)==5
   let c=[1];
@@ -191,19 +218,6 @@ function start() {
 }
 ctx.canvas.addEventListener("click", start, false);
 
-/*
-ctx.canvas.addEventListener("click", (evt)=>{
-  const rect=ctx.canvas.getBoundingClientRect();
-  const bcr=ctx.canvas.getBoundingClientRect();
-  const elx= evt.clientX - rect.left;
-  const ely = evt.clientY - rect.top;
-  const x=elx*ctx.canvas.width/rect.width;
-  const y=ely*ctx.canvas.height/rect.height;
-  console.log([x,y]);
-  start();
-});
-*/
-
 var S=0;
 var stopped=true;
 var t=0;
@@ -213,47 +227,43 @@ var duration=60;
 function animate(ts) {
   if (stopped) return;
   t++; 	// can't be async since radial sets have to be synced
-if (S==0) {
-  if (t%duration==0) {
-    transit();
-    if (!addNode()) {
-      console.log("full");
-      S=1;
-      ot=t;
-    } else {
-      //let c=getRandomInt(0,6,true);
-      let c=getRandomInt(0,5);
-      for (let i=0; i<c; i++) if (!addNode()) break;
+  if (S==0) {
+    if (t%duration==0) {
+      transit();
+      if (!addNode()) {
+	console.log("full");
+	S=1;
+	ot=t;
+      } else {
+	let c=getRandomInt(0,5);
+	for (let i=0; i<c; i++) if (!addNode()) break;
+      }
+      for (let i=1; i<NW; i++) setRandomRSN2(i);
+    } 
+  } else if (S==1) {
+    if (t%duration==0) {
+      transit();
+      for (let i=1; i<NW; i++) setRandomRSN2(i);
     }
-    for (let i=1; i<NW; i++) setRandomRSN2(i);
-  } 
-
-} else if (S==1) {
-  if (t%duration==0) {
-    transit();
-    for (let i=1; i<NW; i++) setRandomRSN2(i);
-  }
-  if (t>ot+160) {
-    S=2;
-    ot2=t;
-  }
-} else if (S==2) {
-  if (t%duration==0) {
-    transit();
-    for (let i=1; i<NW; i++) setRandomRSN2(i);
-  }
-  //ctx.canvas.style.opacity=Math.max(0,1-(t-ot2)/200);
-  ctx.filter="opacity("+(Math.max(0,100*(1-(t-ot2)/40)))+"%)";
-  if (t>ot2+40) {
-    S=3;
-  }
-} else {
-  reset();
-    //ctx.canvas.style.opacity=1;
+    if (t>ot+160) {
+      S=2;
+      ot2=t;
+    }
+  } else if (S==2) {
+    if (t%duration==0) {
+      transit();
+      for (let i=1; i<NW; i++) setRandomRSN2(i);
+    }
+    ctx.filter="opacity("+(Math.max(0,100*(1-(t-ot2)/40)))+"%)";
+    if (t>ot2+40) {
+      S=3;
+    }
+  } else {
+    reset();
     ctx.filter="none";
     S=0;
-}
-  drwGrw();
+  }
+  draw();
   requestAnimationFrame(animate);
 }
 
@@ -291,12 +301,13 @@ var setRandomRSN2=(n)=>{	// no n, internal loop
   for (let i=0; i<RSA[n].length; i++) {	// 3
     //let d=40/radii[n];	// R0 never called, should vary with segmentCount
 //let d=30/radii[n];
-let d=60/radii[n];
-//let d=72/radii[n];	// 18 seg
+//let d=60/radii[n];
+let d=92/radii[n];	// 18 seg
     ////let start=TP/2-counts[n]/2*d;
     let start=TP/2-RSA[n].length/2*d;
     //let angle=start+i*d;
-let angle=start+i*d+d*(1-2*Math.random())/3;  // diag
+//let angle=start+i*d+d*(1-2*Math.random())/3;  // diag
+let angle=start+i*d+d*Math.random()/3;  // diag
 
 /*
     if (RSA[n][i].node.cna.length>0) {
@@ -327,7 +338,64 @@ setRandomRSN2(1);
 }
 initNodes();
 
+var draw=()=>{
+  let bPath=new Path2D();
+  let fPath=[new Path2D(), new Path2D()];
+  ctx.clearRect(-CSIZE,0,2*CSIZE,-2*CSIZE);
+  for (let i=nodes.length-1; i>0; i--) {
+    let po=nodes[i].getPath();
+    ctx.lineWidth=2+nodes[i].cnc/1.6;
+    ctx.strokeStyle=colors[0];
+    ctx.stroke(po.s);
+//    if (nodes[i].cna.length==0) {
+      fPath[i%2].addPath(po.h);
+//    }
+  }
+  ctx.lineWidth=6;
+  ctx.strokeStyle=colors[0];
+  ctx.stroke(fPath[0]);
+  ctx.stroke(fPath[1]);
+  ctx.lineWidth=2;
+  ctx.strokeStyle="#222";
+  ctx.stroke(fPath[0]);
+  ctx.stroke(fPath[1]);
+  ctx.fillStyle=colors[1];
+  ctx.fill(fPath[0]);
+  ctx.fillStyle=colors[2];
+  ctx.fill(fPath[1]);
+}
+
+/*
+var drawo=()=>{
+  ctx.clearRect(-CSIZE,0,2*CSIZE,-2*CSIZE);
+  let spath=new Path2D();
+  let fpath=[new Path2D(), new Path2D()];
+  for (let i=nodes.length-1; i>0; i--) {
+    let po=nodes[i].getPath();
+    spath.addPath(po.s);
+    fpath[i%2].addPath(po.h);
+  }
+ctx.lineWidth=3;
+  ctx.strokeStyle=colors[0];
+  ctx.stroke(spath);
+
+ctx.lineWidth=8;
+  ctx.strokeStyle=colors[2];
+  ctx.filter="blur(5px)";
+  ctx.stroke(fpath[0]);
+  ctx.stroke(fpath[1]);
+  ctx.filter="none";
+  ctx.fillStyle=colors[1];
+  ctx.fill(fpath[0]);
+  ctx.fillStyle=colors[3];
+ctx.lineWidth=1.2;
+ctx.strokeStyle="black";
+ctx.stroke(fpath[0]);
+  ctx.fill(fpath[1]);
+ctx.stroke(fpath[1]);
+}
 var drwGrw=()=>{
+debugger;
   ctx.clearRect(-CSIZE,0,2*CSIZE,-2*CSIZE);
   let lpath=new Path2D();
   let npath=[new Path2D(), new Path2D()];
@@ -336,7 +404,6 @@ var drwGrw=()=>{
   for (let i=1; i<nodes.length; i++) {
     let f=nodes[i].getFrac();
       let bpt=nodes[i].pn.getPointT();
-      lpath.moveTo(bpt.x,bpt.y);
       lpath.moveTo(bpt.x,bpt.y);
       let pt=nodes[i].getPointT();
       let x=pt.x;
@@ -349,58 +416,30 @@ var drwGrw=()=>{
 	n2path[i%2].arc(x,y,3,0,TP);
 	n2path[i%2].closePath();
       }
-
       if (nodes[i].rsdx==0) {
 debugger;
       } else if (nodes[i].rsdx==1) {
-	let rad=nodes[i].rsO;
-	let rz=((1-f)*rad.r+f*rad.r2)/2;
+	let mp=nodes[i].getRadiusT()/2;
 	let ang=nodes[i].getAngleT();
-	if (nodes[i].cna.length==0) {
-	  let cpx2=rz*Math.sin(ang);
-	  let cpy2=rz*Math.cos(ang);
-	  lpath.bezierCurveTo(0,-rz,cpx2,cpy2,x,y);
-	} else {
-	  let mp=nodes[i].getRadiusT()/2;
-	  let cpx2=mp*Math.sin(ang);
-	  let cpy2=mp*Math.cos(ang);
-	  lpath.bezierCurveTo(0,-rz,cpx2,cpy2,x,y);
-	}
+	let cpx2=mp*Math.sin(ang);
+	let cpy2=mp*Math.cos(ang);
+	lpath.bezierCurveTo(0,-mp,cpx2,cpy2,x,y);
       } else {	// rsdx>1
-	let radn=nodes[i].rsO;
-	let radp=nodes[i].pn.rsO;
-	//let rad2=nodes[i].rsO;	// cna means
-	//let mp=((1-f)*radn.r+f*radp.r);
 	let mp=(nodes[i].getRadiusT()+nodes[i].pn.getRadiusT())/2;
-//let mp=(2*nodes[i].getRadiusT()+nodes[i].pn.getRadiusT())/3;
 	let pa=nodes[i].pn.getAngleT();
-	//let cpx1=mp*Math.sin(radp.a);
-	//let cpy1=mp*Math.cos(radp.a);
 	let cpx1=mp*Math.sin(pa);
 	let cpy1=mp*Math.cos(pa);
-//drawPoint(cpx1,cpy1,"#FFFFFF80");
-	if (nodes[i].cna.length==0) {
+        if (nodes[i].rsdx==NW-1) {
+	  lpath.bezierCurveTo(cpx1,cpy1,x,y,x,y);
+        } else {
 	  let ang=nodes[i].getAngleT();
 	  let cpx2=mp*Math.sin(ang);
 	  let cpy2=mp*Math.cos(ang);
-//drawPoint(cpx2,cpy2,"#FFFF0080");
 	  lpath.bezierCurveTo(cpx1,cpy1,cpx2,cpy2,x,y);
-	  //lpath.bezierCurveTo(cpx1,cpy1,x,y,x,y);
-	} else {
-	  //let ang=nodes[i].cna[0].getAngleT();  // fixme, not just cna[0], & if rsdx==NW cp2=x,y
-	  let ang=nodes[i].getAngleT();
-	  let cpx2=mp*Math.sin(ang);
-	  let cpy2=mp*Math.cos(ang);
-//drawPoint(cpx2,cpy2,"#FFFF0080");
-	  lpath.bezierCurveTo(cpx1,cpy1,cpx2,cpy2,x,y);
-	}
-//if (nodes[i].cna.length==0) 
-//drawPoint(x,y,colors[nodes[i].rsdx%colors.length]);
+        }
       }
   }
   ctx.stroke(lpath);
-//  ctx.fillStyle="green";
-//  ctx.fill(n2path);
   ctx.fillStyle=colors[1];
   ctx.fill(npath[0]);
   ctx.fill(n2path[0]);
@@ -408,6 +447,7 @@ debugger;
   ctx.fill(npath[1]);
   ctx.fill(n2path[1]);
 }
+*/
 
 var getRandomRSAIndex=()=>{	// for selecting parent node
   let rri=[];
@@ -434,8 +474,8 @@ var addNode=()=>{
     for (let i=0; i<rset.length; i++) {
       for (let j=0; j<rset[i].node.cna.length+1; j++) {
         if (rset[i].node.cna[j]) prn++;
-if (rset[i].node.cna.length<3)	// limit 3 branches per node
-        slots.push({"ri":i,"ci":j,"prn":prn});
+        if (rset[i].node.cna.length<3)	// limit 3 branches per node
+          slots.push({"ri":i,"ci":j,"prn":prn});
       }
     }
     let rsi=getRandomInt(0,slots.length);
@@ -446,7 +486,7 @@ console.log("cna full");
     let pn=rset[slots[rsi].ri].node;
     let n=new Node(pn);
     nodes.push(n);
-    pn.cna.splice(slots[rsi].ci,0,n);
+    pn.cna.splice(slots[rsi].ci+1,0,n);
     RSA[n.rsdx].splice(slots[rsi].prn,0,n.rsO);
     // parent node should be rset[slots[rsi].ri].node
     // cna insertion point from ci
