@@ -96,7 +96,8 @@ let high=60-50*fF;
   rm=cm+0.1;
   gm=cm;
   bm=cm-0.1;
-  inc=-0.004+fF*0.0037;	// varies with canvas w/h
+  inc=-0.005+fF*0.004;	// varies with canvas w/h
+//  inc=-0.004+fF*0.0037;	// varies with canvas w/h
 
 R=getRandomInt(191,256);
 G=getRandomInt(191,256);
