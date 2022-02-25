@@ -18,8 +18,9 @@ c.style.outline="1px dotted silver";
 })();
 ctx.translate(CSIZE,2*CSIZE);
 ctx.textAlign="center";
-ctx.lineWidth=3;
-//ctx.setLineDash([8,8]);
+ctx.lineWidth=2;
+//ctx.lineCap="round";
+//ctx.setLineDash([22,16]);
 //ctx.filter="saturate(300%)";
 //ctx.filter="grayscale(100%)";
 //ctx.filter="blur(2px)";
@@ -67,7 +68,7 @@ ctx.strokeStyle=colors[0];
 
 var Node=function(pNode,rso,rsdx) {
   this.rsdx=rsdx;
-  this.rSet=RSA[rsdx];
+  //this.rSet=RSA[rsdx];
   //this.rsO=RSA[rsdx][ridx];
   this.rsO=rso;
 if (this.rsO==undefined) debugger;
@@ -101,8 +102,7 @@ this.rsO.node=this;
 }
 
 var draw=()=>{
-ctx.clearRect(-CSIZE,0,2*CSIZE,-2*CSIZE);
-//  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+//ctx.clearRect(-CSIZE,0,2*CSIZE,-2*CSIZE);
 //  ctx.beginPath();
   let n1path=new Path2D();
   let n2path=new Path2D();
@@ -112,14 +112,12 @@ ctx.clearRect(-CSIZE,0,2*CSIZE,-2*CSIZE);
   for (let i=0; i<nodes.length; i++) {
     let rad=nodes[i].rsO;
     let pt=nodes[i].getPoint();
-/*
 if (nodes[i].cna.length!=1 || nodes[i].rsdx==NW-1) {	// mark terminals
-  npa[i%3].arc(pt.x,pt.y,7,0,TP);
+  npa[i%3].arc(pt.x,pt.y,8,0,TP);
   npa[i%3].closePath();
 }
-*/
-    npa[nodes[i].rsdx%3].arc(pt.x,pt.y,7,0,TP);
-    npa[nodes[i].rsdx%3].closePath();
+//    npa[nodes[i].rsdx%3].arc(pt.x,pt.y,8,0,TP);
+//    npa[nodes[i].rsdx%3].closePath();
     let cns=nodes[i].cna;
       for (let l=0; l<cns.length; l++) {	
 //    for (let l=0; l<rss.length; l++) {	
@@ -198,7 +196,7 @@ return;
   requestAnimationFrame(animate);
 }
 
-const NW=8;
+const NW=4;
 
 //const radii=[0,70,150,230,310,390];
 const radii=[];
@@ -207,7 +205,7 @@ for (let i=0; i<NW; i++) {
   radii.push(i*r);
 }
 
-const segmentCount=40;
+const segmentCount=20;
 
 var generateCounts2=()=>{	// Math.pow(2,n) to get to 32, i.e. sum(n)==5
   let c=[1];
@@ -381,9 +379,6 @@ for (let i=1; i<NW-1; i++) {
 //debugger;    // start switch here
 
 let RSA=initRadialSets();
-var RS0=RSA[0];
-var RS1=RSA[1];
-var RS2=RSA[2];
 
 var test=()=>{
   counts=generateCounts2();
@@ -427,17 +422,19 @@ var setRandomTerminals=()=>{
   let ss=segmentCount;	// spacing in radians/ss for full cycle,  make global const
   for (let i=0; i<ss; i++) extraSet.push(i);
   extraSet.sort((a,b)=>{ return Math.abs(a-ss/2)-Math.abs(b-ss/2); });
-  // generate rr and sort
-  for (let i=0; i<counts[counts.length-1]; i++) {
+  let termSet=RSA[RSA.length-1];
+  //for (let i=0; i<counts[counts.length-1]; i++) {
+  for (let i=0; i<termSet.length; i++) {
     //let ai=extraSet.splice(getRandomInt(0,extraSet.length,true),1)[0];
 //let ai=extraSet.splice(getRandomInt(0,extraSet.length),1)[0];
     //RSA[RSA.length-1].a=ai*TP/ss;	// full cycle
-    let rso=RSA[RSA.length-1][i];
+    let rso=termSet[i];
     //rso.a=TP/8+ai*3*TP/4/ss; // 3/4 cycle
     //rso.a=TP/4+ai*TP/2/ss;	// 1/2 cycle
     //rso.a=TP*3/8+ai*TP/4/ss;	// 1/4 cycle
     //rso.a=TP/3+ai*TP/3/ss;	// 1/3 cycle
-rso.a=TP/3+i/counts[counts.length-1]*TP/3;	// non-random, 1/3 cycle
+//rso.a=TP/3+i/counts[counts.length-1]*TP/3;	// non-random, 1/3 cycle
+rso.a=TP/3+i/termSet.length*TP/3;	// non-random, 1/3 cycle
 //rso.a=TP/4+i/counts[counts.length-1]*TP/2;	// non-random, 1/2 cycle
     let rr=radii[radii.length-1]-(radii[radii.length-1]-radii[radii.length-2])/2*Math.random();	
     rso.r=rr;
@@ -457,12 +454,27 @@ var setRandomRSN=(n)=>{
     // fill angle by start+i*0.1; 
 //	equal minimal spacing
     let d=0.1*400/radii[n];	// R0 never called
-    let start=TP/2-counts[n]/2*d;
+    //let start=TP/2-counts[n]/2*d;
+let start=TP/2-RSA[n].length/2*d;
     let angle1=start+i*d;
     let angle2=(RSA[n+1][bSet[n][i]].a+RSA[n+1][bSet[n][i+1]-1].a)/2;
-    let angle=(angle1+3*angle2)/4;
+    let cNodeArray=RSA[n][i].node.cna;
+/*
+if (cNodeArray.length==0) {
+//for (let j=0; j<nodes.length; j++) {
+//  if (nodes[i].cna.length==0) debugger;
+//  if (RSA[n][i].node==nodes[j]) debugger;
+//}
+  console.log(RSA[n][i].node.rsdx);
+  debugger;
+}
+*/
+    // if pruned, RSA must also be pruned of cna.length==0 (or node==undefined?) this following line bombs
+//if (cNodeArray[0]==undefined) debugger;
+//    let angle3=(cNodeArray[0].rsO.a+RSA[n][i].node.cna[RSA[n][i].node.cna.length-1].rsO.a)/2;
+    let angle=(angle1+2*angle2)/3;
 
-    RSA[n][i].a=angle;	// 3
+    RSA[n][i].a=angle;
     RSA[n][i].r=radii[n]-(radii[n]-radii[n-1])/2*Math.random();	// 3 & 2
 //RSA[n][i].r=radii[n];
     let pt=getPoint(RSA[n][i]);
@@ -476,12 +488,15 @@ var deleteBranch=(nde)=>{
   for (let i=0; i<nde.cna.length; i++) {
     deleteBranch(nde.cna[i]);
   }
-  console.log(nodes.splice(nodes.indexOf(nde),1));
+// rm nde.rso element from its array, make sure RSA loops use their lengths, not counts
+// RSA[nde.rsdx].splice(RSA[nde.rsdx].indexOf(nde.rso));
+//RSA[nde.rsdx].splice(RSA[nde.rsdx].indexOf(nde.rsO));
+  nodes.splice(nodes.indexOf(nde),1);
 }
 
 var checkParent=(nd,depth)=>{
   if (nd.pn.cna.length>1) return;
-  if (depth>2) {
+  if (depth>1) {
 //console.log(nd.pn);
 //console.log(nd.rsdx);
 //nd.pn.cna.splice(0);
@@ -493,7 +508,6 @@ deleteBranch(nd);
 }
 
 var prune=()=>{
-  let cou=0;
 console.log("start "+nodes.length);
   for (let i=0; i<nodes.length; i++) {
     if (nodes[i].rsdx==NW-1) {
@@ -505,8 +519,17 @@ console.log("end "+nodes.length);
 }
 
 setNodes();
+//prune();	// not now being done since using small NW
+/*
+for (let i=0; i<RSA.length-2; i++) {
+  for (let j=0; j<RSA[i].length; j++) {
+    if (RSA[i][j].node==undefined) debugger;
+  }
+}
+*/
+//console.log(RSA);
 setRandomTerminals();
-prune();
+//for (let i=0; i<nodes.length; i++) if (nodes[i].cna.length==0) console.log(nodes[i].rsdx); 
 for (let i=NW-2; i>0; i--) {
   setRandomRSN(i);
 }
@@ -559,13 +582,14 @@ var drwGrw=()=>{
 	  lpath.bezierCurveTo(0,fz*-radii[1]/2,cpx,cpy,x,y);
         } else {
           let rad=nodes[i].rsO;
-	  let mp=fz*(rad.cr+rad2.cr)/2;
+//	  let mp=fz*(rad.cr+rad2.cr)/2;
+let mp=(1-fz)*rad.cr+fz*rad2.cr;
 	  let cpx1=mp*Math.cos(rad.ca);
 	  let cpy1=mp*Math.sin(rad.ca);
 	  let cpx2=mp*Math.cos(rad2.ca);
 	  let cpy2=mp*Math.sin(rad2.ca);
-        let x=(1-f)*pt.x+f*pt2.x;
-        let y=(1-f)*pt.y+f*pt2.y;
+          let x=(1-f)*pt.x+f*pt2.x;
+          let y=(1-f)*pt.y+f*pt2.y;
 	  lpath.bezierCurveTo(cpx1,cpy1,cpx2,cpy2,x,y);
         }
         drawn++;      
