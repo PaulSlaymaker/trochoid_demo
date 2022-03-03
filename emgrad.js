@@ -14,7 +14,7 @@ const ctx=(()=>{
   return c.getContext("2d");
 })();
 /*TRANS*/
-ctx.translate(CSIZE,CSIZE);
+//ctx.translate(CSIZE,CSIZE);
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -86,7 +86,7 @@ var setPattern=(n)=>{
   let pixd=getImageData();
   createImageBitmap(pixd).then((ib)=>{ 
     patterns[n]=ctx.createPattern(ib,"no-repeat");
-    patterns[n].setTransform(dm3);
+//    patterns[n].setTransform(dm3);
 //ctx.fillRect(0,0,2*CSIZE,2*CSIZE);
 //ctx.strokeStyle=pattern;
   });
@@ -169,14 +169,13 @@ ctx.fillStyle="#00000007";
 ctx.lineWidth=3;
 var draw=()=>{
   //ctx.fillRect(0,0,2*CSIZE,2*CSIZE);
-/*TRANS*/
-  ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-//  ctx.clearRect(0,0,2*CSIZE,2*CSIZE);
+  //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  ctx.fillRect(0,0,2*CSIZE,2*CSIZE);
+  //ctx.clearRect(0,0,2*CSIZE,2*CSIZE);
   for (let i=0; i<r.length; i++) {
     ctx.beginPath();
-//    ctx.arc(CSIZE,CSIZE,r[i],0,TP);
-/*TRANS*/
-    ctx.arc(0,0,r[i],0,TP);
+    ctx.arc(CSIZE,CSIZE,r[i],0,TP);
+//    ctx.arc(0,0,r[i],0,TP);
     ctx.strokeStyle=patterns[i];
 //ctx.strokeStyle=patterns[0];
     ctx.stroke();
@@ -185,7 +184,4 @@ var draw=()=>{
 
 onresize();
 
-//draw();
-//ctx.shadowColor="black";
-//ctx.shadowBlur=2;
 start();
