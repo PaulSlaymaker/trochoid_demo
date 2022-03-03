@@ -10,11 +10,11 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted silver";
   d.append(c);
   return c.getContext("2d");
 })();
-ctx.translate(CSIZE,CSIZE);
+/*TRANS*/
+//ctx.translate(CSIZE,CSIZE);
 ctx.lineCap="round";
 
 onresize=()=>{ 
@@ -67,12 +67,13 @@ let bo=TP/4*getRandomInt(0,4);
 }
 
 var pattern;
-const dm3=new DOMMatrix([1,0,0,1,-CSIZE/SQC,-CSIZE/SQC]);
+//const dm3=new DOMMatrix([1,0,0,1,-CSIZE/SQC,-CSIZE/SQC]);
 var setPattern=(n)=>{
   let pixd=getImageData();
   createImageBitmap(pixd).then((ib)=>{ 
     pattern=ctx.createPattern(ib,"no-repeat");
-    pattern.setTransform(dm3);
+///TRANS
+//    pattern.setTransform(dm3);
 //ctx.fillRect(0,0,2*CSIZE,2*CSIZE);
 //ctx.strokeStyle=pattern;
   });
@@ -133,12 +134,21 @@ var setPoints2=()=>{
     let z=i*TP/8;
     let za=z-aoc;
     let zb=z+aoc;
+/*
     pts[i].x=rn*Math.sin(z);
     pts[i].y=rn*Math.cos(z);
     ca[i].x=crn*Math.sin(za);
     ca[i].y=crn*Math.cos(za);
     cb[i].x=crn*Math.sin(zb);
     cb[i].y=crn*Math.cos(zb);
+*/
+////TRANS
+    pts[i].x=rn*Math.sin(z)+CSIZE/3;
+    pts[i].y=rn*Math.cos(z)+CSIZE/3;
+    ca[i].x=crn*Math.sin(za)+CSIZE/3;
+    ca[i].y=crn*Math.cos(za)+CSIZE/3;
+    cb[i].x=crn*Math.sin(zb)+CSIZE/3;
+    cb[i].y=crn*Math.cos(zb)+CSIZE/3;
   }
 }
 
@@ -169,14 +179,15 @@ if (t%1200==300) {
   requestAnimationFrame(animate);
 }
 
+let k=CSIZE/3;
 var symSet=[
   new DOMMatrix([1,0,0,1,0,0]),
-  new DOMMatrix([1,0,0,-1,0,0]),
-  new DOMMatrix([-1,0,0,-1,0,0]),
-  new DOMMatrix([-1,0,0,1,0,0]),
-  new DOMMatrix([0,1,-1,0,0,0]),
-  new DOMMatrix([0,-1,-1,0,0,0]),
-  new DOMMatrix([0,-1,1,0,0,0]),
+  new DOMMatrix([1,0,0,-1,0,2*k]),
+  new DOMMatrix([-1,0,0,-1,2*k,2*k]),
+  new DOMMatrix([-1,0,0,1,2*k,0]),
+  new DOMMatrix([0,1,-1,0,2*k,0]),
+  new DOMMatrix([0,-1,-1,0,2*k,2*k]),
+  new DOMMatrix([0,-1,1,0,0,2*k]),
   new DOMMatrix([0,1,1,0,0,0])
 ];
 
@@ -186,7 +197,9 @@ var bezWidth=42;
 
 var draw=()=>{
   //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  ctx.fillRect(-CSIZE+sq,-CSIZE+sq,sq,sq);
+  //ctx.fillRect(-CSIZE+sq,-CSIZE+sq,sq,sq);
+////TRANS
+  ctx.fillRect(0,0,sq,sq);
   //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   let bPath=new Path2D();
 //  ctx.beginPath();
@@ -197,14 +210,11 @@ var draw=()=>{
     bPath.bezierCurveTo(ca[i].x,ca[i].y,cb[i1].x,cb[i1].y,pts[i1].x,pts[i1].y);
     //ctx.bezierCurveTo(ca[i1].x,ca[i1].y,cb[i].x,cb[i].y,pts[i].x,pts[i].y);
   }
-  let pz=new Path2D();
-  for (let i=0; i<symSet.length; i++) pz.addPath(bPath,symSet[i]);
   ctx.setLineDash([]);
   ctx.strokeStyle=pattern;
   //ctx.lineWidth=bezWidth;
   ctx.lineWidth=42+22*Math.sin(TP*t/400);
   ctx.stroke(bPath);
-
   ctx.strokeStyle="#303030";
   ctx.lineWidth=20;
   ctx.stroke(bPath);
@@ -212,6 +222,8 @@ var draw=()=>{
   ctx.lineWidth=1;
   ctx.stroke(bPath);
 
+  let pz=new Path2D();
+  for (let i=0; i<symSet.length; i++) pz.addPath(bPath,symSet[i]);
   //ctx.setLineDash([300,100000]);
   ctx.setLineDash([60,50000]);
   //ctx.lineDashOffset=-2500+2000*Math.cos(t/1200);
@@ -222,18 +234,22 @@ var draw=()=>{
   ctx.strokeStyle="hsl("+Math.round((hue+t/10)%360)+",100%,60%)";
   ctx.lineWidth=14;
   ctx.stroke(pz);
+
   for (let i=0; i<SQC; i++) {
     for (let j=0; j<SQC; j++) {
-    if (i==1 && j==1) continue;	// (C-1)/2
-      ctx.clearRect(-CSIZE+i*sq,-CSIZE+j*sq,sq,sq);
-	// img source parms not transformed, 4 is (C-1)?
-      ctx.drawImage(ctx.canvas,2*CSIZE/SQC,2*CSIZE/SQC,sq,sq,-CSIZE+i*sq,-CSIZE+j*sq,sq,sq);	
+//    if (i==1 && j==1) continue;	// (C-1)/2
+///TRANS
+    if (i==0 && j==0) continue;	// (C-1)/2
+//      ctx.clearRect(-CSIZE+i*sq,-CSIZE+j*sq,sq,sq);
+//	// img source parms not transformed, 4 is (C-1)?
+//      ctx.drawImage(ctx.canvas,2*CSIZE/SQC,2*CSIZE/SQC,sq,sq,-CSIZE+i*sq,-CSIZE+j*sq,sq,sq);	
+///TRANS
+      ctx.clearRect(i*sq,j*sq,sq,sq);
+      ctx.drawImage(ctx.canvas,0,0,sq,sq,i*sq,j*sq,sq,sq);	
     }
   }
 }
 
 onresize();
 
-//setPoints2();
-//draw();
 start();
