@@ -72,8 +72,9 @@ var setSymmetries=()=>{
   udms2=[];
   for (let i=0; i<3; i++) udms2.push([8,16,4,2,1][getRandomInt(0,5,true)]);
   let as=udms2.reduce((a,b)=>{ return a+64/b; });
-console.log(as);
+//console.log(as);
   speed=Math.round(1200/as);
+console.log(udms2);
 }
 
 /*
@@ -124,11 +125,7 @@ var draw=()=>{
       for (let s=0; s<64; s+=udms2[i%3]) {
 	path.addPath(px,syma[s]);
       }
-/*
-      for (let mt of udms[i%3]) {
-	path.addPath(px,mt);
-      }
-*/
+/* for (let mt of udms[i%3]) { path.addPath(px,mt); } */
     }
   }
   ctx.fillStyle=colors[t%colors.length];
@@ -160,5 +157,6 @@ var animate=(ts)=>{
 
 onresize();
 
-setSymmetries();
+//setSymmetries();
+udms2=[16,16,16];
 start();
