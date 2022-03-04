@@ -16,6 +16,7 @@ const ctx=(()=>{
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,CSIZE);
+//ctx.filter="saturate(3)";
 
 
 onresize=()=>{ 
@@ -41,7 +42,7 @@ var getColors=()=>{
   for (let i=0; i<colorCount; i++) {
     c.splice(getRandomInt(0,c.length+1),0,"black");
     let hd=Math.round(240/colorCount)*i+getRandomInt(-hr,hr);
-    let sat=60+getRandomInt(0,41);
+    let sat=70+getRandomInt(0,31);
     let lum=40+getRandomInt(0,41);
     //let lum=Math.round(50+20*Math.pow(Math.sin((col+90)*TP/360),2));
     c.splice(getRandomInt(0,c.length+1),0,"hsl("+((hue+hd)%360)+","+sat+"%,"+lum+"%)");
@@ -67,6 +68,7 @@ const m8=getMatrixArray(8);
 const m9=getMatrixArray(9);
 const m10=getMatrixArray(10);
 const m12=getMatrixArray(12);
+const m15=getMatrixArray(15);
 const m16=getMatrixArray(16);
 const m18=getMatrixArray(18);
 const m20=getMatrixArray(20);
@@ -79,6 +81,7 @@ const symArrays=[
   [m9,m18],
   [m4,m20],
   [m5,m10,m20],
+  [m5,m15],
 ];
 
 const arr4=[[4,0,0,0],[3,1,0,0],[2,2,1,0],[2,1,1,0],[1,1,1,1]];	// enhance single-symmetry sets
@@ -86,66 +89,13 @@ const arr3=[[3,0,0],[2,1,0],[1,1,1]];	// enhance single-symmetry sets
 const arr2=[[2,0],[1,1]];
 
 var syms=[];
-
-/*
-var setSymmetries2=(ma)=>{
-  let arr=(ma.length==3)?arr3:arr2;
-  let at=arr[getRandomInt(0,arr.length,true)];	// favor single symmetry
-  let sa=[];
-  // randomize high to low symmetries
-  for (let i=0; i<at.length; i++) sa.splice(getRandomInt(0,sa.length+1),0,at[i]);
-  // create array to use over brushes
-  for (let i=0; i<ma.length; i++) {
-    for (let j=0; j<sa[i]; j++) syms.push(ma[i]);
-  }
-}
-
-var setSymmetriesD=()=>{
-  const arr=[[3,0,0],[2,1,0],[1,1,1]];	// enhance single-symmetry sets
-  let at=arr[getRandomInt(0,3,true)];
-  let sa=[];
-  for (let i=0; i<at.length; i++) {
-    sa.splice(getRandomInt(0,sa.length+1),0,at[i]);
-    //sa.splice(sa.length-getRandomInt(0,sa.length+1),0,at[i]);
-  }
-  for (let i=0; i<matrixArrays.length; i++) {
-    for (let j=0; j<sa[i]; j++) syms.push(matrixArrays[i]);
-  }
-//  for (let i=0; i<3; i++) { syms.push(matrixArrays[getRandomInt(0,matrixArrays.length)]); }
-}
-
-var setSymmetriesH=()=>{
-  const arr=[[2,0],[1,1]];	// enhance single-symmetry sets
-  let at=arr[getRandomInt(0,2,true)];
-  let sa=[];
-  for (let i=0; i<at.length; i++) {
-    sa.splice(sa.length-getRandomInt(0,sa.length+1),0,at[i]);
-  }
-  for (let i=0; i<matrixArraysH.length; i++) {
-    for (let j=0; j<sa[i]; j++) {
-      syms.push(matrixArraysH[i]);
-    }
-  }
-}
-var setSymmetriesN=()=>{
-  const arr=[[2,0],[1,1]];	// enhance single-symmetry sets
-  let at=arr[getRandomInt(0,2,true)];
-  let sa=[];
-  for (let i=0; i<at.length; i++) {
-    sa.splice(sa.length-getRandomInt(0,sa.length+1),0,at[i]);
-  }
-  for (let i=0; i<matrixArraysN.length; i++) {
-    for (let j=0; j<sa[i]; j++) syms.push(matrixArraysN[i]);
-  }
-}
-*/
-
 var symType=0;
 var setSymmetries=()=>{
   let ss=syms.reduce((a,aa)=>{ return a+aa.length; },0);
   if (symType==1) {
     if (ss==16) {
-      symType=0;
+      if (Math.random()<0.5) symType=0;
+      else symType=5;
     } else if (ss==48) {
       symType=2;
     }
@@ -158,23 +108,39 @@ var setSymmetries=()=>{
   } else if (symType==3) {
     if (ss==24) {
       symType=2;
-    } else if (ss==72) {
+    } else if (ss==72) { // [m6,m18];
       symType=4;
     }
   } else if (symType==4) { // [m9,m18],
     if (ss==72) {
       symType=3;
     }
+  } else if (symType==5) { // [m4,m20],
+    if (ss==16) {
+      if (Math.random()<0.5) symType=0;
+      else symType=1;
+    } else if (ss==80) {
+      symType=6;
+    }
+  } else if (symType==6) { // [m5,m10,m20],
+    if (ss==120) {
+      symType=5;
+    } else if (ss==30) {
+      symType=7;
+    }
+  } else if (symType==7) { // [m5,m15],
+    if (ss==20) {
+      symType=6;
+    }
   } else {
     if (ss==24) {
-      symType=1;
+      if (Math.random()<0.5) symType=1;
+      else symType=5;
     }
   }
   syms=[];
 //  [setSymmetriesD,setSymmetriesH,setSymmetriesN][symType]();
-//  setSymmetries2(symArrays[symType]);
-
-console.log(symType);
+//console.log(symType);
   let arr=(symArrays[symType].length==3)?arr3:arr2;
   let at=arr[getRandomInt(0,arr.length,true)];	// favor single symmetry
   let sa=[];
@@ -226,21 +192,6 @@ var Brush=function(idx) {
     let alpha=1-Math.pow(Math.abs(Math.cos(z)),0.1);
     return {"path":p2,"alpha":alpha};
   }
-
-/*
-  this.getPath=()=>{	// combine path, alpha, radius into 1 func
-    let z=this.time*TP/duration/2;
-    let f2=Math.pow(Math.sin(z),2);
-    let pp=new Path2D();
-    pp.arc(this.x+this.radius*Math.cos(this.d*z+this.rangle),
-           this.y+this.radius*Math.sin(this.d*z+this.rangle),
-           f2*this.rwidth,0,TP);
-    let p2=new Path2D();
-    for (let i=0; i<this.sym.length; i++) p2.addPath(pp,this.sym[i]);
-    return p2;
-  }
-  this.getAlpha=()=>{ return 1-Math.pow(Math.abs(Math.cos(this.time*TP/duration/2)),0.1); }
-*/
 }
 
 var draw=()=>{
