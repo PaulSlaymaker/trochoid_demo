@@ -36,14 +36,13 @@ const getRandomInt=(min,max,low)=>{
 var colors=[];
 var getColors=()=>{
   let c=[];
-  //let colorCount=getRandomInt(2,7);
   let colorCount=4;
   let hr=Math.round(90/colorCount);
   let hue=getRandomInt(0,90,true)+30;
   for (let i=0; i<colorCount; i++) {
     let hd=Math.round(240/colorCount)*i+getRandomInt(-hr,hr);
-    let sat=60+getRandomInt(0,41);
-    let lum=40+getRandomInt(0,41);
+    let sat=60+getRandomInt(0,21);
+    let lum=20+getRandomInt(0,41);
     //let lum=Math.round(50+20*Math.pow(Math.sin((col+90)*TP/360),2));
     c.splice(getRandomInt(0,c.length+1),0,"hsl("+((hue+hd)%360)+","+sat+"%,"+lum+"%)");
   }
