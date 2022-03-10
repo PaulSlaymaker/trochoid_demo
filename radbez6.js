@@ -186,7 +186,7 @@ var RO=new Array(C);
 var TFA=1;
 var TFR=1;
 var TFE=1;
-var ts=tSet[0];
+//var ts=tSet[0];
 var randomize=()=>{
   //for (let i=0; i<C; i++) AD[i]=6-12*Math.random();
   for (let i=0; i<C; i++) AD[i]=6*Math.random();
