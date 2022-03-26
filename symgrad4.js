@@ -47,7 +47,6 @@ var getRandomMultiplier=()=>{
 }
 
 var stopped=true;
-//var t=0;
 var tr=getRandomInt(0,2000);
 var tg=getRandomInt(0,2000);
 var tb=getRandomInt(0,2000);
@@ -57,17 +56,12 @@ var ttb=getRandomInt(0,2000);
 var S=0;
 function animate(ts) {
   if (stopped) return;
-//  t++;
   tr++; tg++; tb++;
   ttr++; ttg++; ttb++;
   rot+=0.007;
   rf=Math.sin(tr/400)/50;
   gf=Math.sin(tg/420)/50;
   bf=Math.sin(tb/380)/50;
-//  rf=Math.sin(tr/500);
-//  gf=Math.sin(tg/520);
-//  bf=Math.sin(t/480);
-//if (ttr%1200==300) {
   let ttrs=ttr%400;
   if (ttrs==300) rm1=getRandomMultiplier();
   else if (ttrs==100) rm2=getRandomMultiplier();
