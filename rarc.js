@@ -80,7 +80,7 @@ var setRadii=()=>{
 var setRadiiT=()=>{
   let rr=[];
   for (let i=0; i<W-2; i++) {
-    if (i && Math.random()<0.6) rr[i]=rr[i-1];
+    if (i && Math.random()<0.5) rr[i]=rr[i-1];
     else if (Math.random()<0.3) rr[i]=r2[i];
     else if (Math.random()<0.3) rr[i]=r[i];
     else rr[i]=getRandomInt(0,CSIZE,getRandomInt(0,2));
@@ -97,7 +97,7 @@ var setRadiiT=()=>{
 var setRadiiC=()=>{
   let rr=[];
   for (let i=0; i<W-2; i++) {
-    if (i && Math.random()<0.6) rr[i]=rr[i-1];
+    if (i && Math.random()<0.5) rr[i]=rr[i-1];
     else if (Math.random()<0.3) rr[i]=r2[i];
     else if (Math.random()<0.3) rr[i]=r[i];
     else rr[i]=getRandomInt(0,CSIZE,getRandomInt(0,2));
