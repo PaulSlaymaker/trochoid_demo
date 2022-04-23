@@ -48,14 +48,11 @@ var osr=Math.random()/200;
 var osr2=Math.random()/200;
 var osr3=Math.random()/200;
 var setOffsets=()=>{
-  os=[];
   for (let i=0; i<4; i++) {	// c-x-c-x
     let ss=0.001;
     if (i==2) {
       ss=os[0];
     } else {
-      //ss=(getRandomInt(1,6)/1000);
-      //ss=6*Math.random()/4000;
       ss=Math.random()/250;
     }
     os.push(ss);
@@ -132,8 +129,8 @@ var t=0;
 function animate(ts) {
   if (stopped) return;
   t++;
-if (t%50==0) { hue=++hue%360; hue2=++hue2%360; hue3=++hue3%360; }
-if (t%1000==0) setOffsets();
+  if (t%100==0) { hue=++hue%360; hue2=(hue2+2)%360; hue3=(hue3+3)%360; }
+  if (t%1000==0) setOffsets();
   transit();
   draw();
   requestAnimationFrame(animate);
@@ -146,7 +143,7 @@ const COUNT=32;
 //ctx.rotate(TP*3/64);	// C32 by 8 rotations	c-x-c-x
 //ctx.rotate(TP*3/80);	// C40 by 8 rotations
 //ctx.rotate(TP*3/96);	// C48 by 8 rotations
-let tb=[];
+var tb=[];
 for (let i=0; i<COUNT; i++) tb.push(new TBez(i));
 
 var hue=getRandomInt(0,360);
