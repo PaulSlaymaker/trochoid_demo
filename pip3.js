@@ -49,7 +49,8 @@ var Circle=function(idx) {
   this.move=(q)=>{
     this.a+=q*TP/this.inc;
     this.a2+=q*TP/this.inc2;
-    let rz=20+340*Math.pow(Math.sin(this.a2),2);
+    let rz=340*Math.pow(Math.sin(this.a2),2);
+//let os=(idx%2)?0:TP/2;
     this.x=rz*Math.cos(this.a);
     this.y=rz*Math.sin(this.a);
   }
@@ -75,18 +76,22 @@ var drawPoint=(x,y,col)=>{	// diag
 }
 */
 
-const WID=12;
+const WID=16;
 ctx.lineWidth=WID;
 
-ctx.fillStyle="#00000020";
+//ctx.fillStyle="#FFFF0080";
 var draw=()=>{
-  ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   for (let i=0; i<ca.length; i++) {
     ctx.beginPath();
     let dr=ca[i].r-WID/2;
     if (dr>0) {
       ctx.arc(ca[i].x,ca[i].y,dr,0,TP);
+//ctx.globalCompositeOperation="lighter";
+ctx.fillStyle="hsla("+(hue+Math.round(ca[i].r)%360)+",90%,30%,0.5)";
+ctx.fill();
+//ctx.globalCompositeOperation="source-over";
       ctx.strokeStyle="hsl("+(hue+Math.round(ca[i].r)%360)+",100%,50%)";
       ctx.stroke();
     }
@@ -103,7 +108,7 @@ function start() {
 }
 ctx.canvas.addEventListener("click", start, false);
 
-var hue=0;
+var hue=getRandomInt(0,360);
 var stopped=true;
 var t=0;
 function animate(ts) {
