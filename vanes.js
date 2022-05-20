@@ -207,7 +207,6 @@ debugger;
 debugger;
     }
   } else if (idx==circles.length-1) {
-debugger;
     if (!circles[0].dmx2) {
       createCognates(0,circles.length-1);
       cia.splice(cia.indexOf(0),1);
