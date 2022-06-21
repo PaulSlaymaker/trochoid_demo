@@ -76,6 +76,7 @@ var createPointArray=()=>{
       if (r<8) continue;
       if (r>RP-8) continue;
       pointArray.splice(getRandomInt(0,pointArray.length+1),0,{"x":i,"y":j,"r":r});
+      //pointArray.push({"x":i,"y":j,"r":r});
     }
   }
   return pointArray;
@@ -98,6 +99,7 @@ console.log("done "+i);
       ca.sort((a,b)=>{ return a.r-b.r; });
       return ca;
     }
+// idx is pa index, idc is offset
     if (idx>100) {
 //console.log(pointArray.length);
       ri=Math.max(0,--ri);
@@ -123,7 +125,7 @@ console.log("done "+i);
       continue;
     }
     //if (y>0 && y-radius<0) {
-    if (y-radius<0) {
+    if (y<radius) {
       if (ri==0) {
         pointArray.splice(idx,1);
         idx=0;
@@ -182,10 +184,7 @@ ctx.fillStyle="#0000000F";
 ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   let dm=new DOMMatrix([1,0,0,1,0,0]);
   let paths=[new Path2D(),new Path2D(),new Path2D(),new Path2D];
-  //let drawPaths={8:paths[0],16:paths[1],40:paths[2],72:paths[3]};
-  let dcount=0;
   let circleArray=ca;
-  //for (let i=0; i<circleArray.length; i++) {
   for (let i=0; i<92; i++) {
 //    let f=Math.pow(Math.sin(t/200),2);
     let dp=new Path2D();
@@ -194,31 +193,22 @@ ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
     //r*=0.2+0.8*Math.pow(Math.cos(TP*f/2),2);
     //r*=0.2+0.8*Math.pow(Math.cos(TP*f/2),2);
     r=Math.max(3,r*Math.pow(Math.cos(TP*f/2),2));
-    //if (circleArray[i].radius==72) { dcount++; continue; }
-    //dm.e=circleArray[i].x;
-    //dm.f=circleArray[i].y;
-    dm.e=(1-f)*circleArray[i].x+f*ca2[i].x;
-    dm.f=(1-f)*circleArray[i].y+f*ca2[i].y;
     let sf=1+1.3*Math.pow(Math.sin(TP*f/2),2);
-dm.e*=sf;
-dm.f*=sf;
-    dp.arc(dm.e,dm.f,r,0,TP);
+//for (let j=0; j<3; j++) {
+    let x2=(1-f)*circleArray[i].x+f*ca2[i].x;
+    let y2=(1-f)*circleArray[i].y+f*ca2[i].y;
+x2*=sf;
+y2*=sf;
+    // dp.moveTo(x2+r,y2,r,0,TP);
+    dp.arc(x2,y2,r,0,TP);
+//}
 //console.log(Math.trunc(i/4));
 //    paths[Math.trunc(i/4)%4].addPath(dp,dm);
-    //drawPaths[circleArray[i].radius].addPath(dp,dm);
-    //drawPaths[circleArray[i].radius].addPath(circleArray[i].path,dm);
     //dp.addPath(dp,dm);
     //ctx.fillStyle=colors[Math.trunc(i/4)%4];
-ctx.fillStyle="hsl("+((hue+60*Math.pow(r,0.5))%360)+",100%,50%)";
+    ctx.fillStyle="hsl("+((hue+Math.round(40*Math.pow(r,0.5)))%360)+",100%,50%)";
     ctx.fill(dp);
   } 
-/*
-  for (let p=0; p<4; p++) { 
-    ctx.fillStyle=colors[p];
-    ctx.fill(paths[p]);
-  }
-*/
-  return dcount;
 }
 
 function start() {
@@ -276,24 +266,10 @@ var rTimeCircles=()=>{
   }
 }
 
-//var cset=[generateCircles(),generateCircles()];
-//var cset=[generateCircles()];
-
-//rTimeCircles();
-
 var pa1=createPointArray();
-var pa2=createPointArray();
+//var pa2=createPointArray();
 var ca=generateCircles(pa1);
-var ca2=generateCircles(pa2);
+var ca2=generateCircles(createPointArray());
 
-/*
-var test2=()=>{
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-pa1.push(pa1.shift());
-  ca=generateCircles(pa1,pa2);
-  draw2(ca);
-}
-*/
-
-draw2();
+//draw2();
 start();
