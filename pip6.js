@@ -11,7 +11,7 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
+//c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -28,24 +28,11 @@ const getRandomInt=(min,max,low)=>{
   else return Math.floor(Math.random()*(max-min))+min;
 }
 
-var Circle=function(x,y,r,radius,path) {
+var Circle=function(x,y,r,radius) {
   this.x=x;
   this.y=y;
   this.radius=radius;
-//  this.a=Math.atan2(y,x);
   this.r=r;
-//  this.path=path;
-}
-
-var getColors=()=>{
-  let c=[];
-  let colorCount=4;
-  let hue=getRandomInt(150,360);
-  for (let i=0; i<colorCount; i++) {
-    let hd=Math.round(240/colorCount)*i+getRandomInt(-8,8);
-    c.splice(getRandomInt(0,c.length+1),0,"hsl("+((hue+hd)%360)+",100%,50%)");
-  }
-  return c;
 }
 
 const radii=[8,20,40,72];
@@ -76,7 +63,6 @@ var createPointArray=()=>{
       if (r<8) continue;
       if (r>RP-8) continue;
       pointArray.splice(getRandomInt(0,pointArray.length+1),0,{"x":i,"y":j,"r":r});
-      //pointArray.push({"x":i,"y":j,"r":r});
     }
   }
   return pointArray;
@@ -85,23 +71,17 @@ var createPointArray=()=>{
 var generateCircles=()=>{
   let pointArray=createPointArray();
   let ca=[];
-//  let pointArray=createPointArray();
-//let counter=0;
-//let hctr=0;
   let dm=new DOMMatrix([1,0,0,1,0,0]);
   let p=new Path2D();
   let idx=0;
-//let radii=[8,16,40,72];
-let ri=3;
+  let ri=3;
   for (let i=0; i<80000; i++) {
     if (pointArray.length==0) {
 console.log("done "+i);
       ca.sort((a,b)=>{ return a.r-b.r; });
       return ca;
     }
-// idx is pa index, idc is offset
-    if (idx>100) {
-//console.log(pointArray.length);
+    if (idx>120) {
       ri=Math.max(0,--ri);
       idx=0;
     }
@@ -116,7 +96,6 @@ console.log("done "+i);
       } else idx++;
       continue;
     }
-    //if (x>0 && x-radius<0) {
     if (x<radius) {
       if (ri==0) {
         pointArray.splice(idx,1);
@@ -124,7 +103,6 @@ console.log("done "+i);
       } else idx++;
       continue;
     }
-    //if (y>0 && y-radius<0) {
     if (y<radius) {
       if (ri==0) {
         pointArray.splice(idx,1);
@@ -147,67 +125,38 @@ console.log("done "+i);
     dm.e=x;
     dm.f=y;
     p.addPath(rps[radius],dm);
-/*
-    //ca.push(new Circle(x,y,pointArray[idx].r,radius,rps[radius]));
-    //ca.push(new Circle(x,-y,pointArray[idx].r,radius,rps[radius]));
-    //ca.push(new Circle(-x,y,pointArray[idx].r,radius,rps[radius]));
-    //ca.push(new Circle(-x,-y,pointArray[idx].r,radius,rps[radius]));
-*/
     ca.push(new Circle(x,y,pointArray[idx].r,radius));
     ca.push(new Circle(x,-y,pointArray[idx].r,radius));
     ca.push(new Circle(-x,y,pointArray[idx].r,radius));
     ca.push(new Circle(-x,-y,pointArray[idx].r,radius));
-    //pointArray.splice(idx,1);
-//pax.push(pointArray.splice(idx,1)[0]);
-idx=0;
+    pointArray.splice(idx,1);
+    idx=0;
   }
-console.log("notdone");
+//console.log("notdone");
 return ca;
 }
-
-//var colorSet=[getColors(),getColors()];
-var colors=getColors();
-
-/*
-const draw=()=>{
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  draw2(1);
-  return draw2(0);
-}
-*/
 
 var hue=getRandomInt(200,300);
 
 const draw2=()=>{
-  //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-ctx.fillStyle="#0000000F";
-ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  let dm=new DOMMatrix([1,0,0,1,0,0]);
-  let paths=[new Path2D(),new Path2D(),new Path2D(),new Path2D];
+  ctx.fillStyle="#00000010";
+  ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   let circleArray=ca;
-  for (let i=0; i<92; i++) {
-//    let f=Math.pow(Math.sin(t/200),2);
-    let dp=new Path2D();
+  for (let i=0; i<92; i+=4) {
+    ctx.beginPath();
     let r=(1-f)*circleArray[i].radius+f*ca2[i].radius;
-    //dp.arc(0,0,r,0,TP);
-    //r*=0.2+0.8*Math.pow(Math.cos(TP*f/2),2);
-    //r*=0.2+0.8*Math.pow(Math.cos(TP*f/2),2);
-    r=Math.max(3,r*Math.pow(Math.cos(TP*f/2),2));
-    let sf=1+1.3*Math.pow(Math.sin(TP*f/2),2);
-//for (let j=0; j<3; j++) {
-    let x2=(1-f)*circleArray[i].x+f*ca2[i].x;
-    let y2=(1-f)*circleArray[i].y+f*ca2[i].y;
-x2*=sf;
-y2*=sf;
-    // dp.moveTo(x2+r,y2,r,0,TP);
-    dp.arc(x2,y2,r,0,TP);
-//}
-//console.log(Math.trunc(i/4));
-//    paths[Math.trunc(i/4)%4].addPath(dp,dm);
-    //dp.addPath(dp,dm);
-    //ctx.fillStyle=colors[Math.trunc(i/4)%4];
+    r=Math.max(4,r*Math.pow(Math.cos(TP*f/2),2));
+    for (let j=0; j<4; j++) {
+      let x2=(1-f)*circleArray[i+j].x+f*ca2[i+j].x;
+      let y2=(1-f)*circleArray[i+j].y+f*ca2[i+j].y;
+      let sf=1+1.2*Math.pow(Math.sin(TP*f/2),2);
+      x2*=sf;
+      y2*=sf;
+      ctx.moveTo(x2+r,y2,r,0,TP);
+      ctx.arc(x2,y2,r,0,TP);
+    }
     ctx.fillStyle="hsl("+((hue+Math.round(40*Math.pow(r,0.5)))%360)+",100%,50%)";
-    ctx.fill(dp);
+    ctx.fill();
   } 
 }
 
@@ -228,48 +177,17 @@ function animate(ts) {
   if (stopped) return;
   t++;
   draw2();
-  if (t==400) ca=generateCircles(createPointArray());
-  if (t==800) { ca2=generateCircles(createPointArray()); t=0; }
-  f=Math.pow(Math.sin(TP*t/1600),2);
-//let dc=draw();
-//  if (dc==cset[0].length-4) { stopped=true; return; }
-/*
-  if (draw()>=cset[0].length) {
-    t=0;
-    cset.reverse();
-    cset[0]=generateCircles();
-    rTimeCircles();
-    colorSet.unshift(getColors()), colorSet.pop();
-  }
-*/
+  if (t==200) ca=generateCircles();
+  if (t==400) { ca2=generateCircles(); t=0; }
+  f=Math.pow(Math.sin(TP*t/800),2);
   if (t%10==0) hue=(++hue%360);
   requestAnimationFrame(animate);
 }
 
 onresize();
 
-const speed=2;
-
-var k=12;
-
-var rTimeCircles=()=>{
-  k=20+Math.abs(cset[0].length-cset[1].length)/2.5;
-//let speed1=speed*cset[0].length/cset[1].length;
-//let speed2=speed*cset[1].length/cset[0].length;
-  for (let i=0, j=0; i<cset[0].length; i++) {
-    if (i%4==0) j++;
-    cset[0][i].t=Math.round(-k-j*speed);
-  }
-  for (let i=0, j=0; i<cset[1].length; i++) {
-    if (i%4==0) j++;
-    cset[1][i].t=Math.round(-j*speed);
-  }
-}
-
-var pa1=createPointArray();
-//var pa2=createPointArray();
-var ca=generateCircles(pa1);
-var ca2=generateCircles(createPointArray());
+var ca=generateCircles();
+var ca2=generateCircles();
 
 //draw2();
 start();
