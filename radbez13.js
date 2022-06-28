@@ -10,6 +10,7 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
+c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -23,11 +24,8 @@ onresize=()=>{
 }
 
 const getRandomInt=(min,max,low)=>{
-  if (low) {
-    return Math.floor(Math.random()*Math.random()*(max-min))+min;
-  } else {
-    return Math.floor(Math.random()*(max-min))+min;
-  }
+  if (low) return Math.floor(Math.random()*Math.random()*(max-min))+min;
+  else return Math.floor(Math.random()*(max-min))+min;
 }
 
 var hues=[];
@@ -45,14 +43,13 @@ var getHues=()=>{
 //  for (let i=0; i<h.length; i++) colors[i]="hsl("+h[i]+",100%,50%)";
   return h;
 }
-hues=getHues();
 var setColors=()=>{
+hues=getHues();
   colors[0]="hsl("+hues[0]+",100%,40%)";
   colors[1]="hsl("+hues[1]+",100%,50%)";
   colors[2]="hsl("+hues[2]+",100%,50%)";
   colors[3]="hsl("+hues[3]+",100%,50%)";
 }
-setColors();
 
 /*
 var colors=[];
@@ -83,6 +80,7 @@ let colorCount=4;
 }
 */
 
+/*
 var drawPoint2=(x,y,col)=>{	// diag
   ctx.beginPath();
   ctx.arc(x,y,6,0,TP);
@@ -91,13 +89,11 @@ var drawPoint2=(x,y,col)=>{	// diag
   else ctx.fillStyle="red";
   ctx.fill();
 }
-
 var drawPath=(p)=>{	// diag
   ctx.beginPath();
   ctx.strokeStyle="white";
   ctx.stroke(p);
 }
-
 var drawLine=(l,col)=>{	// diag
   ctx.beginPath();
   ctx.moveTo(l.dp1.x,l.dp1.y);
@@ -107,15 +103,14 @@ var drawLine=(l,col)=>{	// diag
   ctx.lineWidth=1;
   ctx.stroke();
 }
+*/
 
 const C=8;
-const W=3;
 
 var Line=function(idx,rdx) {
   this.a=idx*TP/C;
-//  this.r=radius;
-this.r=radii[rdx];
-this.rdx=rdx;
+//  this.r=radii[rdx];
+  this.rdx=rdx;
   let f=2/C;
   this.f1x=Math.cos(this.a-f);
   this.f1y=Math.sin(this.a-f);
@@ -124,7 +119,7 @@ this.rdx=rdx;
   this.dp1=new DOMPoint();
   this.dp2=new DOMPoint();
   this.setLine=()=>{
-    let r=this.r;
+    let r=radii[this.rdx];
     this.dp1.x=Math.round(r*this.f1x);
     this.dp1.y=Math.round(r*this.f1y);
     this.dp2.x=Math.round(r*this.f2x);
@@ -137,13 +132,15 @@ var Trav=function(arc) {
   this.pathIndex=getRandomInt(0,lset.length);
   this.arcCounter=arc;
   this.t=0;
-  this.tf=ls[lset[this.pathIndex][arc].rdx+"-"+lset[this.pathIndex][(arc+1)%C].rdx];
+  this.tf=ls2[lset[this.pathIndex][arc].rdx+"-"+lset[this.pathIndex][(arc+1)%C].rdx];
 let q=getRandomInt(0,3);
-this.rad=[14,22,30][q];
+//this.rad=[14,22,30][q];
+this.rad=[22,38,54][q];
+//this.rad=14;
 this.col=colors[q+1];
+//this.col="blue";
   this.stepArc=()=>{
     this.arcCounter=++this.arcCounter%C;
-
     if (nodes[this.arcCounter][iset[this.arcCounter][this.pathIndex]].length>1) {
 //console.log("switch "+nodes[this.arcCounter][iset[this.arcCounter][this.pathIndex]]);
        let ca=nodes[this.arcCounter][iset[this.arcCounter][this.pathIndex]];
@@ -151,7 +148,7 @@ this.col=colors[q+1];
     }
 
     let a2=(this.arcCounter+1)%C;
-    this.tf=ls[lset[this.pathIndex][this.arcCounter].rdx+"-"+lset[this.pathIndex][a2].rdx];
+    this.tf=ls2[lset[this.pathIndex][this.arcCounter].rdx+"-"+lset[this.pathIndex][a2].rdx];
 //console.log(nodes[this.arcCounter][lset[this.pathIndex].rdx]);
 //console.log(iset[this.arcCounter][this.pathIndex]);
   }
@@ -171,63 +168,47 @@ this.col=colors[q+1];
   }
 }
 
-var radii=[220,280,340];
+//var radii=[220,280,340];
+var radii=[150,220,290,360];
 var iset=new Array(C);
+//var lset=[new Array(C),new Array(C),new Array(C)];
+//var lset=[new Array(C),new Array(C),new Array(C),new Array(C)];
+var lset=[new Array(C),new Array(C),new Array(C),new Array(C), new Array(C)];
+var nodes=new Array(C);
 
 var setRadii=()=>{
   for (let i=0; i<C; i++) {
-    let is=new Array(radii.length);
-    for (let i=0; i<radii.length; i++) {
+    let is=new Array(lset.length);
+    for (let i=0; i<lset.length; i++) {
       is[i]=getRandomInt(0,radii.length);
     }
     is.sort();
     iset[i]=is;
   }
 }
-setRadii();
 
-var lset=[new Array(C),new Array(C),new Array(C)];
-var nodes=new Array(C);
-
-for (let i=0; i<C; i++) {
-  nodes[i]=[];
-  for (let j=0; j<lset.length; j++) {
-    lset[j][i]=new Line(i,iset[i][j]);
-  //  lset[1][i]=new Line(i,0,iset[i][1]);
-  //  lset[2][i]=new Line(i,0,iset[i][2]);
-//let v=j+"-"+i;
-    if (nodes[i][iset[i][j]]) {
-      nodes[i][iset[i][j]].push(j);
-    } else {
-      nodes[i][iset[i][j]]=[j];
+var setLinesAndNodes=()=>{
+  for (let i=0; i<C; i++) {
+    nodes[i]=[];
+    for (let j=0; j<lset.length; j++) {
+      lset[j][i]=new Line(i,iset[i][j]);
+    //  lset[1][i]=new Line(i,0,iset[i][1]);
+    //  lset[2][i]=new Line(i,0,iset[i][2]);
+  //let v=j+"-"+i;
+      if (nodes[i][iset[i][j]]) {
+	nodes[i][iset[i][j]].push(j);
+      } else {
+	nodes[i][iset[i][j]]=[j];
+      }
     }
   }
 }
-
-/*
-var getPath=(lp)=>{
-  let p=new Path2D();
-  let x=(lp[0].dp1.x+lp[0].dp2.x)/2;
-  let y=(lp[0].dp1.y+lp[0].dp2.y)/2;
-  p.moveTo(x,y);
-  for (let i=0; i<C; i++) {
-    let i0=i;
-    let i1=(i+1)%C;
-    x=Math.round((lp[i1].dp1.x+lp[i1].dp2.x)/2);
-    y=Math.round((lp[i1].dp1.y+lp[i1].dp2.y)/2);
-    p.bezierCurveTo(lp[i0].dp2.x,lp[i0].dp2.y,lp[i1].dp1.x,lp[i1].dp1.y,x,y);
-pointsPath.moveTo(x+6,y);
-pointsPath.arc(x,y,6,0,TP);
-  }
-  return p;
-}
-*/
 
 var pa=new Array(lset.length);
 var dpath;//=new Path2D();
 var setPaths=()=>{
   dpath=new Path2D();
-  for (let l=0; l<radii.length; l++) {
+  for (let l=0; l<lset.length; l++) {
     let lp=lset[l];
 let a2=new Array(C);
     for (let i=0; i<C; i++) {
@@ -237,7 +218,7 @@ let a2=new Array(C);
     let x=(lp[i0].dp1.x+lp[i0].dp2.x)/2;
     let y=(lp[i0].dp1.y+lp[i0].dp2.y)/2;
 //pointsPath.moveTo(x+6,y);
-//pointsPath.arc(x,y,6,0,TP);
+//pointsPath.arc(x,y,10,0,TP);
       p.moveTo(x,y);
       x=Math.round((lp[i1].dp1.x+lp[i1].dp2.x)/2);
       y=Math.round((lp[i1].dp1.y+lp[i1].dp2.y)/2);
@@ -266,8 +247,9 @@ ctx.strokeStyle=colors[0];
 
 function start() {
   if (stopped) {
-    requestAnimationFrame(animate);
     stopped=false;
+reset();
+    requestAnimationFrame(animate);
   } else {
     stopped=true;
   }
@@ -275,27 +257,21 @@ function start() {
 ctx.canvas.addEventListener("click", start, false);
 
 var stopped=true;
-var time=0;
+var s=0;
 function animate(ts) {
   if (stopped) return;
+  if (s++>1000) {
+    if (s==1040) reset();
+    if (s-1000<40) {
+      ctx.globalAlpha=(1040-s)/40;
+    } else {
+      ctx.globalAlpha=(s-1040)/40;
+    }
+    if (s==1080) { ctx.globalAlpha=1; s=0; }
+  }
   for (let i=0; i<ta.length; i++) ta[i].step();
-//  trav.step();
-//  trav2.step();
-/*
-  t++;
-if (t==STOP) {
-//  acounter=++acounter%C;
-//let i0=acounter
-//let i1=(acounter+1)%C
-//  tf=ls[lset[rndLine][i0].rdx+"-"+lset[rndLine][i1].rdx]*10;
-//  trav.stepArc();
-  t=0;
-//stopped=true;
-}
-*/
   draw();
-ctx.rotate(-0.003);
-//  test();
+  ctx.rotate(-0.003);
   requestAnimationFrame(animate);
 }
 
@@ -320,54 +296,57 @@ var ls={
   "2-2":1288,
 };
 
+var ls2={
+  "0-0":0.113,		//
+  "0-1":0.157,		//
+  "1-0":0.157,		//
+  "0-2":0.217,		//
+  "2-0":0.217,		//
+  "0-3":0.283,		//
+  "3-0":0.283,		//
+  "1-1":0.167,		//
+  "1-2":0.206,		//
+  "2-1":0.206,		//
+  "1-3":0.261,		//
+  "3-1":0.261,		//
+  "2-2":0.220,		//
+  "2-3":0.256,		//
+  "3-2":0.256,		//
+  "3-3":0.273,		//
+};
+
 for (let key in ls) { 
   //ls[key]=Math.round(ls[key]/5000); 
-  ls[key]=ls[key]/500; 
+  ls[key]=ls[key]/5000; 	// speed 500
 }
 
-var STOP=100;
-
-var rndLine=getRandomInt(0,3);
-//console.log((rset[0][rndLine]-220)/60);
-//console.log(lset[rndLine][0].rdx);
-//console.log(lset[rndLine][0].rdx+"-"+lset[rndLine][1].rdx);
-//console.log(Math.round(ls[lset[rndLine][0].rdx+"-"+lset[rndLine][1].rdx]*1000));
-//STOP=Math.round(ls[lset[rndLine][0].rdx+"-"+lset[rndLine][1].rdx]*1000);
-//var tf=ls[lset[rndLine][0].rdx+"-"+lset[rndLine][1].rdx]*10;
-//console.log("tf "+tf);
-//console.log("path "+rndLine);
-
-var acounter=0;
-
-/*
-var test=(la,o)=>{
-  //let pth=getPath(lset[1]);
-//let z=(ERA[2]+ERA[1])/2+o;
-//let z=ERA[1];
-  //ctx.lineDashOffset=-TP*z/8;	// 271
-  //ctx.lineDashOffset=-TP*ERA[2]/8;	// 271
-  ctx.lineDashOffset=-tf*t;
-  ctx.setLineDash([1,8000]);
-  ctx.lineWidth=18;
-  ctx.stroke(pa[rndLine][acounter]);
+for (let key in ls2) { 
+  //ls[key]=Math.round(ls[key]/5000); 
+  ls2[key]=ls2[key]*10; 	// speed 500
 }
-*/
 
+var STOP=100;		// speed 100
+
+const TPA=5;	// trav per arc
+const TCOUNT=16;
+var ta=new Array(TCOUNT);
+var setTravelers=()=>{
+  for (let i=0; i<TCOUNT; i++) {
+    ta[i]=new Trav(Math.trunc(i/2));	// 5 per arc, TCOUNT=TPA*8
+  //  ta[i].arcCounter=Math.trunc(i/5);
+    ta[i].t=50*(i%2);	// 20 - 5 integral separation of trav, for Trav radius (linewidth),  5*20=STOP, speed 20
+  }
+}
+
+var reset=()=>{
+setRadii();
+setLinesAndNodes();
 setPaths();
-
-//var ta=new Array(3);
-/*
-var trav=new Trav(0);
-var trav2=new Trav(0);
-trav2.t=16;
-var ta=[trav,trav2,new Trav(0)];
-ta[2].t=32;
-*/
-var ta=new Array(40);
-for (let i=0; i<40; i++) {
-  ta[i]=new Trav(Math.trunc(i/5));
-//  ta[i].arcCounter=Math.trunc(i/5);
-  ta[i].t=20*(i%5);	// 20 - 5 integral separation of trav, for Trav radius (linewidth),  5*20=STOP
+setColors();
+setTravelers();
+ctx.transform([1,-1][getRandomInt(0,2)],0,0,1,0,0);
 }
 
+//reset();
+//draw();
 start();
