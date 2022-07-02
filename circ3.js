@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/ZErXxpo
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
 const TP=2*Math.PI;
