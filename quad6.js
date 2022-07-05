@@ -10,16 +10,13 @@ const ctx=(()=>{
   d.style.textAlign="center";
   body.append(d);
   let c=document.createElement("canvas");
-  c.width=2*CSIZE;
-  c.height=2*CSIZE;
+  c.width=c.height=2*CSIZE;
   d.append(c);
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,CSIZE);
 ctx.lineWidth=60;
-//ctx.lineCap="round";
-//ctx.lineJoin="round";
-//ctx.globalAlpha=0.5;
+ctx.lineCap="round";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -39,15 +36,24 @@ var colors=[];
 var getColors=()=>{
   let c=[];
   let colorCount=4;
-  let hue=getRandomInt(0,90,true)+30;
-  let colorSeg=Math.round(360/colorCount);
+  let hue=getRandomInt(120,360);
   for (let i=0; i<colorCount; i++) {
-    let hd=Math.round(360/colorCount)*i+getRandomInt(-40,40);
+    let hd=Math.round(240/colorCount)*i+getRandomInt(-20,20);
     let sat=70+getRandomInt(0,31);
-    let lum=30+getRandomInt(0,11);
+    let lum=60+getRandomInt(0,11);
     c.splice(getRandomInt(0,c.length+1),0,"hsl("+((hue+hd)%360)+","+sat+"%,"+lum+"%)");
   }
   return c;
+}
+
+const getRandomSum=(c,s)=>{
+  let ra=[0];
+  for (let i=0; i<c-1; i++) ra.push(Math.random());
+  ra.push(1);
+  ra.sort((a,b)=>{ return a-b; });
+  let ra2=new Array(c);
+  for (let i=0; i<c; i++) ra2[i]=Math.round(s*(ra[i+1]-ra[i]));
+  return ra2;
 }
 
 var Point=function() {
@@ -56,17 +62,99 @@ var Point=function() {
   this.d=false;
 }
 
-var LineObject=function(ln,idx) {
+var LineObject=function(ln,idx) {	// depecate to array
   this.line=ln;
-//  this.color=color;
-  this.mi=true;
-  this.idx=idx;
-  this.rndStart=false;
-  this.twistX=0;
-  this.twisty=0;
+//  this.mi=true;
+//  this.rndStart=false;
 }
 
-var drawLineB=(lineObject,rt)=>{
+var segIntensity=getRandomInt(2,20);
+var PLine=function(idx,length) {
+  this.to=Math.round(length*Math.random());
+  this.t=this.to;
+  //this.tf=[-1.2,-1,-0.8,0.8,1,1.2][getRandomInt(0,6)];
+  this.tf=(0.5+Math.random())*[-1,1][getRandomInt(0,2)];
+  this.oo=TP*Math.random();
+  this.dash=getRandomSum(2*getRandomInt(1,segIntensity),length);
+//  this.lw=10+11*idx;
+this.lw=7+10*idx;
+  if (idx%2) this.col="black";
+  else this.col=colors[(idx/2)%colors.length];
+}
+
+var shape=0;
+var shapesO=[
+  {"iz":[1,1],"tlength":1519},
+  {"iz":[2,2],"tlength":1479},
+];
+
+var shapes=[
+  {"iz":[5,5],"tlength":2271},	// distinct 2271
+  {"iz":[5,4],"tlength":2309},	// distinct 2309
+  {"iz":[5,3],"tlength":2283},	// distinct 2283
+  {"iz":[3,5],"tlength":2283},	// distinct 2283
+  {"iz":[5,2],"tlength":2284},
+//  {"iz":[5,1],"tlength":2321},		// ==1,1
+//  {"iz":[1,5],"tlength":2321},		// ==1,1
+  {"iz":[4,4],"tlength":2271},
+  {"iz":[4,3],"tlength":2229},
+  {"iz":[3,4],"tlength":2309},
+//  {"iz":[4,1],"tlength":2296},	// ==1,2
+//  {"iz":[1,4],"tlength":2321},	// ==1,1
+  {"iz":[3,3],"tlength":2294},
+  {"iz":[3,2],"tlength":2269},
+  {"iz":[1,3],"tlength":2307},	
+//  {"iz":[3,1],"tlength":2307},	// ==1,3
+//  {"iz":[2,1],"tlength":2321},	// ==1,1
+  {"iz":[1,2],"tlength":2296},
+  {"iz":[1,1],"tlength":2321},
+//  {"iz":[2,2],"tlength":1479},
+];
+
+//var TEST=2350;	// H	//	full canvas
+//var TEST=2432;	// U	//	COUNT=5		16x152
+//TEST=480/400*TEST;
+const SF=1;
+//var TEST=1519;
+const tlength=1519; 	// U	//	COUNT=5		1/4 canvas
+const tlength2=1479; 	// H	//	COUNT=5		1/4 canvas
+//var TEST=1479;
+
+/*
+var dashLength=Math.round(TEST*Math.random());
+//var dash=[dashLength,TEST-dashLength];
+//var dash=getRandomSum(4,TEST+1);
+var dash=getRandomSum(2*getRandomInt(1,5),TEST+1);
+var dash2=getRandomSum(2*getRandomInt(1,5),TEST+1);
+//var dash=getRandomSum(2*getRandomInt(1,5),TEST/128);
+//dash=dash.map((e)=>{ return e*128; });
+*/
+
+var drawLineC=()=>{
+  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  ctx.setLineDash([]);
+  ctx.strokeStyle=colors[0];
+  ctx.closePath();
+  ctx.lineWidth=2;
+  ctx.stroke(path);
+
+  ctx.lineDashOffset=0;  //-t-2300;
+  ctx.setLineDash([1,4000]);
+  ctx.strokeStyle="white";
+  ctx.lineWidth=20;
+  ctx.stroke(path);
+
+ctx.setLineDash([1,4000]);
+//ctx.setLineDash([1,shapes[shape].tlength]);
+ctx.lineDashOffset=-shapes[shape].tlength-2*t;
+//  ctx.lineDashOffset=-2*t;
+  ctx.lineWidth=18;
+  ctx.strokeStyle=colors[0];
+  ctx.stroke(path);
+
+}
+
+var drawLineB=(lineObject)=>{
   let ln=lineObject.line;
   ctx.beginPath();
   let pt1=pts[ln[0][0]][ln[0][1]];
@@ -83,14 +171,47 @@ var drawLineB=(lineObject,rt)=>{
       (cy+pts[ln[b][0]][ln[b][1]].y)/2,
     );
   }
-  ctx.strokeStyle=colors[lineObject.idx%colors.length];
-  ctx.closePath();
-  ctx.globalCompositeOperation="source-over";
-  ctx.lineWidth=lineWidthA;
+
+/*
+  ctx.lineDashOffset=0;  //-t-2300;
+  ctx.setLineDash([1,4000]);
+//  ctx.setLineDash([1,TEST]);
+  //ctx.strokeStyle=colors[0];
+  ctx.strokeStyle="white";
+  ctx.lineWidth=20;
   ctx.stroke();
-  ctx.globalCompositeOperation="lighter";
-  ctx.lineWidth=lineWidthB;
+*/
+
+/*
+ctx.setLineDash([1,TEST]);
+  //ctx.setLineDash(dash);
+ctx.lineDashOffset=-2*t;
+  //ctx.lineDashOffset=2*t;
+  //ctx.lineWidth=0.8*lineWidthA;
+  ctx.lineWidth=18;
+  ctx.strokeStyle=colors[0];
   ctx.stroke();
+*/
+
+/*
+ctx.setLineDash(dash2);
+  ctx.lineDashOffset=1000-2*t;
+  ctx.lineWidth=lineWidthA/2;
+  //ctx.lineWidth=86;
+  //ctx.strokeStyle=colors[1];
+  ctx.strokeStyle="black";
+  ctx.stroke();
+*/
+
+for (let i=0; i<p.length; i++) {
+  ctx.setLineDash(p[i].dash);
+  //ctx.lineDashOffset=p[i].to-2*t*p[i].tf;
+  ctx.lineDashOffset=p[i].to-2*t*p[i].tf;
+  ctx.lineWidth=p[i].lw;
+  ctx.strokeStyle=p[i].col;
+  ctx.stroke();
+}
+
 }
 
 const EDGE=CSIZE;
@@ -98,43 +219,38 @@ const EDGE=CSIZE;
 var pts=[];
 var setPoints=()=>{
   pts=[];
-  let d=2*EDGE/(COUNT);
-  let xs=getSet();
-  let ys=getSet();
+//xs=ys=[-160,0,160,320,400,560];
+//xs=ys=[0,80,160,240,320,400];
+//xs=ys=[-50,50,150,250,350,450];
+//let xs=[-50,50,150,250,350,450];
+//let xs=[-50,50,160,240,350,450];
+let xs=[-33,33,100,167,233,300,367,433];	// for (let i=0; i<8; i++) console.log(Math.round(-400/6/2+i*400/6))
+
+let ys=xs;
   for (let i=0; i<COUNT+1; i++) {
     pts[i]=[];
     for (let j=0; j<COUNT+1; j++) {
       pts[i][j]=new Point();
       pts[i][j].x=Math.round(xs[i]);
       pts[i][j].y=Math.round(ys[j]);
-if (Math.abs(xs[i])==EDGE || Math.abs(xs[j])==EDGE) pts[i][j].d=true;
+      if (i==0 || j==0 || i==COUNT || j==COUNT) pts[i][j].d=true;
     }
   }
 }
 
-var lo=[];
-
-var COUNT=getRandomInt(50,90);
+var COUNT=7; //getRandomInt(30,70);
 var lineWidthA=Math.round(2*EDGE/COUNT)-1;
 var lineWidthB=Math.round(2*EDGE/(COUNT+3)/6);
 var posX=1+Math.round((COUNT-1)*Math.random());
 var posY=1+Math.round((COUNT-1)*Math.random());
 var zx=getRandomInt(1,12);
 var zy=getRandomInt(1,12);
-var qrndx=Math.random()<0.5;
-var qrndy=Math.random()<0.5;
-var rndRC=Math.random()<0.5;
+//var rndRC=Math.random()<0.5;
 
-var getNextQuad=()=>{
-  let lidx=qrndx?getRandomInt(1,COUNT-1):posX;
-  let lidy=qrndy?getRandomInt(1,COUNT-1):posY;
 /*
-  //let lidx=posX;
-  let lidy=posY;
-  let lidx=getRandomInt(1,COUNT-1);
-  //let lidy=getRandomInt(1,COUNT-1);
-*/
-
+var getNextQuad=()=>{
+  let lidx=shapes[shape].iz[0];
+  let lidy=shapes[shape].iz[1];
   var eligible=(i,j)=>{
       let sx0=(lidx+i)%COUNT;
       let sy0=(lidy+j)%COUNT;
@@ -143,29 +259,26 @@ var getNextQuad=()=>{
       if (pts[sx0][sy0].d || pts[sx1][sy0].d || pts[sx0][sy1].d || pts[sx1][sy1].d) return false;
       return [sx0,sy0];
   }
-
   for (let i=0; i<COUNT; i+=zx) {
     for (let j=0; j<COUNT; j+=zy) {
-      let rndPair=rndRC?eligible(i,j):eligible(j,i);
+      //let rndPair=rndRC?eligible(i,j):eligible(j,i);
+      let rndPair=eligible(i,j);
       if (rndPair) return rndPair;
-/*
-      let sx0=(lidx+i)%COUNT;
-      let sy0=(lidy+j)%COUNT;
-      let sx1=(lidx+i+1)%COUNT;
-      let sy1=(lidy+j+1)%COUNT;
-      if (pts[sx0][sy0].d || pts[sx1][sy0].d || pts[sx0][sy1].d || pts[sx1][sy1].d) continue;
-      return [sx0,sy0];
-*/
     }
   }
-console.log("QQQ "+COUNT/lineCount);
+console.log("QQQ ");
   return [Math.round(COUNT/2),Math.round(COUNT/2)];
 }
+*/
 
 var initLine=(idx)=>{
-  let lidx,lidy;
-  [lidx,lidy]=getNextQuad();
+  let lidx=shapes[shape].iz[0];
+  let lidy=shapes[shape].iz[1];
+
+//  [lidx,lidy]=getNextQuad();
   let line=[];
+console.log("called "+lidx+" "+lidy+" "+shape);
+//debugger;
   line[0]=[lidx,lidy];
   line[1]=[lidx+1,lidy];
   line[2]=[lidx+1,lidy+1];
@@ -175,93 +288,49 @@ var initLine=(idx)=>{
   pts[lidx+1][lidy].d=true;
   pts[lidx+1][lidy+1].d=true;
   pts[lidx][lidy+1].d=true;
-// TODO randomize line order?
-//  line.push(line.shift());
-// a.unshift(...a.splice(n));
   return line;
 }
 
-var lineCount;	// temp
-
 var reset=()=>{
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  COUNT=getRandomInt(40,90);
   setPoints();
   lineWidthA=Math.round(2*EDGE/COUNT)-1;
   lineWidthB=Math.round(2*EDGE/(COUNT+3)/6);
-  lineCount=4*Math.round(COUNT/4/(1.3+2*Math.random()));
-  lo=[];
-posX=1+Math.round((COUNT-1)*Math.random());
-posY=1+Math.round((COUNT-1)*Math.random());
-zx=getRandomInt(1,12);
-zy=getRandomInt(1,12);
-qrndx=Math.random()<0.7;
-qrndy=Math.random()<0.7;
-rndRC=Math.random()<0.5;
-  let randomize=Math.random()<0.2;
-  let TY=0;
-  let TX=0;
-  if (Math.random()<0.4) TY=18-getRandomInt(2,17,true);	
-  if (Math.random()<0.4) TX=18-getRandomInt(2,17,true);
-console.log(TX+" "+TY+" "+randomize+" "+(COUNT/lineCount).toFixed(2));
-  for (let i=0; i<lineCount; i++) {
-    lo[i]=new LineObject(initLine(i),i);
-    lo[i].rndStart=randomize;
-    lo[i].twistY=TY;
-    lo[i].twistX=TX;
-  }
+posX=0; //1+Math.round((COUNT-1)*Math.random());
+posY=0; //1+Math.round((COUNT-1)*Math.random());
+zx=1; getRandomInt(1,12);
+zy=1; getRandomInt(1,12);
+//rndRC=false; //Math.random()<0.5;
+  shape=getRandomInt(0,shapes.length);
+    lineO=new LineObject(initLine());
+while (grow(lineO.line));
+
   colors=getColors();
+segIntensity=getRandomInt(2,14,true);
+console.log("seg "+segIntensity);
+  setDashes();
+  path=generatePath();
+  drawPane();
 }
 
-var getSet=()=>{	// can't use
-  let s=[];
-  let d=2*EDGE/(COUNT);
-  for (let i=0; i<COUNT; i++) {
-    s.push(-EDGE+i*d);
-  }
-  s.push(EDGE);
-  return s;
-}
+var grow=(ln)=>{
+//  if (!lineObject.mi) return false;
+//  let ln=lineObject.line;
 
-var grow=(lineObject)=>{
-  if (!lineObject.mi) return false;
-  let ln=lineObject.line;
-//  let pst=getRandomInt(0,ln.length);
-//ln.unshift(ln.pop());
-if (lineObject.rndStart) ln.unshift(...ln.splice(getRandomInt(1,ln.length-1)));
-//ln.unshift(...ln.splice(2));
+//if (lineObject.rndStart) ln.unshift(...ln.splice(getRandomInt(1,ln.length-1)));
+
 //ln.push(...ln.splice(ln.length-1));
-//  let pst=0;
-//ln.push(ln.shift());
-//  let pst=getRandomInt(0,3);
-//  let pst=(lineObject.idx%2)?0:getRandomInt(0,ln.length);
-//  let pst=(lineObject.idx%2)?0:getRandomInt(0,ln.length);
   for (let p=0; p<ln.length; p++) {
-    //let s1=(pst+p)%ln.length;
     let s1=p;
     let s2=(s1+1)%ln.length;
-//    let c=[[-1,1],[1,-1]][getRandomInt(0,2)];
-//    let c=(lineObject.idx%2)?[-1,-1]:[1,1];
-//    let c=(lineObject.idx%2)?[1,-1]:[-1,1];
     let c=[-1,1];
     if (ln[s1][0]==ln[s2][0]) {
       for (let i=0; i<2; i++) {
 	let pt1=pts[ln[s1][0]+c[i]][ln[s1][1]];
 	let pt2=pts[ln[s2][0]+c[i]][ln[s2][1]];
 	if (pt1.d==false && pt2.d==false) {
-          if (lineObject.twistX) {
-	    if (ln.length%lineObject.twistX) 
-              ln.splice(s2,0,[ln[s1][0]+c[i],ln[s1][1]],[ln[s2][0]+c[i],ln[s2][1]]);
-	    else ln.splice(s2,0,[ln[s2][0]+c[i],ln[s2][1]],[ln[s1][0]+c[i],ln[s1][1]]);
-          } else {
-	    ln.splice(s2,0,[ln[s1][0]+c[i],ln[s1][1]],[ln[s2][0]+c[i],ln[s2][1]]);
-          }
+	  ln.splice(s2,0,[ln[s1][0]+c[i],ln[s1][1]],[ln[s2][0]+c[i],ln[s2][1]]);
 	  pt1.d=true;
 	  pt2.d=true;
-  //if (!lineObject.idx%4) { ln.unshift(ln.pop()); } 
-  //if (ln.length%2) ln.push(ln.shift());
-  //ln.push(ln.shift());
-  //ln.unshift(ln.pop());
 	  return true;
 	}
       }
@@ -270,13 +339,7 @@ if (lineObject.rndStart) ln.unshift(...ln.splice(getRandomInt(1,ln.length-1)));
 	let pt1=pts[ln[s1][0]][ln[s1][1]+c[i]];
 	let pt2=pts[ln[s2][0]][ln[s2][1]+c[i]];
 	if (pt1.d==false && pt2.d==false) {
-          if (lineObject.twistY) {
-	    if (ln.length%lineObject.twistY) 
-              ln.splice(s2,0,[ln[s1][0],ln[s1][1]+c[i]],[ln[s2][0],ln[s2][1]+c[i]]);
-	    else ln.splice(s2,0,[ln[s2][0],ln[s2][1]+c[i]],[ln[s1][0],ln[s1][1]+c[i]]);
-          } else {
-	    ln.splice(s2,0, [ln[s1][0],ln[s1][1]+c[i]], [ln[s2][0],ln[s2][1]+c[i]],);
-          }
+	  ln.splice(s2,0, [ln[s1][0],ln[s1][1]+c[i]], [ln[s2][0],ln[s2][1]+c[i]],);
 	  pt1.d=true;
 	  pt2.d=true;
   //ln.push(ln.shift());
@@ -289,19 +352,49 @@ if (lineObject.rndStart) ln.unshift(...ln.splice(getRandomInt(1,ln.length-1)));
       }
     }
   }
-  lineObject.mi=false;
+//  lineObject.mi=false;
   return false;
 }
 
-//ctx.fillStyle="hsla(0,0%,0%,0.2)";
+const pane=new Path2D();
+/*
+pane.moveTo(-CSIZE,-CSIZE);
+pane.lineTo(CSIZE,-CSIZE);
+pane.lineTo(CSIZE,CSIZE);
+pane.lineTo(-CSIZE,CSIZE);
+pane.lineTo(CSIZE,CSIZE);
+*/
+pane.moveTo(0,-CSIZE);
+pane.lineTo(0,CSIZE);
+pane.moveTo(-CSIZE,0);
+pane.lineTo(CSIZE,0);
+
+var drawPane=()=>{
+  ctx.globalAlpha=1;
+ctx.setLineDash([]);
+ctx.strokeStyle=colors[0];
+ctx.lineWidth=2;
+ctx.stroke(pane);
+ctx.globalAlpha=0.7;
+}
+
+//ctx.fillStyle="#00000010";
 var draw=()=>{
-  //ctx.globalCompositeOperation="source-over";
   //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  for (let i=0; i<lo.length; i++) {
-    //ctx.strokeStyle=colors[i%colors.length];
-    drawLineB(lo[i]);
-  }
+  //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+
+for (let i=0; i<p.length; i++) {
+  ctx.setLineDash(p[i].dash);
+  ctx.lineDashOffset=Math.sin(p[i].oo+t/400)*p[i].to-1.4*t*p[i].tf;
+  ctx.lineWidth=p[i].lw;
+  ctx.strokeStyle=p[i].col;
+  ctx.stroke(path);
+}
+//  drawLineB(lineO);
+//ctx.transform(-1,0,0,1,0,0);
+//  drawLineB(lineO);
+
+//  drawLineC();
 }
 
 var frac=1;
@@ -316,59 +409,80 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
-var pidx=0;
-var step=0;
-var time=0;
+var t=0;
+var s=0;
 var animate=(ts)=>{
   if (stopped) return;
-  if (!time) time=ts;
-  if (step==0) {
-    if (ts-time>60) {
-      if (pidx>lo.length-1) {
-        step=1;
-        pidx=0;
-      } else {
-        drawLineB(lo[pidx++]);
-      }
-      time=0;
-    }
-  } else if (step==2) {
-    if (ts-time>1600) {
-      time=0;
-      step=3;
-//      step=0;
-//      reset();
-    }
-  } else if (step==3) {
-    if (ts-time>1000) {
-      time=0;
-      step=0;
-      ctx.canvas.style.opacity=1;
+  t++;
+  if (s++>800) {
+    if (s==840) {
+      ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
       reset();
-    } else {
-      let frac=1-(ts-time)/1000;
-      ctx.canvas.style.opacity=frac;
+      t=0;
+      ctx.canvas.style.opacity=1;
     }
-  } else {
-    if (ts-time>8) {  // ?how often true
-      frac=0;
-      time=0;
-      let moved=false;
-      for (let i=0; i<lo.length; i++) {
-	moved=grow(lo[i]) || moved;
-      }
-      if (!moved) {
-	step=2;
-      }
-      draw();
+    if (s-800<40) {
+      ctx.canvas.style.opacity=(840-s)/40;
     } else {
-  //    frac=(ts-time)/duration;
+      ctx.canvas.style.opacity=(s-840)/40;
     }
+    if (s==880) { ctx.canvas.style.opacity=1; s=0; }
   }
+  draw();
   requestAnimationFrame(animate);
 }
 
 onresize();
-reset();
+var lineO;	// deprecate
 
-start();
+var p=[];
+var setDashes=()=>{
+  p=[];
+  for (let i=0; i<7; i++) {
+    p[i]=new PLine(i,shapes[shape].tlength);
+  }
+  p.reverse();
+//p[0].lw=lineWidthA;
+}
+
+var generatePath=()=>{
+  var pathX=new Path2D();
+  let ln=lineO.line;
+  let pt1=pts[ln[0][0]][ln[0][1]];
+  let pt2=pts[ln[1][0]][ln[1][1]];
+  pathX.moveTo((pt1.x+pt2.x)/2,(pt1.y+pt2.y)/2);
+  for (let p=0; p<ln.length; p++) {
+    let a=(p+1)%ln.length;
+    let b=(p+2)%ln.length;
+    let cx=pts[ln[a][0]][ln[a][1]].x;
+    let cy=pts[ln[a][0]][ln[a][1]].y;
+    pathX.bezierCurveTo(cx,cy,cx,cy,
+      (cx+pts[ln[b][0]][ln[b][1]].x)/2,
+      (cy+pts[ln[b][0]][ln[b][1]].y)/2,
+    );
+  }
+  const dma=[
+    new DOMMatrix([1,0,0,1,0,0]),
+    //new DOMMatrix([0,1,1,0,0,0]),
+    //new DOMMatrix([0,-1,1,0,0,CSIZE]),
+    //new DOMMatrix([0,-1,-1,0,CSIZE,CSIZE]),
+    //new DOMMatrix([0,1,-1,0,CSIZE,0]),
+    new DOMMatrix([0,1,-1,0,CSIZE,0]),
+    new DOMMatrix([-1,0,0,-1,CSIZE,CSIZE]),
+    new DOMMatrix([0,-1,1,0,0,CSIZE]),
+  ];
+  var path=new Path2D();
+  let q=getRandomInt(0,4);
+//console.log("rot "+q);
+  path.addPath(pathX, dma[q]);
+
+  path.addPath(path,new DOMMatrix([-1,0,0,1,0,0]));
+  path.addPath(path,new DOMMatrix([-1,0,0,-1,0,0]));
+  return path;
+}
+
+reset();
+var path;
+
+draw();
+//start();
