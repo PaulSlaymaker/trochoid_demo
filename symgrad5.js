@@ -1,8 +1,7 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/abqjdNW
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const TP=2*Math.PI;
-//const CSIZE=120;
 const CSIZE=100;
 
 const ctx=(()=>{
@@ -78,16 +77,15 @@ function animate(ts) {
   for (let i=0; i<RF; i++) {
     rfa1[i]=0.24*Math.sin(ts/(sp1[i]));
     rfa2[i]=Math.cos(ts/(sp2[i]));
-    if (Math.abs(rfa2[i])<0.0005) {
+    if (Math.abs(rfa2[i])<0.0003) {
       ac[i]=4*getRandomInt(1,11);
-      console.log("AAA "+ac);
+//console.log("AAA "+ac);
       sp1[i]*=0.95;
     }
 
 if (Math.abs(rfa1[i])<0.0001) {
-  //sp2[i]=sp2[i]*(1-1/TP);
-  sp2[i]*=0.97;
-  console.log("BBB "+sp2[i].toFixed(0));
+  sp2[i]*=0.98;
+//console.log("BBB "+sp2[i].toFixed(0));
 }
 
   }
