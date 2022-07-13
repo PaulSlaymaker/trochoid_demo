@@ -56,6 +56,7 @@ var Line=function(idx,rdx) {
   //this.a=idx*TP/C;
   this.radius=radii[rdx];
   let f=2/C;
+  //let f=TP/C*Math.random();
 let a=idx*TP/C;
   this.f1x=Math.cos(a-f);
   this.f1y=Math.sin(a-f);
@@ -77,7 +78,7 @@ let a=idx*TP/C;
 //var radii=[60,180,300];
 var radii=new Array(4);
 var setRadii=()=>{
-  radii[0]=0;
+  radii[0]=1;
   for (let i=1; i<radii.length; i++) {
     radii[i]=Math.round(380*Math.random());
   }
@@ -89,7 +90,6 @@ setRadii(radii);
 let L=C/4+1;
 var lset=[new Array(L),new Array(L),new Array(L),new Array(L), new Array(L), new Array(L)];
 var lset2=[new Array(L),new Array(L),new Array(L),new Array(L), new Array(L), new Array(L)];
-var lineSet=[lset,lset2];
 
 var setLines=(ls)=>{
   var iset=new Array(L);
@@ -116,17 +116,16 @@ var setPaths=()=>{
   for (let l=0; l<lset.length; l++) {
     let lp=lset[l];
     let lp2=lset2[l];
-
+    let x=(1-frac)*(lp[0].dp1.x+lp[0].dp2.x)/2+frac*(lp2[0].dp1.x+lp2[0].dp2.x)/2;
+    let y=(1-frac)*(lp[0].dp1.y+lp[0].dp2.y)/2+frac*(lp2[0].dp1.y+lp2[0].dp2.y)/2;
     pa[l]=new Path2D();
+    pa[l].moveTo(Math.round(x),Math.round(y));
     for (let i=0; i<C/4; i++) {
 //      let p=new Path2D();
       let i0=i;
       let i1=(i+1)%C;
-    let x=(1-frac)*(lp[i0].dp1.x+lp[i0].dp2.x)/2+frac*(lp2[i0].dp1.x+lp2[i0].dp2.x)/2;
-    let y=(1-frac)*(lp[i0].dp1.y+lp[i0].dp2.y)/2+frac*(lp2[i0].dp1.y+lp2[i0].dp2.y)/2;
     //let x=(lp[i0].dp1.x+lp[i0].dp2.x)/2;
     //let y=(lp[i0].dp1.y+lp[i0].dp2.y)/2;
-      pa[l].moveTo(Math.round(x),Math.round(y));
 //      x=Math.round((lp[i1].dp1.x+lp[i1].dp2.x)/2);
 //      y=Math.round((lp[i1].dp1.y+lp[i1].dp2.y)/2);
       x=Math.round((1-frac)*(lp[i1].dp1.x+lp[i1].dp2.x)/2+frac*(lp2[i1].dp1.x+lp2[i1].dp2.x)/2);
@@ -170,7 +169,6 @@ ctx.lineWidth=10;
 ctx.globalAlpha=0.2;
 var dash=[30,60];
 ctx.setLineDash(dash);
-var dash2=[100,10];
 
 var draw=()=>{
   //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
@@ -245,7 +243,7 @@ ctx.strokeStyle=colors[0];
 */
 
   ctx.setLineDash([]);
-  ctx.lineWidth=4;
+  ctx.lineWidth=2;
   ctx.strokeStyle="silver";
   ctx.stroke(p2);
 }
