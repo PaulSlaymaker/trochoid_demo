@@ -53,7 +53,6 @@ var setColors=()=>{
   colors[0]="hsl("+hues[0]+",100%,80%)";
   colors[1]="hsl("+hues[1]+",100%,80%)";
   colors[2]="hsl("+hues[2]+",100%,80%)";
-//  colors[3]="hsl("+hues[3]+",100%,70%)";
 }
 
 var Axis=function(idx) {
@@ -64,14 +63,12 @@ var Axis=function(idx) {
   this.setPoints=()=>{
     for (let i=0; i<PC; i++) {
       let r=CSIZE*i/(PC-1);
-//let ri=getRandomInt(0,axFactors[i].length);
       let ri=Math.trunc(idx*axFactors[i].length/lineCount);
       let xf=axFactors[i][ri].x;
       let yf=axFactors[i][ri].y;
       this.pts[i]={"x":xf*r,"y":yf*r,"c1x":xf*(r-CD),"c1y":yf*(r-CD),"c2x":xf*(r+CD),"c2y":yf*(r+CD)};
       let xf2=axFactors2[i][ri].x;
       let yf2=axFactors2[i][ri].y;
-      this.pts[i]={"x":xf*r,"y":yf*r,"c1x":xf*(r-CD),"c1y":yf*(r-CD),"c2x":xf*(r+CD),"c2y":yf*(r+CD)};
       this.pts2[i]={"x":xf2*r,"y":yf2*r,"c1x":xf2*(r-CD),"c1y":yf2*(r-CD),"c2x":xf2*(r+CD),"c2y":yf2*(r+CD)};
     }
   }
@@ -198,12 +195,14 @@ var draw=()=>{
   //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
 
 ctx.globalAlpha=0.4;
+  const dm1=new DOMMatrix([1,0,0,-1,0,0]);
+  const dm2=new DOMMatrix([-1,0,0,1,0,0]);
   let opath=new Path2D();
   let spath=new Array(lineCount);
   for (let i=0; i<lineCount; i++) {
     let pth=aa[i].getPath();
-    pth.addPath(pth, new DOMMatrix([1,0,0,-1,0,0]));
-    pth.addPath(pth, new DOMMatrix([-1,0,0,1,0,0]));
+    pth.addPath(pth,dm1);
+    pth.addPath(pth,dm2);
     spath[i]=pth;
     opath.addPath(pth);
   }
@@ -221,14 +220,12 @@ ctx.globalAlpha=0.4;
   ctx.lineWidth=10;
   for (let i=0; i<lineCount; i++) {
     let ldo=440+80*Math.sin(dt/40+aa[i].dof2);
-if (i==lineCount-1) ldo=240+100*Math.sin(dt/80+aa[i].dof2);
-ctx.setLineDash([ldo,100000]);
-    //ctx.strokeStyle=colors[(i+1)%colors.length];
+    if (i==lineCount-1) ldo=240+100*Math.sin(dt/80+aa[i].dof2);
+    ctx.setLineDash([ldo,100000]);
     ctx.strokeStyle="white";
     ctx.stroke(spath[i]);
   }
 
-  //ctx.setLineDash([400,100000]);
   ctx.setLineDash([2,7]);
   ctx.lineWidth=4;
   ctx.strokeStyle="#2A2A2A";
@@ -243,5 +240,4 @@ onresize();
 hues=getHues();
 setColors();
 
-//draw();
 start();
