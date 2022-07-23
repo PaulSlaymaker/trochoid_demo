@@ -36,7 +36,7 @@ var colors=[];
 var getColors=()=>{
   let c=[];
   let colorCount=4;
-  let hue=getRandomInt(120,360);
+  let hue=getRandomInt(90,270);
   for (let i=0; i<colorCount; i++) {
     let hd=Math.round(240/colorCount)*i+getRandomInt(-20,20);
     let sat=70+getRandomInt(0,31);
@@ -62,12 +62,6 @@ var Point=function() {
   this.d=false;
 }
 
-var LineObject=function(ln,idx) {	// depecate to array
-  this.line=ln;
-//  this.mi=true;
-//  this.rndStart=false;
-}
-
 var segIntensity=getRandomInt(2,20);
 var PLine=function(idx,length) {
   this.to=Math.round(length*Math.random());
@@ -77,16 +71,13 @@ var PLine=function(idx,length) {
   this.oo=TP*Math.random();
   this.dash=getRandomSum(2*getRandomInt(1,segIntensity),length);
 //  this.lw=10+11*idx;
-this.lw=7+10*idx;
+  this.lw=7+10*idx;
   if (idx%2) this.col="black";
   else this.col=colors[(idx/2)%colors.length];
 }
 
 var shape=0;
-var shapesO=[
-  {"iz":[1,1],"tlength":1519},
-  {"iz":[2,2],"tlength":1479},
-];
+//var shapesO=[ {"iz":[1,1],"tlength":1519}, {"iz":[2,2],"tlength":1479}, ];
 
 var shapes=[
   {"iz":[5,5],"tlength":2271},	// distinct 2271
@@ -110,25 +101,6 @@ var shapes=[
   {"iz":[1,1],"tlength":2321},
 //  {"iz":[2,2],"tlength":1479},
 ];
-
-//var TEST=2350;	// H	//	full canvas
-//var TEST=2432;	// U	//	COUNT=5		16x152
-//TEST=480/400*TEST;
-const SF=1;
-//var TEST=1519;
-const tlength=1519; 	// U	//	COUNT=5		1/4 canvas
-const tlength2=1479; 	// H	//	COUNT=5		1/4 canvas
-//var TEST=1479;
-
-/*
-var dashLength=Math.round(TEST*Math.random());
-//var dash=[dashLength,TEST-dashLength];
-//var dash=getRandomSum(4,TEST+1);
-var dash=getRandomSum(2*getRandomInt(1,5),TEST+1);
-var dash2=getRandomSum(2*getRandomInt(1,5),TEST+1);
-//var dash=getRandomSum(2*getRandomInt(1,5),TEST/128);
-//dash=dash.map((e)=>{ return e*128; });
-*/
 
 var drawLineC=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
@@ -154,136 +126,35 @@ ctx.lineDashOffset=-shapes[shape].tlength-2*t;
 
 }
 
-var drawLineB=(lineObject)=>{
-  let ln=lineObject.line;
-  ctx.beginPath();
-  let pt1=pts[ln[0][0]][ln[0][1]];
-  let pt2=pts[ln[1][0]][ln[1][1]];
-//if (pt1==undefined) debugger;
-  ctx.moveTo((pt1.x+pt2.x)/2,(pt1.y+pt2.y)/2);
-  for (let p=0; p<ln.length; p++) {
-    let a=(p+1)%ln.length;
-    let b=(p+2)%ln.length;
-    let cx=pts[ln[a][0]][ln[a][1]].x;
-    let cy=pts[ln[a][0]][ln[a][1]].y;
-    ctx.bezierCurveTo(cx,cy,cx,cy,
-      (cx+pts[ln[b][0]][ln[b][1]].x)/2,
-      (cy+pts[ln[b][0]][ln[b][1]].y)/2,
-    );
-  }
-
-/*
-  ctx.lineDashOffset=0;  //-t-2300;
-  ctx.setLineDash([1,4000]);
-//  ctx.setLineDash([1,TEST]);
-  //ctx.strokeStyle=colors[0];
-  ctx.strokeStyle="white";
-  ctx.lineWidth=20;
-  ctx.stroke();
-*/
-
-/*
-ctx.setLineDash([1,TEST]);
-  //ctx.setLineDash(dash);
-ctx.lineDashOffset=-2*t;
-  //ctx.lineDashOffset=2*t;
-  //ctx.lineWidth=0.8*lineWidthA;
-  ctx.lineWidth=18;
-  ctx.strokeStyle=colors[0];
-  ctx.stroke();
-*/
-
-/*
-ctx.setLineDash(dash2);
-  ctx.lineDashOffset=1000-2*t;
-  ctx.lineWidth=lineWidthA/2;
-  //ctx.lineWidth=86;
-  //ctx.strokeStyle=colors[1];
-  ctx.strokeStyle="black";
-  ctx.stroke();
-*/
-
-for (let i=0; i<p.length; i++) {
-  ctx.setLineDash(p[i].dash);
-  //ctx.lineDashOffset=p[i].to-2*t*p[i].tf;
-  ctx.lineDashOffset=p[i].to-2*t*p[i].tf;
-  ctx.lineWidth=p[i].lw;
-  ctx.strokeStyle=p[i].col;
-  ctx.stroke();
-}
-
-}
-
 const EDGE=CSIZE;
 
 var pts=[];
 var setPoints=()=>{
   pts=[];
-//xs=ys=[-160,0,160,320,400,560];
-//xs=ys=[0,80,160,240,320,400];
-//xs=ys=[-50,50,150,250,350,450];
-//let xs=[-50,50,150,250,350,450];
 //let xs=[-50,50,160,240,350,450];
-let xs=[-33,33,100,167,233,300,367,433];	// for (let i=0; i<8; i++) console.log(Math.round(-400/6/2+i*400/6))
-
-let ys=xs;
+let ss=[-33,33,100,167,233,300,367,433];	// for (let i=0; i<8; i++) console.log(Math.round(-400/6/2+i*400/6))
   for (let i=0; i<COUNT+1; i++) {
     pts[i]=[];
     for (let j=0; j<COUNT+1; j++) {
       pts[i][j]=new Point();
-      pts[i][j].x=Math.round(xs[i]);
-      pts[i][j].y=Math.round(ys[j]);
+      pts[i][j].x=Math.round(ss[i]);
+      pts[i][j].y=Math.round(ss[j]);
       if (i==0 || j==0 || i==COUNT || j==COUNT) pts[i][j].d=true;
     }
   }
 }
 
 var COUNT=7; //getRandomInt(30,70);
-var lineWidthA=Math.round(2*EDGE/COUNT)-1;
-var lineWidthB=Math.round(2*EDGE/(COUNT+3)/6);
-var posX=1+Math.round((COUNT-1)*Math.random());
-var posY=1+Math.round((COUNT-1)*Math.random());
-var zx=getRandomInt(1,12);
-var zy=getRandomInt(1,12);
-//var rndRC=Math.random()<0.5;
+//var lineWidthA=Math.round(2*EDGE/COUNT)-1;
 
-/*
-var getNextQuad=()=>{
+var initLine=()=>{
   let lidx=shapes[shape].iz[0];
   let lidy=shapes[shape].iz[1];
-  var eligible=(i,j)=>{
-      let sx0=(lidx+i)%COUNT;
-      let sy0=(lidy+j)%COUNT;
-      let sx1=(lidx+i+1)%COUNT;
-      let sy1=(lidy+j+1)%COUNT;
-      if (pts[sx0][sy0].d || pts[sx1][sy0].d || pts[sx0][sy1].d || pts[sx1][sy1].d) return false;
-      return [sx0,sy0];
-  }
-  for (let i=0; i<COUNT; i+=zx) {
-    for (let j=0; j<COUNT; j+=zy) {
-      //let rndPair=rndRC?eligible(i,j):eligible(j,i);
-      let rndPair=eligible(i,j);
-      if (rndPair) return rndPair;
-    }
-  }
-console.log("QQQ ");
-  return [Math.round(COUNT/2),Math.round(COUNT/2)];
-}
-*/
-
-var initLine=(idx)=>{
-  let lidx=shapes[shape].iz[0];
-  let lidy=shapes[shape].iz[1];
-
-//  [lidx,lidy]=getNextQuad();
   let line=[];
-console.log("called "+lidx+" "+lidy+" "+shape);
-//debugger;
   line[0]=[lidx,lidy];
   line[1]=[lidx+1,lidy];
   line[2]=[lidx+1,lidy+1];
   line[3]=[lidx,lidy+1];
-
   pts[lidx][lidy].d=true;
   pts[lidx+1][lidy].d=true;
   pts[lidx+1][lidy+1].d=true;
@@ -293,31 +164,19 @@ console.log("called "+lidx+" "+lidy+" "+shape);
 
 var reset=()=>{
   setPoints();
-  lineWidthA=Math.round(2*EDGE/COUNT)-1;
-  lineWidthB=Math.round(2*EDGE/(COUNT+3)/6);
-posX=0; //1+Math.round((COUNT-1)*Math.random());
-posY=0; //1+Math.round((COUNT-1)*Math.random());
-zx=1; getRandomInt(1,12);
-zy=1; getRandomInt(1,12);
-//rndRC=false; //Math.random()<0.5;
   shape=getRandomInt(0,shapes.length);
-    lineO=new LineObject(initLine());
-while (grow(lineO.line));
-
+  let line=initLine();
+  while (grow(line));
   colors=getColors();
-segIntensity=getRandomInt(2,14,true);
-console.log("seg "+segIntensity);
+  segIntensity=getRandomInt(2,14,true);
+//console.log("seg "+segIntensity);
   setDashes();
-  path=generatePath();
+  path=generatePath(line);
   drawPane();
 }
 
 var grow=(ln)=>{
-//  if (!lineObject.mi) return false;
-//  let ln=lineObject.line;
-
 //if (lineObject.rndStart) ln.unshift(...ln.splice(getRandomInt(1,ln.length-1)));
-
 //ln.push(...ln.splice(ln.length-1));
   for (let p=0; p<ln.length; p++) {
     let s1=p;
@@ -342,28 +201,15 @@ var grow=(ln)=>{
 	  ln.splice(s2,0, [ln[s1][0],ln[s1][1]+c[i]], [ln[s2][0],ln[s2][1]+c[i]],);
 	  pt1.d=true;
 	  pt2.d=true;
-  //ln.push(ln.shift());
-  //if (!lineObject.idx%4) { ln.push(ln.shift()); }
-  //else ln.unshift(ln.pop());
-  //ln.push(ln.shift());
-//  ln.unshift(ln.pop());
 	  return true;
 	}
       }
     }
   }
-//  lineObject.mi=false;
   return false;
 }
 
 const pane=new Path2D();
-/*
-pane.moveTo(-CSIZE,-CSIZE);
-pane.lineTo(CSIZE,-CSIZE);
-pane.lineTo(CSIZE,CSIZE);
-pane.lineTo(-CSIZE,CSIZE);
-pane.lineTo(CSIZE,CSIZE);
-*/
 pane.moveTo(0,-CSIZE);
 pane.lineTo(0,CSIZE);
 pane.moveTo(-CSIZE,0);
@@ -378,11 +224,8 @@ ctx.stroke(pane);
 ctx.globalAlpha=0.7;
 }
 
-//ctx.fillStyle="#00000010";
 var draw=()=>{
-  //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-
 for (let i=0; i<p.length; i++) {
   ctx.setLineDash(p[i].dash);
   ctx.lineDashOffset=Math.sin(p[i].oo+t/400)*p[i].to-1.4*t*p[i].tf;
@@ -390,14 +233,9 @@ for (let i=0; i<p.length; i++) {
   ctx.strokeStyle=p[i].col;
   ctx.stroke(path);
 }
-//  drawLineB(lineO);
-//ctx.transform(-1,0,0,1,0,0);
-//  drawLineB(lineO);
-
 //  drawLineC();
 }
 
-var frac=1;
 var stopped=true;
 var start=()=>{
   if (stopped) { 
@@ -414,26 +252,25 @@ var s=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-  if (s++>800) {
-    if (s==840) {
+  if (s++>1200) {
+    if (s==1240) {
       ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
       reset();
       t=0;
       ctx.canvas.style.opacity=1;
     }
-    if (s-800<40) {
-      ctx.canvas.style.opacity=(840-s)/40;
+    if (s-1200<40) {
+      ctx.canvas.style.opacity=(1240-s)/40;
     } else {
-      ctx.canvas.style.opacity=(s-840)/40;
+      ctx.canvas.style.opacity=(s-1240)/40;
     }
-    if (s==880) { ctx.canvas.style.opacity=1; s=0; }
+    if (s==1280) { ctx.canvas.style.opacity=1; s=0; }
   }
   draw();
   requestAnimationFrame(animate);
 }
 
 onresize();
-var lineO;	// deprecate
 
 var p=[];
 var setDashes=()=>{
@@ -442,12 +279,13 @@ var setDashes=()=>{
     p[i]=new PLine(i,shapes[shape].tlength);
   }
   p.reverse();
-//p[0].lw=lineWidthA;
+p[0].dash=[1,shapes[shape].tlength];
+p[0].to=0;
+p[0].tf=1;
 }
 
-var generatePath=()=>{
+var generatePath=(ln)=>{
   var pathX=new Path2D();
-  let ln=lineO.line;
   let pt1=pts[ln[0][0]][ln[0][1]];
   let pt2=pts[ln[1][0]][ln[1][1]];
   pathX.moveTo((pt1.x+pt2.x)/2,(pt1.y+pt2.y)/2);
@@ -481,8 +319,8 @@ var generatePath=()=>{
   return path;
 }
 
-reset();
 var path;
+reset();
 
-draw();
-//start();
+//draw();
+start();
