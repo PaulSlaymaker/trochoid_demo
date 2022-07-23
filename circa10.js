@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/rNdwMjK
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -269,7 +269,7 @@ var arcCount=6;
 var symmetry=getSymPath22;
 
 var reset=()=>{
-  radius=32; //[40,50,66,100][getRandomInt(0,4)];
+  radius=[32,40,50,66,100][getRandomInt(0,5)];
   generateHexes();
   tStep=Math.round(radius*TP/6/timeMultiplier);
   symmetry=[getSymPath22,getSymPath6][getRandomInt(0,2)];
@@ -281,8 +281,8 @@ var reset=()=>{
     else arcCount=getRandomInt(3,6);
   } else {
     if (cm.size<19) arcCount=getRandomInt(3,7);
-    else if (cm.size>61) arcCount=getRandomInt(10,16);
-    else if (cm.size>37) arcCount=getRandomInt(7,14);
+    else if (cm.size>61) arcCount=getRandomInt(13,19);
+    else if (cm.size>37) arcCount=getRandomInt(8,14);
     else arcCount=getRandomInt(5,11);
   }
   setCurves();
