@@ -281,7 +281,7 @@ var reset=()=>{
     else arcCount=getRandomInt(3,6);
   } else {
     if (cm.size<19) arcCount=getRandomInt(3,7);
-    else if (cm.size>61) arcCount=getRandomInt(13,19);
+    else if (cm.size>61) arcCount=getRandomInt(14,19);
     else if (cm.size>37) arcCount=getRandomInt(8,14);
     else arcCount=getRandomInt(5,11);
   }
