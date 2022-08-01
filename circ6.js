@@ -53,7 +53,7 @@ var Circle=function(x,y,xp,yp,radius,pc) {
 //let col=Math.round(this.radius/10);
 //ctx.fillStyle=colors[col%colors.length];
 //ctx.fillStyle="hsla("+(hue+4*this.radius)+",90%,50%,0.7)";
-ctx.fillStyle="hsl("+(hue+4*this.radius)+",90%,50%)";
+ctx.fillStyle="hsl("+(hue+5*this.radius)+",90%,50%)";
     ctx.fill();
   }
 /*
@@ -80,7 +80,7 @@ ctx.fillStyle="hsl("+(hue+4*this.radius)+",90%,50%)";
 
 var Curve=function() {
   this.car=[];
-  this.to=-getRandomInt(0,100);
+  this.to=-getRandomInt(0,400);
   this.addCurveCircle=(cir)=>{
     if (cir.pc) {
       this.car.unshift(cir.pc);
@@ -105,9 +105,8 @@ var Curve=function() {
     this.len+=this.car[this.car.length-1].radius;
   }
   this.drawCurve=()=>{
-//    ctx.lineWidth=5;
     let tt=this.to+t;
-    ctx.setLineDash([Math.max(1,tt),2000]);
+    ctx.setLineDash([Math.max(1,tt),4000]);
     ctx.stroke(this.path);
     if (tt>this.len+40) {
       this.car[this.car.length-1].drawCircle(0.8);
@@ -189,34 +188,12 @@ var draw=()=>{
   return grown;
 }
 
-/*
-var drawCurve=(cu)=>{
-  ctx.lineWidth=5;
-  ctx.stroke(cu.path);
-  if (t>cu.len+40) {
-    let uc=cu.car[cu.car.length-1];
-    uc.drawCircle(0.8);
-    if (t>cu.len+120) return false;
-    else return true;
-  } else if (t>cu.len) {
-    let uc=cu.car[cu.car.length-1];
-    let raf=0.8*(t-cu.len)/40;
-    uc.drawCircle(raf);
-    return true;
-  } else {
-    return true;
-  }
-}
-*/
-
 var stopped=true;
 var start=()=>{
   if (stopped) { 
     stopped=false;
     requestAnimationFrame(animate);
-  } else {
-    stopped=true;
-  }
+  } else stopped=true;
 }
 body.addEventListener("click", start, false);
 
@@ -246,27 +223,22 @@ var ca=[new Circle(0,0,0,0,50,0,0)];
 
 var curves=[];
 
-//var generateCurve=(cc)=>{ if (cc.cp.length==0) return; }
-
 var setCircles=()=>{
   //ca=[new Circle(0,350,0,400,50,0,0)];
   ca=[new Circle(0,0,0,0,50,0,0)];
   for (let i=0; i<2000; i++) {
     //let r=8*getRandomInt(1,6);
     let r=10;
-    if (i<20) r=50;
-    else if (i<100) r=40;
-    else if (i<300) r=30;
-    else if (i<1000) r=20;
+    if (i<20) r=42;
+    else if (i<100) r=34;
+    else if (i<300) r=26;
+    else if (i<1000) r=18;
     grow(r);
   }
   curves=[];
   for (let i=0; i<ca.length; i++) {
-  //for (let i=0; i<100; i++) {
     if (ca[i].c.length==0) {
       var nc=new Curve();
-      //curves[0].car=[ca[i]];
-      //curves[0].addCurveCircle(ca[i]);
       nc.car=[ca[i]];
       nc.addCurveCircle(ca[i]);
       nc.setPath();
@@ -279,6 +251,5 @@ onresize();
 
 setCircles();
 ctx.strokeStyle="hsla("+getRandomInt(0,360)+",90%,60%,0.6)";
-
 
 start();
