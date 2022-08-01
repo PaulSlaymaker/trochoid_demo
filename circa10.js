@@ -273,17 +273,20 @@ var reset=()=>{
   generateHexes();
   tStep=Math.round(radius*TP/6/timeMultiplier);
   symmetry=[getSymPath22,getSymPath6][getRandomInt(0,2)];
-  if (symmetry.name=="getSymPath6") {
-    if (cm.size<19) arcCount=getRandomInt(2,4);
-    else if (cm.size>61) arcCount=getRandomInt(7,14);
-    else if (cm.size>37) arcCount=getRandomInt(5,11);
-    else if (cm.size>19) arcCount=getRandomInt(4,8);
-    else arcCount=getRandomInt(3,6);
+  if (symmetry.name=="getSymPath6") {	// 7,19,37,61,91
+    if (cm.size==7) arcCount=getRandomInt(2,4);
+    else if (cm.size==19) arcCount=getRandomInt(4,7);
+    else if (cm.size==37) arcCount=getRandomInt(6,11);
+    else if (cm.size==61) arcCount=getRandomInt(8,14);
+    else if (cm.size==91) arcCount=getRandomInt(14,24);	//
+    else arcCount=2;
   } else {
-    if (cm.size<19) arcCount=getRandomInt(3,7);
-    else if (cm.size>61) arcCount=getRandomInt(14,19);
-    else if (cm.size>37) arcCount=getRandomInt(8,14);
-    else arcCount=getRandomInt(5,11);
+    if (cm.size==7) arcCount=getRandomInt(3,7);
+    else if (cm.size==19) arcCount=getRandomInt(5,12);
+    else if (cm.size==37) arcCount=getRandomInt(9,20);
+    else if (cm.size==61) arcCount=getRandomInt(12,25);
+    else if (cm.size==91) arcCount=getRandomInt(18,36);
+    else arcCount=2;
   }
   setCurves();
   colors=getColors();
@@ -295,5 +298,4 @@ onresize();
 
 reset();
 
-//draw();
 start();
