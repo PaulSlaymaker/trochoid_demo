@@ -11,7 +11,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -46,9 +45,9 @@ function animate(ts) {
   t++;
   if (t>503) { 
     facx=facx2;
-    facx2=3-6*Math.random();
+    facx2=4-8*Math.random();
     facy=facy2;
-    facy2=3-6*Math.random();
+    facy2=4-8*Math.random();
     t=0; 
   }
   frac=t/503;
@@ -87,7 +86,6 @@ setFactors();
 
 const seg=Math.round(EDGE/(COUNT-1));
 var setSquares=()=>{
-  if ((COUNT/2)%2) debugger;
   let s=8;
   xa[0]=-seg/2-s/2*Math.sin(((1-frac)*facx+frac*facx2));
   ya[0]=-seg/2-s/2*Math.sin(((1-frac)*facy+frac*facy2));
@@ -109,7 +107,7 @@ ctx.lineWidth=3;
 var hue=getRandomInt(0,360);
 
 var draw=()=>{
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);	// may be unnecessary
+  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   for (let i=0; i<COUNT-1; i++) {
     let x=(xa[i]+xa[i+1])/2;
     let xr=Math.abs((xa[i]-xa[i+1])/2);
