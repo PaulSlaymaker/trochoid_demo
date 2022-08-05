@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=360;
 
@@ -170,6 +171,7 @@ function animate(ts) {
 if (t%1200==300) {
 //  console.log(t+" "+42+22*Math.sin(TP*t/400));
    setPattern();
+if (EM) stopped=true;
 }
   setPoints2();
 //ctx.strokeStyle="hsl("+Math.round((t/20)%360)+",100%,50%)";
