@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -215,6 +216,7 @@ function animate(ts) {
     if (t==2*duration) { S=0; t=0; }
 //    bezWidth=(t/80)*20;
 //    if (t==80) { S=1; t=0; }
+if (EM) stopped=true;
   }
   for (let i=0; i<hues.length; i++) {
     colors[i]="hsl("+Math.round((hues[i]+c/(9+i))%360)+",100%,50%)";
