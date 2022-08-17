@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -218,6 +219,7 @@ function animate(ts) {
   } else if (t>700) {
     ctx.globalAlpha=1-(t-700)/100; // faded out
   }
+if (EM && t==200) stopped=true;
   rotation+=rotRate/C;
   for (let i=0; i<C; i++) {
     F=TP*(0.25+0.15*Math.sin(TP*t/fRate1));
