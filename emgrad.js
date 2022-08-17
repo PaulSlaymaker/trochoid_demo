@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=200;
 
@@ -136,6 +137,7 @@ patterns[i].setTransform(dm2.multiply(dm3));
       //if (i==0) ctx.strokeStyle="#00000010";
       //if (i==0) ctx.strokeStyle="black";
       setPattern(i);
+if (EM) stopped=true;
     }
   }
 /*
