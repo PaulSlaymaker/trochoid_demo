@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -95,6 +96,7 @@ if (t%2) {
   let rt=t%230;
   if (rt==0) {
     transit();
+if (EM) stopped=true;
   }
   f=cFrac(rt/230);
   let rt2=t%270;
