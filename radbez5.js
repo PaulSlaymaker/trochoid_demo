@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -151,6 +152,7 @@ for (let i=0; i<C; i++) {
 
   //ctx.lineWidth=3*(1-Math.cos(TP*t/duration));
   ctx.lineWidth=3*(1-Math.pow(Math.cos(TP*t/duration),5));
+if (EM && t==300) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
