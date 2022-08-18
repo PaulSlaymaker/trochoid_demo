@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/WNzdLLe
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -29,9 +29,6 @@ const getRandomInt=(min,max,low)=>{
   if (low) return Math.floor(Math.random()*Math.random()*(max-min))+min;
   else return Math.floor(Math.random()*(max-min))+min;
 }
-
-var radius=30;
-//var dur=6;
 
 var Circle=function(x,y,xp,yp,radius,pc) {
   this.x=x;
