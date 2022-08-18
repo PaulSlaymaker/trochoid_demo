@@ -41,7 +41,6 @@ var getColors=()=>{
   return c;
 }
 
-//const rad=120;	// no variable radius for now, motion by position
 const rad=90;
 var ww=12;
 var lw=12;
@@ -55,15 +54,12 @@ var Circle=function(x,y,r,pc) {
   this.x=x;
   this.y=y;
   this.x2=x;
-//  this.a=a;
-//  this.r=r;
   this.radius=rad-SPACER;	// can be modified
   this.pc=pc;
   this.level=0;
   this.sr=1;
   this.setSpokes=()=>{
     this.spokes=new Path2D();
-    //let a=-t/(this.radius);
     this.spokes.moveTo(0,0);
     this.spokes.lineTo(this.radius-(lw+ww)/2,0);
     this.spokes.addPath(this.spokes,dm1);
@@ -75,8 +71,6 @@ var Circle=function(x,y,r,pc) {
     this.path=new Path2D();
     this.path2=new Path2D();
     let rr=(lw+ww)/2;
-//    let xt=(1-frac)*this.x+frac*this.x2;
-    //let yt=(1-frac)*this.y+frac*this.y2;
     this.path.moveTo(this.x+this.radius-rr,this.y);
     this.path.arc(this.x,this.y,this.radius-rr,0,TP);
     this.path2.moveTo(this.x+this.radius-rr-5,this.y);
@@ -89,13 +83,10 @@ var Circle=function(x,y,r,pc) {
     }
   }
   this.getSpokes=()=>{	// with motion, no need for separate func
-    //let xt=(1-frac)*this.x+frac*this.x2;
-    //let yt=(1-frac)*this.y+frac*this.y2;
     let p=new Path2D();
     let ra=-speed*t/this.radius/this.sr;
     let dm=new DOMMatrix([Math.cos(ra),Math.sin(ra),-Math.sin(ra),Math.cos(ra),this.x,this.y]);
     p.addPath(this.spokes,dm);
-    //p.addPath(this.spokes,new DOMMatrix([Math.cos(ra),Math.sin(ra),-Math.sin(ra),Math.cos(ra),this.x,this.y]));
     return p;
   }
 }
@@ -107,35 +98,14 @@ var Link=function(c1,c2) {
   c2.sr=c1.sr*c1.level/c2.level;
   //this.sr=c2.sr/c1.sr;
   this.sr=c2.sr;
-
   this.c1rad=c1.level>1?c1.radius/2:c1.radius;
-/*
   this.setPath=()=>{
     this.lpath=new Path2D();
     let aa=Math.atan2(c2.y-c1.y,c2.x-c1.x);
     let d=Math.pow((c1.x-c2.x)*(c1.x-c2.x)+(c1.y-c2.y)*(c1.y-c2.y),0.5);
     let th=Math.asin((this.c1rad-c2.radius)/d);
-    let aa1=-th+aa+TP/4
-    let aa2=th+aa-TP/4
-    // set up 3 paths, 4th is from closePath
-    let x1=c1.x+this.c1rad*Math.cos(aa1);
-    let y1=c1.y+this.c1rad*Math.sin(aa1);
-    let x3=c2.x+c2.radius*Math.cos(aa1);
-    let y3=c2.y+c2.radius*Math.sin(aa1);
-    let x4=c2.x+c2.radius*Math.cos(aa2);
-    let y4=c2.y+c2.radius*Math.sin(aa2);
-  }
-*/
-
-  this.setPath=()=>{
-    this.lpath=new Path2D();
-    //let x1t=(1-frac)*c1.x+frac*c1.x2;
-    //let x2t=(1-frac)*c2.x+frac*c2.x2;
-    let aa=Math.atan2(c2.y-c1.y,c2.x-c1.x);
-    let d=Math.pow((c1.x-c2.x)*(c1.x-c2.x)+(c1.y-c2.y)*(c1.y-c2.y),0.5);
-    let th=Math.asin((this.c1rad-c2.radius)/d);
-    let aa1=-th+aa+TP/4
-    let aa2=th+aa-TP/4
+    let aa1=-th+aa+TP/4;
+    let aa2=th+aa-TP/4;
     // set up 3 paths, 4th is from closePath
     let x1=c1.x+this.c1rad*Math.cos(aa1);
     let y1=c1.y+this.c1rad*Math.sin(aa1);
@@ -148,14 +118,12 @@ var Link=function(c1,c2) {
     this.lpath.lineTo(x4,y4);
     this.lpath.arc(c2.x,c2.y,c2.radius,aa2,aa1);
     this.lpath.closePath();
-
     let len=2*Math.pow((x1-x3)*(x1-x3)+(y1-y3)*(y1-y3),0.5);
     len+=(TP/2+2*th)*this.c1rad;
     len+=(TP/2-2*th)*c2.radius;
     this.dash=[len/28,len/28];
   }
   this.setPath();
-
   this.draw=()=>{
     ctx.setLineDash([]);
     ctx.strokeStyle=colors[1];
@@ -171,31 +139,6 @@ var Link=function(c1,c2) {
     ctx.stroke(this.lpath);
   }
 }
-
-/*
-var mval=()=>{
-  for (let i=0; i<ca.length; i++) {
-    if (Math.pow(ca[i].x2*ca[i].x2+ca[i].y2*ca[i].y2,0.5)>CSIZE-rad+SPACER) {
-console.log("on edge");
-      return false;
-    }
-    for (let j=i+1; j<ca.length; j++) {
-      let xd=ca[i].x2-ca[j].x2;
-      let yd=ca[i].y2-ca[j].y2;
-      if (Math.abs(xd)>2.5*rad) continue;
-      if (Math.abs(yd)>2.5*rad) continue;
-      let d=Math.pow(xd*xd+yd*yd,0.5)+1;
-      //if (Math.pow(xd*xd+yd*yd,0.5)+1<2*rad) {
-      if (j==i+1 && d>2.4*rad) { return false; }
-      if (d<2*rad) {
-console.log(i+" and "+j+" too close");
-        return false;
-      }
-    }
-  }
-  return true;
-}
-*/
 
 var cval=(x,y)=>{
   //if (Math.abs(x)>CSIZE-rad) return false;
@@ -242,24 +185,11 @@ if (ca.length>1)
   return false;
 }
 
-/*
-var drawPoint=(x,y,col)=>{	// diag
-  ctx.beginPath();
-  ctx.arc(x,y,5,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
-}
-*/
-
 var reset=()=>{
   speed=3+3*Math.random();
   setCirclesAndLinks();
   colors=getColors();
 }
-
-//var fade=()=>{ ctx.fillStyle="#00000033"; ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE); }
 
 var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
@@ -292,10 +222,8 @@ var start=()=>{
 }
 
 body.addEventListener("click", start, false);
-//body.addEventListener("click", reset, false);
 
-//var frac=0;
-//var m=0;
+var ra=3-6*Math.random();
 var animate=()=>{
   if (stopped) return;
   t++;
@@ -303,21 +231,26 @@ var animate=()=>{
   if (t==800) {
     reset();
     t=0;
+    ra=3-6*Math.random();
   } else if (t>760) {
     let tt=(800-t)/40;
-// rotate ?
     ctx.globalAlpha=tt;
-    ctx.setTransform(tt,0,0,tt,CSIZE,CSIZE);
+    //ctx.setTransform(tt,0,0,tt,CSIZE,CSIZE);
+    let a=ra*(1-tt);
+    ctx.setTransform(tt*Math.cos(a),tt*Math.sin(a),-tt*Math.sin(a),tt*Math.cos(a),CSIZE,CSIZE);
   } else if (t<40) {
     let tt=t/40;
     ctx.globalAlpha=tt;
-    ctx.setTransform(tt,0,0,tt,CSIZE,CSIZE);
+    //ctx.setTransform(tt,0,0,tt,CSIZE,CSIZE);
+    let a=ra*(1-tt);
+    ctx.setTransform(tt*Math.cos(a),tt*Math.sin(a),-tt*Math.sin(a),tt*Math.cos(a),CSIZE,CSIZE);
   } else if (t==40) {
+    ra=3-6*Math.random();
     ctx.globalAlpha=1;
     ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
   }
-  for (let i=0; i<ca.length; i++) { ca[i].setPaths(); }
-  for (let i=0; i<links.length; i++) { links[i].setPath(); }
+//  for (let i=0; i<ca.length; i++) { ca[i].setPaths(); }
+//  for (let i=0; i<links.length; i++) { links[i].setPath(); }
   draw();
   requestAnimationFrame(animate);
 }
@@ -336,7 +269,6 @@ var setCirclesAndLinks=()=>{
       console.log(i);
       break;
     }
-//    if (i==399) console.log("99");
   }
   for (let i=0; i<ca.length; i++) { 
     if (ca[i].pc) {
@@ -350,63 +282,6 @@ var setCirclesAndLinks=()=>{
   }
   for (let i=0; i<ca.length; i++) { ca[i].setPaths(); }
 }
-
-/*
-var moveCircles=(distance)=>{
-  for (let i=0; i<ca.length; i++) { 
-    ca[i].x2=ca[i].x+distance-2*distance*Math.random(); 
-    ca[i].y2=ca[i].y+distance-2*distance*Math.random(); 
-  }
-  return mval();
-}
-var moveCirclesP=(fp)=>{
-console.log(fp);
-  for (let i=0; i<ca.length; i++) { 
-    if (Math.random()<fp) {
-      ca[i].x2=ca[i].x+40-80*Math.random(); 
-      ca[i].y2=ca[i].y+40-80*Math.random(); 
-    } else {
-      ca[i].x2=ca[i].x;
-      ca[i].y2=ca[i].y;
-    }
-  }
-  return mval();
-}
-var moveCirclesA=(fp)=>{
-console.log(fp);
-  let mx=fp*(40-80*Math.random()); 
-  let my=fp*(40-80*Math.random()); 
-  ca[0].x2=ca[0].x+mx;
-  ca[0].y2=ca[0].y+my;
-  for (let i=1; i<ca.length; i++) { 
-    let a2=ca[i].a+fp*(1-2*Math.random());
-//    ca[i].x2=ca[i].r*Math.cos(a2);
-//    ca[i].y2=ca[i].r*Math.sin(a2);
-    //ca[i].x2=(ca[i].pc.x2+ca[i].pc.r+ca[i].r)*Math.cos(a2);
-    //ca[i].y2=(ca[i].pc.y2+ca[i].pc.r+ca[i].r)*Math.sin(a2);
-    ca[i].x2=ca[i].pc.x2+ca[i].r*Math.cos(a2);
-    ca[i].y2=ca[i].pc.y2+ca[i].r*Math.sin(a2);
-  }
-  return mval();
-}
-var reset=()=>{
-  for (let i=0; i<ca.length; i++) {
-    ca[i].x=ca[i].x2;
-    ca[i].y=ca[i].y2;
-  }
-  for (let i=0; i<40; i++) {
-    if (moveCirclesA((40-i)/40)) {
-    //if (moveCircles(80-i)) {
-      for (let i=0; i<links.length; i++) {
-	links[i].setPath();
-      }
-console.log("mv idx "+i);
-      break; 
-    }
-if (i==79) console.log("79");
-  }
-}
-*/
 
 onresize();
 
