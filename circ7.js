@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/LYdXwMr
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const TP=2*Math.PI;
@@ -66,7 +66,6 @@ var Circle=function(x,y,r,pc) {
     this.spokes.addPath(this.spokes,dm2);
   }
   this.setSpokes();
-
   this.setPaths=()=>{
     this.path=new Path2D();
     this.path2=new Path2D();
