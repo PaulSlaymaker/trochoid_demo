@@ -27,13 +27,13 @@ const getRandomInt=(min,max,low)=>{
 }
 
 var t=0;
-//var rf=0.87;
 
 var Node=function(pn) {
   this.level=pn?pn.level+1:0;
   this.aos=0.3-0.6*Math.random();
   this.aos2=1-2*TP*Math.random();
-this.af=0.02;//0.015;//0.01-0.025
+//this.af=0.025;//0.015;//0.01-0.025
+this.af=0.02+0.01*Math.sin(t/700);
   this.rf=1+Math.random()/2;
   this.r=this.rf*30;
   this.a0=0;
@@ -83,7 +83,8 @@ const pf=0.24;	// 0.23 flatt
 var Arm=function(idx) {
   this.na=[new Node()];
   this.na[0].x=80*Math.random();
-let nodeCount=idx%2?14:12;
+//let nodeCount=idx%2?14:12;
+let nodeCount=idx%2?16:14;
   for (let i=0; i<nodeCount; i++) {
     let nn=new Node(this.na[i]);
     this.na.push(nn);
@@ -116,7 +117,7 @@ ctx.lineWidth=1;
 
 var draw=()=>{
 //  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  let color="hsla("+hue+",95%,55%,0.6)";
+  let color="hsla("+hue+",95%,55%,0.5)";
   for (let i=0; i<aa.length; i++) {
     if (i%2) {
       ctx.strokeStyle="#0000003A";
@@ -156,5 +157,4 @@ for (let i=0; i<COUNT; i++) {
 
 onresize();
 
-//draw();
 start();
