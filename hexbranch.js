@@ -127,7 +127,7 @@ var draw=()=>{
 }
 
 var stopped=true;
-var start=()=>{
+function start() {
   if (stopped) {
     stopped=false;
     requestAnimationFrame(animate);

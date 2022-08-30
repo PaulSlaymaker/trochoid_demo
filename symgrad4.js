@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=420;
 
@@ -74,6 +75,7 @@ function animate(ts) {
   if (ttbs==300) bm1=getRandomMultiplier();
   else if (ttbs==100) bm2=getRandomMultiplier();
   ffb=(1+Math.sin(TP*ttb/400))/2;
+if (EM && tr%200==0) stopped=true;
   drawEM();
   requestAnimationFrame(animate);
 }
