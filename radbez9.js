@@ -1,5 +1,6 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/BaJVqRe
 const body=document.getElementsByTagName("body").item(0);
+const EM=location.href.endsWith("em");
 body.style.background="#000";
 const TP=2*Math.PI;
 const CSIZE=400;
@@ -10,7 +11,7 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="0.2px dotted gray";
+//c.style.outline="0.2px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -129,7 +130,10 @@ var t=0;
 function animate(ts) {
   if (stopped) return;
   t++;
-  if (t%100==0) { hue=++hue%360; hue2=(hue2+2)%360; hue3=(hue3+3)%360; }
+  if (t%100==0) { 
+    hue=++hue%360; hue2=(hue2+2)%360; hue3=(hue3+3)%360; 
+if (EM) stopped=true;
+  }
   if (t%1000==0) setOffsets();
   transit();
   draw();
