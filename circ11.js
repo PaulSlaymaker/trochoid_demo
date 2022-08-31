@@ -32,7 +32,6 @@ var colors=[];
 var setHues=()=>{
   let colorCount=3;
   let hue=getRandomInt(180,270);
-//console.log("hue "+hue);
   for (let i=0; i<colorCount; i++) {
     let hd=Math.round(270/colorCount)*i+getRandomInt(-10,10);
     let h=(hue+hd)%360;
@@ -75,22 +74,11 @@ var CirclePath=function(cp) {
   else this.len=Math.abs(TP-(this.a2-this.a1))%TP*this.r;
 }
 
-/*
-var drawPoint=(x,y,col)=>{	// diag
-  ctx.beginPath();
-  ctx.arc(x,y,3,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
-}
-*/
-
 var MAXR=100;
 var MINR=10;
 
 var cpa=[new CirclePath()];
-for (let i=1; i<10; i++) cpa.push(new CirclePath(cpa[i-1]));
+for (let i=1; i<11; i++) cpa.push(new CirclePath(cpa[i-1]));
 
 const dm1=new DOMMatrix([-1,0,0,1,0,0]);
 const dm2=new DOMMatrix([1,0,0,-1,0,0]);
