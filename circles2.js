@@ -226,7 +226,7 @@ var transit=()=>{
 }
 
 var stopped=true;
-var start=()=>{
+function start(){
   if (stopped) {
     stopped=false;
     if (async) {
