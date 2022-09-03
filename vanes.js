@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/LYQbrLb
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -69,6 +70,7 @@ if (t%40==0) huex++;
     let hue=(huex+Math.round(circles[i].hDiff*Math.pow(Math.sin(2*a),2)))%360;
     circles[i].col="hsl("+hue+",100%,50%)";
   }
+if (EM && t%100==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
@@ -134,7 +136,7 @@ var createCognates=(i1,i2)=>{
   circles[i2].dmx2=new DOMMatrix([1,0,0,1,(i2-i1)*radius/2,0]);
 //let rr=Math.abs(circles[i1].x)+Math.abs(circles[i2].x);
 let rr=Math.abs(circles[i1].x-circles[i2].x);
-console.log("rr "+rr);
+//console.log("rr "+rr);
 if (rr>300) circles[i1].sf=[-2,2][getRandomInt(0,2)];
 else if (rr>200) circles[i1].sf=[-6,-4,-2,2,4,6][getRandomInt(0,6)];
 else if (rr>100) circles[i1].sf=[-10-8,-6,-4,-2,2,4,6,8,10][getRandomInt(0,8)];

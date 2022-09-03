@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/RwQPYrY
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -98,6 +99,7 @@ function animate(ts) {
   dashLength2=20+70*(1+Math.cos(t/300))/2;
   if (t%8==0) { for (let i=0; i<hues.length; i++) hues[i]=(++hues[i])%360; setColors(); }
   draw();
+if (EM && t%100==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
