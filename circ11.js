@@ -15,6 +15,7 @@ const ctx=(()=>{
 })();
 ctx.translate(CSIZE,CSIZE);
 ctx.lineCap="round";
+ctx.fillStyle="#00000030";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -51,8 +52,8 @@ var CirclePath=function(cp) {
   this.a2=cp?cp.a2+0.2+0.7*Math.random():TP/2+1-2*Math.random()+this.a1;//a2;
   this.pnx=cp?cp.x+(cp.r+2*this.r)*Math.cos(cp.a2):0;
   this.pny=cp?cp.y+(cp.r+2*this.r)*Math.sin(cp.a2):0;
-  this.d=Math.pow(this.pnx*this.pnx+this.pny*this.pny,0.5);
-  if (this.d>CSIZE-2*MINR) { /*console.log(this.pny);*/ this.r=MINR; }
+  let d=Math.pow(this.pnx*this.pnx+this.pny*this.pny,0.5);
+  if (d>CSIZE-2*MINR) { /*console.log(this.pny);*/ this.r=MINR; }
   this.x=cp?cp.x+(cp.r+this.r)*Math.cos(cp.a2):0;
   this.y=cp?cp.y+(cp.r+this.r)*Math.sin(cp.a2):0;
   this.path=new Path2D();
