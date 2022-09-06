@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/zYRQeeQ
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const HE=2*Math.tan(TP/12);
 const CSIZE=400;
@@ -77,7 +78,7 @@ var generateCircles=()=>{
   let ri=3;
   for (let i=0; i<80000; i++) {
     if (pointArray.length==0) {
-console.log("done "+i);
+//console.log("done "+i);
       ca.sort((a,b)=>{ return a.r-b.r; });
       return ca;
     }
@@ -181,6 +182,7 @@ function animate(ts) {
   if (t==400) { ca2=generateCircles(); t=0; }
   f=Math.pow(Math.sin(TP*t/800),2);
   if (t%10==0) hue=(++hue%360);
+if (EM && t%200==0) stopped=true;
   requestAnimationFrame(animate);
 }
 

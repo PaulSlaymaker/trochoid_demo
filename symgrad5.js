@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/abqjdNW
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=100;
 
@@ -89,6 +90,7 @@ if (Math.abs(rfa1[i])<0.0001) {
 }
 
   }
+if (EM && time==0) stopped=true;
   drawEM();
   requestAnimationFrame(animate);
 }

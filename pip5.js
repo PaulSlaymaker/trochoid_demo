@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/XWZQgBp
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const HE=2*Math.tan(TP/12);
 const CSIZE=400;
@@ -191,6 +192,7 @@ function animate(ts) {
     cset[0]=generateCircles();
     rTimeCircles();
     colorSet.unshift(getColors()), colorSet.pop();
+if (EM) stopped=true;
   }
   requestAnimationFrame(animate);
 }

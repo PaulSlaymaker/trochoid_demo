@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/NWYWgBv
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -304,6 +305,7 @@ function animate(ts) {
   }
   for (let i=0; i<ta.length; i++) ta[i].step();
   if (SW) setPass();
+if (EM && s%100==0) stopped=true;
   draw();
   ctx.rotate(rotationRate);
   requestAnimationFrame(animate);
