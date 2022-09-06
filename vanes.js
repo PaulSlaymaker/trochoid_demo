@@ -224,7 +224,7 @@ debugger;
 for (let i=0; i<24; i++) {	// radius 20
 //for (let i=0; i<50; i++) {	// radius 10
   if (!getNextCognate()) {
-console.log("end cog "+i);
+//console.log("end cog "+i);
     break;
   }
 //  console.log(cia);
@@ -272,12 +272,12 @@ var reset=()=>{
   //for (let i=0; i<50; i++) {	// radius 10
   for (let i=0; i<24; i++) {	// radius 20
     if (!getNextCognate()) {
-      console.log("end cog "+i);
-      console.log(cia);
+//      console.log("end cog "+i);
+//      console.log(cia);
       break;
     }
   }
-  console.log(cia);
+//  console.log(cia);
 }
 
 onresize();
