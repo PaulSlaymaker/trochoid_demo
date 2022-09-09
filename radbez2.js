@@ -216,11 +216,11 @@ function animate(ts) {
     if (t==2*duration) { S=0; t=0; }
 //    bezWidth=(t/80)*20;
 //    if (t==80) { S=1; t=0; }
-if (EM) stopped=true;
   }
   for (let i=0; i<hues.length; i++) {
     colors[i]="hsl("+Math.round((hues[i]+c/(9+i))%360)+",100%,50%)";
   }
+if (EM && t%200==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
