@@ -2,7 +2,6 @@
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
-
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -13,7 +12,6 @@ const ctx=(()=>{
   let c=document.createElement("canvas");
   c.width=2*CSIZE;
   c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -202,6 +200,7 @@ var animate=()=>{
 	curves[i].setPath()
     }
   }
+if (EM && s%200==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }

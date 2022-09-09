@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/ZExpZYg
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -119,6 +120,7 @@ function animate(ts) {
     axFactors=getRandomAxialFactors();
     for (let i=0; i<lineCount; i++) aa[i].setPoints();
     frac=1;
+if (EM) stopped=true;
   } else if (t==2*dur) {
     axFactors2=getRandomAxialFactors();
     for (let i=0; i<lineCount; i++) aa[i].setPoints();
