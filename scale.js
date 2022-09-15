@@ -200,7 +200,7 @@ function animate(ts) {
     hues[2]=++hues[2]%360;
     setColors();
   }
- 
+if (EM && t%200==0) stopped=true; 
   draw();
   requestAnimationFrame(animate);
 }
