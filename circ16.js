@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/RwyrBYN
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -109,6 +110,7 @@ function animate(ts) {
     colors[i]="hsl("+hues[i]+",82%,54%)";
   }
   ctx.rotate(-0.002);
+if (EM && t%100==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
