@@ -130,14 +130,16 @@ var initPointArray=()=>{
   pa[0].aidx=getRandomInt(0,4);
 }
 
-var grow=(idx)=>{
-  let a1=[[-1,1],[1,-1]][getRandomInt(0,2)];
-  let a2=[[-1,1],[1,-1]][getRandomInt(0,2)];
+var grow=()=>{
+  let rnd=getRandomInt(0,pa.length);
   for (let c=pa.length-1; c>=0; c--) {
-    idx=c;
+//    idx=c;
+    let idx=(c+rnd)%pa.length;
+    let a1=[[-1,1],[1,-1]][getRandomInt(0,2)];
     for (let i of a1) {
       if (pa[idx].i+i<0) continue;
       if (pa[idx].i+i>COUNT-1) continue;
+      let a2=[[-1,1],[1,-1]][getRandomInt(0,2)];
       for (let j of a2) {
 	if (pa[idx].j+j<0) continue;
 	if (pa[idx].j+j>COUNT-1) continue;
