@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/XWqExRB
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const TP=2*Math.PI;
@@ -162,8 +162,8 @@ function animate(ts) {
       if (rpa[i].pa.length<len) rpa[i].grow();
       rpa[i].shrink();
     }
-  }
   draw();
+  }
   requestAnimationFrame(animate);
 }
 
