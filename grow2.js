@@ -161,7 +161,7 @@ function animate(ts) {
       rpa[i].shrink();
       if (rpa[i].l>100) {
         removePath(i);
-        for (let i=0; i<rpa.length; i++) rpa[i].l=0;
+        for (let j=0; j<rpa.length; j++) rpa[j].l=0;
         len++;
       }
     }
@@ -178,9 +178,7 @@ var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);	// TODO, remove, black on shrink
 /*
 for (let w=0; w<pts2.length; w++) {
-  for (let c=0; c<pts2[w].length; c++) {
-    drawPoint(pts2[w][c].x,pts2[w][c].y,"gray",3);
-  }
+  for (let c=0; c<pts2[w].length; c++) drawPoint(pts2[w][c].x,pts2[w][c].y,"gray",3);
 }
 */
   let pa=[new Path2D(),new Path2D(),new Path2D(),new Path2D()];
@@ -188,7 +186,7 @@ for (let w=0; w<pts2.length; w++) {
     pa[rpa[i].kidx%4].addPath(rpa[i].getPath());
   }
   for (let i=0; i<4; i++) {
-    ctx.strokeStyle=colors[rpa[i].kidx%colors.length];
+    ctx.strokeStyle=colors[i%colors.length];
     ctx.stroke(pa[i]);
   }
 }
