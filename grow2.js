@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/ZEojYgW
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -166,6 +167,7 @@ function animate(ts) {
       }
     }
     t=0;
+if (EM) stopped=true;
   }
   frac=t/dur;
   draw();
