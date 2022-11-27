@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=512;
 
@@ -13,7 +14,7 @@ const ctx=(()=>{
   d.append(c);
   return c.getContext("2d");
 })();
-ctx.lineWidth=3;
+ctx.lineWidth=4;
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -173,7 +174,7 @@ function RCT(p1,p2) {
 var transit=()=>{
   rect.transit();
   K=Math.pow(Math.random(),0.5);
-//console.log(K);
+console.log(K);
   rect.reset();
 }
 
@@ -202,11 +203,12 @@ var t=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-  if (t==340) {
+  if (t==440) {
     transit();
     t=0;
+if (EM) stopped=true;
   }
-  f=cFrac(t/340);
+  f=cFrac(t/440);
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   rect.draw3();
   requestAnimationFrame(animate);
