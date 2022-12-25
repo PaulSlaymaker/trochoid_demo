@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -125,8 +126,10 @@ function start() {
 ctx.canvas.addEventListener("click", start, false);
 
 var stopped=true;
+var tt=0;
 function animate(ts) {
   if (stopped) return;
+  tt++;
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   lines.forEach((l)=>{ 
     l.t+=2;
@@ -136,16 +139,7 @@ function animate(ts) {
       l.t=0;
     }
   });
-/*
-  if (line.t>line.lineLength+line.pathLength) {
-    line.generatePath();
-    line.t=0;
-  }
-  if (line2.t>line2.lineLength+line2.pathLength) {
-    line2.generatePath();
-    line2.t=0;
-  }
-*/
+if (EM && tt%200==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
