@@ -1,9 +1,8 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/ZEojYgW
+"use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
-const CSIZE=400;
+const CSIZE=360;
 
 const ctx=(()=>{
   let d=document.createElement("div");
@@ -20,8 +19,7 @@ ctx.lineCap="round";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
-  ctx.canvas.style.width=D+"px";
-  ctx.canvas.style.height=D+"px";
+  ctx.canvas.style.width=ctx.canvas.style.height=D+"px";
 }
 
 const getRandomInt=(min,max,low)=>{
@@ -30,14 +28,15 @@ const getRandomInt=(min,max,low)=>{
 }
 
 var colors=[];
+var hues=[];
 var setColors=()=>{
   colors=[];
   let colorCount=3;
-  let hue=getRandomInt(180,270);
+  let h=getRandomInt(180,270);
   for (let i=0; i<colorCount; i++) {
     let hd=Math.round(180/colorCount)*i+getRandomInt(-10,10);
-    let h=(hue+hd)%360;
-    colors.splice(getRandomInt(0,colors.length+1),0,"hsl("+h+",98%,40%)");
+    let hue=(h+hd)%360;
+    colors.splice(getRandomInt(0,colors.length+1),0,"hsl("+hue+",98%,40%)");
   }
 }
 
@@ -69,68 +68,61 @@ const df=[
 ];
 
 /*
-const ipt=[
-  [0,1,3],
-  [1,2,0],
-  [2,3,1],
-  [3,0,2],
-]
-*/
-
 const iptX=[	// add reverse, make itpX[DK] a SPath member?
-  [0,1,2,3],
+  [2,3,1,0],
+  [3,2,0,1],
+  //[0,1,2,3],
   [0,1,3,2],
   [0,2,1,3],
   [0,2,3,1],
   [0,3,1,2],
   [0,3,2,1],
 ];
+*/
 
-var CK=getRandomInt(1,12);
-var DK=getRandomInt(0,6);
-var TR=24;
+const iptX=[[2,3,1,0],[3,2,0,1]];
+
+var CK=getRandomInt(0,2);
+var DK=0;//getRandomInt(0,6);
+//console.log("CK "+CK+" DK "+DK+" GC "+GC);
+
+var getFalsePoint=()=>{
+  let pt=pts[getRandomInt(1,CT-1,true)][getRandomInt(1,CT-1,true)];
+  while (pt.d) {
+    pt=pts[getRandomInt(1,CT-1,true)][getRandomInt(1,CT-1,true)];
+  } 
+  return pt;
+}
 
 function SPath(idx) {
-  let initPoint=pts[getRandomInt(1,CT-1)][getRandomInt(1,CT-1)];
-  initPoint.d=true;	// TODO, check if already true
+  //let initPoint=pts[getRandomInt(1,CT-1)][getRandomInt(1,CT-1)];
+  let initPoint=getFalsePoint();
+  //let initPoint=pts[1][1];
+  initPoint.d=true;
   initPoint.ppt=pts[0][0];
   this.pa=[initPoint];
   //this.shrinkPoint=initPoint;
-  this.l=0;
   this.path;
   this.term;
-
+  this.ipt=iptX[0];
   this.grow=(sec)=>{
-if (!sec) {
-  this.growPoint=false;
-  this.growPoint2=false;
-}
-// vary c max, c dir?, ic max?, ic rnd?, trend to front/back/early/late or loc?, rnd df
-    //let cz=getRandomInt(0,this.pa.length,true);
-    //let cz=getRandomInt(0,Math.min(CK,this.pa.length),true);	// not var
-    let cz=getRandomInt(0,Math.min(CK,this.pa.length-1));	// not var
-//    let cz=this.pa.length<2?0:1;
-    //let cz=Math.max(0,this.pa.length+1);	// not var
-    //let cz=Math.round(Math.min(CK,this.pa.length)/2+1);	// not var
-    for (let c=0; c<this.pa.length-cz; c++) {
-      let ci=(this.pa.length-c-cz-1)%this.pa.length;    
-      //let ci=(this.pa.length-c-1);
+    for (let c=0; c<this.pa.length; c++) {
+      //let ci=(this.pa.length-c-1)%this.pa.length;    
+      let ci=(this.pa.length-c-1);
       let pt=this.pa[ci];
       if (pt==undefined) debugger;
 if (sec && pt==this.growPoint) continue;
       
-	let rz=getRandomInt(0,4,true);
       for (let ic=0; ic<4; ic++) {
-	//let i=(ic+rz)%4;
 	//let dfunc=df[i];
-    let dfunc=df[iptX[DK][ic]];
+        //let dfunc=df[iptX[DK][ic]];
+        let dfunc=df[this.ipt[ic]];
 	let cpt=dfunc(pt);
     if (cpt==undefined) debugger;
 	if (cpt.d) continue;
 	//if (cpt==this.shrinkPoint) debugger;
     if (cpt==this.shrinkPoint) continue;
 if (sec && this.cpt==this.growPoint) debugger; //continue;
-    //    else {
 	  cpt.d=true;
 	  pt.cpa.push(cpt);
 	  cpt.ppt=pt;
@@ -139,15 +131,15 @@ if (sec) this.growPoint2=cpt;
 else
           this.growPoint=cpt;
 	  return true;
-    //    }
       }
     }
     return false;
   }
 
   this.setShrink=()=>{
+this.shrinkPoint=false;
     if (this.pa.length<3) {
-console.log("no shrink<3");
+//console.log("no shrink<3");
       return;
     }
     let pt=this.pa[0];
@@ -177,7 +169,7 @@ return;
       }
     }
 this.shrinkPoint=false;
-console.log("no shrink");
+//console.log("no shrink");
   }
   this.shrink2=()=>{
 if (!this.shrinkPoint) return;
@@ -253,17 +245,13 @@ debugger;
 //this.term.arc(mx,my,TR,0,TP);
 	} else if (pt==this.growPoint2) {
 	  this.path.moveTo((1-frac)*pt.ppt.x+frac*pt.x,(1-frac)*pt.ppt.y+frac*pt.y);
-	} else {
-	  this.path.moveTo(pt.x,pt.y);
-//if (pt.cpa.length==0) {
-//  this.term.moveTo(pt.x+TR,pt.y);
-//  this.term.arc(pt.x,pt.y,TR,0,TP);
-//}
-	}
+	} else this.path.moveTo(pt.x,pt.y);
 	this.path.lineTo(pt.ppt.x,pt.ppt.y);
       }
     }
-
+  }
+  this.morph=()=>{
+    this.ipt=iptX[getRandomInt(0,2)];
   }
 }
 
@@ -281,36 +269,40 @@ var stopped=true;
 var t=1;
 var n=0;
 var frac=0;
-var dur=10;
+var dur=16;
 function animate(ts) {
   if (stopped) return;
   t++;
   if (t==dur) {
-  for (let i=0; i<sp.length; i++) {
-    sp[i].shrink2();
-  }
-
-    if (spath.pa.length<GC) {
-	if (spath.grow()) {
-	  if (spath.pa.length<GC) {
-    //        console.log("2nd gp");
-    //        stopped=true;
-	    spath.grow(true);
+    for (let i=0; i<sp.length; i++) {
+      sp[i].shrink2();
+      sp[i].growPoint=false;
+      sp[i].growPoint2=false;
+      if (sp[i].pa.length<GC) {
+	if (sp[i].grow()) {
+	  if (sp[i].pa.length<GC) {
+      //        console.log("2nd gp");
+      //        stopped=true;
+	    sp[i].grow(true);
 	  }
-	} else console.log("no grow");
+	} //else console.log("no grow");
+      }
+      sp[i].setShrink();
+      }
+      if (++n>36) {
+//	reset();
+GC=getRandomInt(3,20,true);
+//GC=[3,24][getRandomInt(0,2)];
+console.log("GC "+GC);
+for (let i=0; i<sp.length; i++) sp[i].morph();
+	n=0;
     }
-    spath.setShrink();
-    if (++n>100) {
-      reset();
-      n=0;
-    }
-
     t=0;
 //checkFalse();
 //stopped=true;
   }
   frac=t/dur;
-draw();
+  draw();
   requestAnimationFrame(animate);
 }
 
@@ -318,18 +310,19 @@ onresize();
 
 ctx.font="bold 11px sans-serif";
 ctx.textAlign="center";
-var showIndexes=()=>{	
-  for (let i=0; i<spath.pa.length; i++) {
-    let pt=spath.pa[i];
+var showIndexes=(pth)=>{	
+  for (let i=0; i<pth.pa.length; i++) {
+    let pt=pth.pa[i];
     drawPt(pt,"white",12);
     ctx.fillStyle="black";
     ctx.fillText(i,pt.x,pt.y+3);
   }
 }
 
-const CT=11;
-//const GC=getRandomInt(CT,4*CT);
-var GC=getRandomInt(CT,(CT-2)*(CT-2));
+const CT=14;
+//var GC=13; //getRandomInt(CT,(CT-2)*(CT-2));
+//var GC=36; //getRandomInt(CT,(CT-2)*(CT-2));
+var GC=20; //getRandomInt(CT,(CT-2)*(CT-2));
 
 var showFalse=()=>{
   for (let i=0; i<CT; i++) {
@@ -356,9 +349,9 @@ var showParents=()=>{	// diag
   }
 }
 
-var checkFalse=()=>{	// diag
-  for (let i=0; i<spath.pa.length; i++) {
-    if (spath.pa[i].d==false) {
+var checkFalse=(pth)=>{	// diag
+  for (let i=0; i<pth.pa.length; i++) {
+    if (pth.pa[i].d==false) {
 console.log(i);
 stopped=true;
 break;
@@ -366,12 +359,13 @@ break;
   }
 }
 
-var drawTerminals=()=>{	// diag
-  let pt=spath.pa[0];
+var drawTerminals=(pth)=>{	// diag
+  let TR=24;
+  let pt=pth.pa[0];
   //if (pt.cpa.length<2) drawPoint(pt.x,pt.y,colors[1],TR);
-  if (pt==spath.shrinkPoint) drawPoint(pt.x,pt.y,colors[1],TR);
-  for (let i=1; i<spath.pa.length; i++) {
-    let pt=spath.pa[i];
+  if (pt==pth.shrinkPoint) drawPoint(pt.x,pt.y,colors[1],TR);
+  for (let i=1; i<pth.pa.length; i++) {
+    let pt=pth.pa[i];
     //if (pt.cpa.length==0 || !pt.ppt) {
     if (pt.cpa.length==0) {
       drawPt(pt,colors[1],TR);
@@ -379,22 +373,25 @@ var drawTerminals=()=>{	// diag
   }
 }
 
-var showShrink=()=>{	// diag
-  drawPt(spath.shrinkPoint,"#FF000080",8);
-  //drawPt(spath.shrinkPoint,"#000000",8);
-  //drawPt(spath.shrinkPoint,"#FF0000",8);
+var showShrink=(pth)=>{	// diag
+  drawPt(pth.shrinkPoint,"#FF000080",8);
+  //drawPt(pth.shrinkPoint,"#000000",8);
+  //drawPt(pth.shrinkPoint,"#FF0000",8);
 }
 
-var showGrow=()=>{	// diag
-  drawPt(spath.growPoint,"#00FF0080",8);
-  drawPt(spath.growPoint2,"#00FF0080",8);
-  //drawPt(spath.shrinkPoint,"#000000",8);
-  //drawPt(spath.shrinkPoint,"#FF0000",8);
+var showGrow=(pth)=>{	// diag
+  drawPt(pth.growPoint,"#00FF0080",8);
+  drawPt(pth.growPoint2,"#00FF0080",8);
+  //drawPt(pth.shrinkPoint,"#000000",8);
+  //drawPt(pth.shrinkPoint,"#FF0000",8);
 }
 
 var showZero=(pth)=>{
   drawPt(pth.pa[0]);
 }
+
+const dm1=new DOMMatrix([-1,0,0,1,0,0]);
+const dm2=new DOMMatrix([1,0,0,-1,0,0]);
 
 var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
@@ -414,17 +411,20 @@ var draw=()=>{
   //let p=spath.getPath();
   for (let i=0; i<sp.length; i++) {
     sp[i].setPath();
+let p=new Path2D(sp[i].path);
+p.addPath(p,dm1);
+p.addPath(p,dm2);
+    ctx.globalAlpha=1;
+    ctx.lineWidth=Math.round(270/CT);
+    ctx.strokeStyle=colors[i%colors.length];
+    //ctx.stroke(sp[i].path);
+ctx.stroke(p);
+    ctx.globalAlpha=0.4;
+    ctx.lineWidth=Math.round(90/CT);
+    ctx.strokeStyle="white";//colors[1];
+    //ctx.stroke(sp[i].path);
+ctx.stroke(p);
   }
-ctx.globalAlpha=1;
-ctx.lineWidth=Math.round(360/CT);
-  ctx.strokeStyle=colors[0];
-  ctx.stroke(spath.path);
-ctx.globalAlpha=0.4;
-ctx.lineWidth=Math.round(120/CT);
-  ctx.strokeStyle="white";//colors[1];
-  ctx.stroke(spath.path);
-//ctx.strokeStyle="white";
-//ctx.stroke(spath.pathx);
 
 //drawTerminals();
 /*
@@ -434,61 +434,70 @@ ctx.lineWidth=Math.round(120/CT);
 */
 /*
 ctx.globalAlpha=1;
-showChilds();
-showIndexes();
-showShrink();
-showGrow();
+showChilds(sp[0]);
+showIndexes(sp[0]);
+showShrink(sp[0]);
+showGrow(sp[0]);
 */
-//showZero(spath);
+//showZero(sp[0]);
 }
-
-ctx.lineWidth=Math.round(300/CT);
-
-//draw();
 
 const pts=new Array();
 
-const inc=2*CSIZE/(CT-1);
+//const inc=2*CSIZE/(CT-1);
+const inc=CSIZE/(CT-2);
 
 for (let i=0; i<CT; i++) {
   pts.push(new Array());
   for (let j=0; j<CT; j++) {
     pts[i].push(new Array());
-    pts[i][j]={"x":-CSIZE+i*inc,"y":-CSIZE+j*inc,"i":i,"j":j,"cpa":[]};//,"ppt":{"cpa":[]}};
+    //pts[i][j]={"x":-CSIZE+i*inc,"y":-CSIZE+j*inc,"i":i,"j":j,"cpa":[]};//,"ppt":{"cpa":[]}};
+pts[i][j]={"x":-inc+i*inc,"y":-inc+j*inc,"i":i,"j":j,"cpa":[]};
     if (i==0 || i==CT-1 || j==0 || j==CT-1) pts[i][j].d=true;
-//if (pts[i][j].d) drawPoint(pts[i][j].x, pts[i][j].y);
+    //if (i==CT-1 || j==CT-1) pts[i][j].d=true;
   }
 }
 
-var spath;
-var sp=new Array(1);
+var sp=new Array(9);
 
+/*
 var reset=()=>{
   for (let i=0; i<CT; i++) {
     for (let j=0; j<CT; j++) {
       pts[i][j].cpa=[];
       pts[i][j].ppt=false;
+      //if (i==CT-1 || j==CT-1) pts[i][j].d=true;
       if (i==0 || i==CT-1 || j==0 || j==CT-1) pts[i][j].d=true;
       else pts[i][j].d=false;
     }
   }
-  CK=getRandomInt(0,12);
-  DK=getRandomInt(0,6);
-  GC=getRandomInt(CT,(CT-2)*(CT-2));
-  console.log("CK "+CK+" DK "+DK+" GC "+GC);
+  DK=0;//getRandomInt(0,6);
+  //GC=13;//getRandomInt(CT,(CT-2)*(CT-2));
+GC=getRandomInt(3,20);
+console.log("GC "+GC);
 //  let m=pts[getRandomInt(1,CT-1)][getRandomInt(1,CT-1)];
-  sp[0]=new SPath();
-spath=sp[0];
+//  sp[0]=new SPath();
+//spath=sp[0];
 //for (let i=0; i<GC; i++) {
   for (let i=0; i<sp.length; i++) {
-    if (!sp[i].grow()) break;
-//    if (!sp[i].grow()) break;
+    sp[i]=new SPath(i);
+//    if (Math.random()<0.5) sp[i].ipt.reverse();
+    //if (!sp[i].grow()) break;
+    if (sp[i].grow()) sp[i].grow();
   }
   //spath.setShrink();
   setColors();
 }
-
 reset();
+*/
 
-draw();
-//start();
+  for (let i=0; i<sp.length; i++) {
+    sp[i]=new SPath(i);
+//    if (Math.random()<0.5) sp[i].ipt.reverse();
+    //if (!sp[i].grow()) break;
+    if (sp[i].grow()) sp[i].grow();
+  }
+  //spath.setShrink();
+setColors();
+
+start();
