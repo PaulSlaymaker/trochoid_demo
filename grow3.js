@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=360;
 
@@ -202,6 +203,7 @@ function animate(ts) {
       GC=[8,9,7,10,6,11,5,12,4,13,3,14,15][getRandomInt(0,12,true)];
       for (let i=0; i<sp.length; i++) sp[i].morph();
       n=0;
+if (EM) stopped=true;
     }
     t=0;
   }
