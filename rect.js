@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/rNKYoLX
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -174,7 +174,7 @@ function RCT(p1,p2) {
 var transit=()=>{
   rect.transit();
   K=Math.pow(Math.random(),0.5);
-console.log(K);
+//console.log(K);
   rect.reset();
 }
 
