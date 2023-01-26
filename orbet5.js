@@ -34,9 +34,9 @@ var colors=[];
 var setColors=()=>{
   colors=[];
   let colorCount=2;
-  let h=getRandomInt(180,270);
+  let h=getRandomInt(180,300);
   for (let i=0; i<colorCount; i++) {
-    let hd=Math.round(60/colorCount)*i+getRandomInt(-10,10);
+    let hd=Math.round(90/colorCount)*i+getRandomInt(-10,10);
     let hue=(h+hd)%360;
     colors.push("hsl("+hue+",98%,60%)");
   }
