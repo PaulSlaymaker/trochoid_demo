@@ -130,19 +130,17 @@ for (let i=0; i<7; i++) ba.push(new Branch(i));
 ctx.lineWidth=4;
 const YR=200;
 
-var kk=TP*Math.random();
-
 var draw=()=>{
   let s=0;
   for (let i=0; i<count; i++) {
     let y0=CSIZE-580*ba[i].rxa/CSIZE*2;
     let dt1=580*ba[i].rxa/CSIZE*2;
     ctx.strokeStyle=colors[i%colors.length];
-    let q=(ba[i].ra+0.25)*TP*(YR+ba[i].rxa)/2.3;	// 2->2.3 empirical
-let dt2=(ba[i].ra+0.25)*TP*(YR+ba[i].rxa)/2.3;	// 2->2.3 empirical
+    //let q=(ba[i].ra+0.25)*TP*(YR+ba[i].rxa)/2.3;	// 2->2.3 empirical
+    let dt2=(ba[i].ra+0.25)*TP*(YR+ba[i].rxa)/2.3;	// 2->2.3 empirical
     //var dim=2+40*(1-t/(dt1+dt2));
     //var dim=3+40*Math.pow(1-t/(dt1+dt2),0.9);
-    var dim=3+ba[i].kdim*Math.pow(1-t/(dt1+dt2),0.9);
+    let dim=3+ba[i].kdim*Math.pow(1-t/(dt1+dt2),0.9);
 //let q=(3*TP/4+TP/4*ra[1]-TP/2)*(300+rxa[1])/2;
 //let q=300; //(3*TP/4+TP/4*ra[i]-TP/2)*(YR+rxa[i])/1.2;	// 2->1.2 empirical
     let dz=ba[i].kk+ba[i].K1*t/600;
