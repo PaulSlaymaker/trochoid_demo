@@ -11,7 +11,6 @@ const ctx=(()=>{
   let c=document.createElement("canvas");
   c.width=2*CSIZE;
   c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -65,10 +64,10 @@ function animate(ts) {
     reset();
     t=0;
   }
-  if (t>dur+160) {
-    ctx.canvas.style.opacity=1-(t-dur-160)/60;
+  if (t>dur+200) {
+    ctx.canvas.style.opacity=1-(t-dur-200)/60;
   } 
-  if (t>dur+160+60) {
+  if (t>dur+200+60) {
     reset();
     t=0;
     s=0;
@@ -128,29 +127,16 @@ var K2=getRandomInt(1,10);
 ctx.lineWidth=10;
 var draw=()=>{
   let z=TP/4*t/dur;
-  //let x=300*Math.cos(z);
-  //let y=300*Math.sin(z);
   let x=340*(P1*Math.cos(F1*z)+P2*Math.cos(F2*z));
   let y=340*(P3*Math.sin(F3*z)+P4*Math.sin(F4*z));
-
-/*
-ctx.beginPath();
-ctx.arc(x,y,R,TP/4+K*z+TP/16,3*TP/4+K*z-TP/16);
-ctx.fillStyle="yellow";
-ctx.fill();
-*/
-
-  let s=Math.pow(Math.sin(TP/2*t/dur),2);
-  ctx.setTransform(s,0,0,s,CSIZE,CSIZE);
-
   let pd=new Path2D();
-  //ctx.arc(x,y,R,3*TP/4+K*z-TP/16,TP/4+K*z+TP/16);
   pd.arc(x,y,R,0,TP);
   pd.addPath(pd,dm1);
   pd.addPath(pd,dm2);
   pd.addPath(pd,dm3);
   ctx.fill(pd);
-
+  let s=Math.pow(Math.sin(TP/2*t/dur),2);
+  ctx.setTransform(s,0,0,s,CSIZE,CSIZE);
   let dx=dim*Math.cos(K1*z);
   let dy=dim*Math.sin(K1*z);
   let p0=new Path2D();
@@ -162,7 +148,6 @@ ctx.fill();
   ctx.strokeStyle=colors[0];
   ctx.setLineDash(dash1);
   ctx.stroke(p0);
-
   dx=dim*Math.cos(-K2*z);
   dy=dim*Math.sin(-K2*z);
   let p1=new Path2D();
