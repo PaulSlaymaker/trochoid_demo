@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/eYjrBae
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -64,10 +65,10 @@ function animate(ts) {
     reset();
     t=0;
   }
-  if (t>dur+200) {
-    ctx.canvas.style.opacity=1-(t-dur-200)/60;
+  if (t>dur+240) {
+    ctx.canvas.style.opacity=1-(t-dur-240)/60;
   } 
-  if (t>dur+200+60) {
+  if (t>dur+300) {
     reset();
     t=0;
     s=0;
@@ -98,19 +99,12 @@ var reset=()=>{
   F4=4*Math.random();
   P3=1-2*Math.random();
   P4=(1-Math.abs(P3))*[-1,1][getRandomInt(0,2)];
-/*
-  K1=TP*Math.random();
-*/
-  //K1=getRandomInt(1,10)*[-1,1][getRandomInt(0,2)];
-  //K2=getRandomInt(1,10)*[-1,1][getRandomInt(0,2)];
   K1=10-20*Math.random();
   K2=10-20*Math.random();
-//if (Math.random()<0.4) ctx.setLineDash([dim*Math.random(),dim*Math.random()]);
-//else ctx.setLineDash([]);
-if (Math.random()<0.4) dash1=([dim*Math.random(),dim*Math.random()]);
-else dash1=[];
-if (Math.random()<0.4) dash2=([dim*Math.random(),dim*Math.random()]);
-else dash2=[];
+  if (Math.random()<0.4) dash1=([dim*Math.random(),dim*Math.random()]);
+  else dash1=[];
+  if (Math.random()<0.4) dash2=([dim*Math.random(),dim*Math.random()]);
+  else dash2=[];
   setColors();
 }
 
