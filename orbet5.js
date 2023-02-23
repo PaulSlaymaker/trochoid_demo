@@ -64,6 +64,7 @@ function animate(ts) {
   if (t==dur && ++s<S) {
     reset();
     t=0;
+if (EM) stopped=true;
   }
   if (t>dur+240) {
     ctx.canvas.style.opacity=1-(t-dur-240)/60;
