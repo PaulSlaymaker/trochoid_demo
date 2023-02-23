@@ -1,6 +1,7 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/YzOqmvp
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 var CSIZE=16;
 
@@ -49,6 +50,7 @@ var animate=(ts)=>{
   if (rexp<0) { rexp=-rexp; inc*=-1; }
   if (rexp>20) inc*=-1;
   drawEM();
+if (EM && t%200==0) stopped=true;
   requestAnimationFrame(animate);
 }
 

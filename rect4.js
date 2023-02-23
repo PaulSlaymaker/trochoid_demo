@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/JjaXbEJ
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -59,6 +60,7 @@ var animate=(ts)=>{
     setPattern();
     ctx.fillStyle=patterns[0];
     c=0;
+if (EM) stopped=true;
   }
   cfrac=c/200;
   transit();
