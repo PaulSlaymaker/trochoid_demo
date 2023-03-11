@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/YzOZeYP
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 
@@ -103,33 +103,19 @@ var transit=()=>{
 
 onresize();
 
-var drawPoint=(x,y,col)=>{	// diag
-  ctx.beginPath();
-  ctx.arc(x,y,4,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
-}
-
 var xa=new Array();
 let ya=new Array();
 let y2a=new Array();
 
-//ctx.strokeStyle="yellow";
 ctx.strokeStyle="#00000080";
 ctx.lineWidth=2;
-//ctx.globalAlpha=0.6;
-//ctx.globalAlpha=0.3;
 var draw=()=>{
-//  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   for (let i=0; i<xa.length; i++) {
     let path=new Path2D();
     path.moveTo(0,0);
     path.bezierCurveTo(0,-ya[i],0,-ya[i],xa[i]/2,-ya[i]/2);
     path.bezierCurveTo(xa[i],0,xa[i],0,xa[i]/2,y2a[i]/2);
     path.bezierCurveTo(0,y2a[i],0,y2a[i],0,0);
-
     path.addPath(path, new DOMMatrix([-1,0,0,1,0,0]));
 //    path.addPath(path, new DOMMatrix([1,0,0,-1,0,0]));
 //if (i%2==0)
@@ -153,12 +139,8 @@ var draw=()=>{
       ctx.stroke(path2);
     }
 */
-//drawPoint(0,ya[i]);
-//drawPoint(0,-ya[i]);
-//drawPoint(xa[i],0);
   }
 }
 
 transit();
-//draw();
 start();
