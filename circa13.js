@@ -1,5 +1,6 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/yLxqyWJ
 const body=document.getElementsByTagName("body").item(0);
+const EM=location.href.endsWith("em");
 body.style.background="#000";
 const TP=2*Math.PI;
 const CSIZE=350;
@@ -89,6 +90,7 @@ var start=()=>{
 }
 ctx.canvas.addEventListener("click", start, false);
 
+var c=0;
 var animate=(ts)=>{
   if (stopped) return;
   for (let i=0; i<count; i++) {
@@ -98,6 +100,7 @@ var animate=(ts)=>{
       generate(pa[i]=new Path());
     }
   }
+if (EM && ++c%100==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
