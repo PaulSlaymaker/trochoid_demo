@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/WNzdLLe
+"use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -33,8 +33,6 @@ const dec=0.3;
 var Circle=function(x,y,xp,yp,radius) {
   this.x=x;
   this.y=y;
-  this.a1;
-  this.a2;
   this.xp=xp;
   this.yp=yp;
   this.radius=radius;
@@ -87,8 +85,7 @@ var cval=(c,x,y,rad)=>{
 
 var growCircles=(rad)=>{
   let c=ca[ca.length-1];
-  let ai=getRandomInt(0,4);
-  let a=TP/4*ai;
+  let a=TP*Math.random();
   let x=c.x+(c.radius+rad)*Math.cos(a);
   let y=c.y+(c.radius+rad)*Math.sin(a);
   if (cval(c,x,y,rad)) {
@@ -98,7 +95,6 @@ var growCircles=(rad)=>{
     ca.push(circle);
     c.a1=a;
     circle.a2=(a+Math.PI)%TP;
-    circle.ai=(ai+2)%4;
     return true;
   }
   return false;
@@ -148,7 +144,7 @@ var gidx=3;
 var setCircles=()=>{
   let r0=10*getRandomInt(2,7);
   ca=[new Circle(r0,r0,r0,r0,r0,0)];
-  for (let i=0; i<40; i++) {
+  for (let i=0; i<30; i++) {
     for (let r=80; r>12; r-=6) {
       if (growCircles(r)) break;
     }
@@ -164,14 +160,10 @@ var setPath=()=>{
   path.moveTo(0,0);
   path.lineTo(ca[0].rd,0);
   path.arc(ca[0].rd,ca[0].rd,ca[0].rd,3*TP/4,ca[0].a1);
-  let c=ca[gidx];
-  let x=c.x;
-  let y=c.y;
-  if (c.ai==0) x=c.xp-c.rd;
-  else if (c.ai==1) y=c.yp-c.rd;
-  else if (c.ai==2) x=c.xp+c.rd;
-  else y=c.yp+c.rd;
   for (let i=1; i<gidx; i++) path.arc(ca[i].x,ca[i].y,ca[i].rd,ca[i].a2,ca[i].a1,i%2);
+  let c=ca[gidx];
+  let x=c.xp+c.rd*Math.cos(c.a2+Math.PI);
+  let y=c.yp+c.rd*Math.sin(c.a2+Math.PI);
   if (gidx%2) path.arc(x,y,c.rd,c.a2,c.a2-TP,true);
   else path.arc(x,y,c.rd,c.a2-TP,c.a2);
   for (let i=gidx-1; i>0; i--) {
