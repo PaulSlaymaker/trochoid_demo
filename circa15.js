@@ -1,6 +1,7 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/LYJMBYz
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=360;
 
@@ -98,6 +99,7 @@ var animate=(ts)=>{
       hues[i]=++hues[i]%360;
       colors[i]="hsl("+hues[i]+",98%,54%)";
     }
+if (EM) stopped=true;
   }
   draw();
   requestAnimationFrame(animate);
