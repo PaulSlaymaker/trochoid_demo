@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/gORdyyN
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 
@@ -18,7 +18,6 @@ const ctx=(()=>{
 })();
 ctx.translate(CSIZE,CSIZE);
 ctx.lineCap="round";
-//ctx.shadowColor="white";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
