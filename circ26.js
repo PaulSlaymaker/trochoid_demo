@@ -1,6 +1,7 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/poxNdBV
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S60=Math.sin(Math.PI/3);
 const CSIZE=400;
@@ -133,14 +134,12 @@ function start() {
 }
 container.addEventListener("click", start, false);
 
-//var brush2=new Brush();
-//var brush3=new Brush();
-
 var t=getRandomInt(0,100);
 var stopped=true;
 function animate(ts) {
   if (stopped) return;
   t++;
+if (EM && t%300==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }

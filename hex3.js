@@ -1,6 +1,7 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/abRZYWr
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S60=Math.sin(Math.PI/3);
 const CSIZE=400;
@@ -66,35 +67,18 @@ var color2="rgb(159,159,159)";
 //ctx.setLineDash([10,20,1000]);
 var dash=[CSO/2,CSO/2];
 
+const Kr=TP*Math.random();
+const Kg=TP*Math.random();
+const Kb=TP*Math.random();
 var stopped=true;
 var t=getRandomInt(0,100);
-//var dur=300;
 function animate(ts) {
   if (stopped) return;
   t++;
-
-/*
-  let dl1=CSO/8+CSO/4*Math.pow(Math.sin(t/130),2);
-  let dl2=CSO/8+CSO/4*Math.pow(Math.sin(t/70),2);
-  dash=[dl1,20,dl2,20];
-*/
-
-  //let red=Math.round(CBASE+CT*Math.cos(c/10));
-  let red=Math.round(CBASE+CT*Math.cos(t/10+14*Math.cos(t/200)));
-  //let grn=Math.round(CBASE+CT*Math.cos(c/25));
-  let grn=Math.round(CBASE+CT*Math.cos(t/25+14*Math.cos(t/210)));
-  //let blu=Math.round(CBASE+CT*Math.cos(c/20));
-  let blu=Math.round(CBASE+CT*Math.cos(t/20+14*Math.cos(t/220)));
+  let red=Math.round(CBASE+CT*Math.cos(Kr+t/10+14*Math.cos(t/200)));
+  let grn=Math.round(CBASE+CT*Math.cos(Kg+t/25+14*Math.cos(t/210)));
+  let blu=Math.round(CBASE+CT*Math.cos(Kb+t/20+14*Math.cos(t/220)));
   color="rgb("+red+","+grn+","+blu+")";
-
-/*
-  //red=Math.round(CBASE+CT*Math.cos(c/12));
-  red=Math.round(CBASE+CT*Math.cos(t/12+14*Math.cos(t/190)));
-  grn=Math.round(CBASE+CT*Math.cos(t/23));
-  blu=Math.round(CBASE+CT*Math.cos(t/19));
-  color2="rgb("+red+","+grn+","+blu+")";
-*/
-
   if (lineflip) {
     if (Math.random()<0.001) lineflip=false;
   } else {
@@ -105,10 +89,7 @@ function animate(ts) {
   } else {
     if (Math.random()<0.0005) linerot=true;
   }
-
-//if (Math.random()<0.0005) lineflip=!lineflip;
-//if (Math.random()<0.0005) linerot=!linerot;
-
+if (EM && t%300==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
