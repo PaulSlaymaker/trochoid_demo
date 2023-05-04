@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/abRVEpm
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -60,10 +60,10 @@ var animate=(ts)=>{
   if (stopped) return;
   t++;
   R3=R2-0.7*R2*Math.pow(Math.sin(t/210),2);
-//d=D*Math.pow(Math.sin(t/400),2);
   f=Math.pow(Math.cos(t/400),2);
   k=-(2*Math.PI/8-Math.PI/4*Math.cos(t/100));
   color.set();
+if (EM && t%400==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
@@ -88,23 +88,13 @@ var draw=()=>{
     let zz=z+i*TP/3;
     let x=200*(f*Math.cos(zz)+(1-f)*Math.cos(2*zz));
     let y=200*(f*Math.sin(zz)-(1-f)*Math.sin(2*zz));
-
-/*
-ctx.beginPath();
-ctx.arc(x,y,180,0,TP);
-ctx.strokeStyle="white";
-ctx.lineWidth=1;
-ctx.stroke();
-*/
-
     for (let j=0; j<3; j++) {
       let z3=z2+j*TP/3;
       let x2=x+R2*Math.cos(z3);
       let y2=y+R2*Math.sin(z3);
       ctx.beginPath();
-      //ctx.arc(x2,y2,R2,z3+Math.PI,z3-Math.PI/8);
       //ctx.arc(x2,y2,R2,z3+Math.PI,z3+k);
-ctx.ellipse(x2,y2,R2,R3,z3,Math.PI,TP+k);
+      ctx.ellipse(x2,y2,R2,R3,z3,Math.PI,TP+k);
       ctx.lineCap="round";
       ctx.lineWidth=10;
       ctx.strokeStyle="#0000000C";
