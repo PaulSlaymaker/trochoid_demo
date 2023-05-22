@@ -110,16 +110,6 @@ const S1=Math.sin(TP/16);
 const S2=Math.sin(TP/8);
 const S3=Math.sin(3*TP/16);
 
-//const ttc=new Array();
-//for (let i=0; i<32; i++) ttc.push(Math.sin(i*TP/32));
-
-/*
-//var K1=0.5+1.5*Math.random();
-var K2=0.5+1.5*Math.random();
-var K3=50+40*Math.random();
-var K4=TP*Math.random();
-*/
-
 var strokeTile2=()=>{
   let z=TP*t/800;
   let p=new Path2D();
