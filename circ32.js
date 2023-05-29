@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/yLRvdBg
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -64,6 +65,7 @@ var animate=(ts)=>{
   color.set();
   color2.set();
   draw();
+if (EM && t%300==0) stopped=true;
   requestAnimationFrame(animate);
 }
 

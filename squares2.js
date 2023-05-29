@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/wvYppWj
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -72,6 +73,7 @@ var animate=(ts)=>{
     K=400/(2*getRandomInt(1,6,true));
     KK=100+1000*Math.random();
     sq=Math.random()<0.7;
+if (EM) stopped=true;
   }
   if (t==1800) {
     t=0;
