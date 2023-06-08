@@ -96,6 +96,15 @@ for (let i=0; i<200; i++) {
 var circle=new Path2D();
 circle.arc(0,0,140,0,TP);
 
+var star=new Path2D();
+for (let i=0; i<200; i++) {
+  let z=i*TP/200; 
+  let x=140*Math.pow(Math.sin(z),3);
+  let y=140*Math.pow(Math.cos(z),3);
+  star.lineTo(x,y);
+}
+star.closePath();
+
 var color,color2,color3;
 var k1,k2,k3,k4,k5;
 var kb1,kb2,kb3,kb4,kb5,kb6;
@@ -104,12 +113,15 @@ var path,count;
 ctx.lineWidth=2;
 
 var reset=()=>{
-  if (Math.random()<0.5) {
+  if (Math.random()<0.3) {
     path=circle;
     count=4*getRandomInt(9,13);
   } else if (Math.random()<0.1) {
     path=heart;
     count=4*getRandomInt(2,6);
+  } else if (Math.random()<0.1) {
+    path=star;
+    count=4*getRandomInt(7,11);
   } else {
     path=diamond;
     count=4*getRandomInt(7,11);
