@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/QWJLBVz
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const TP=2*Math.PI;
@@ -12,12 +12,9 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-//c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
-//ctx.globalAlpha=0.7;
-//ctx.globalCompositeOperation="destination-over";
 
 const ctxo=(()=>{
   let c=document.createElement("canvas");
@@ -69,10 +66,10 @@ console.log(rf2.toFixed(0),gf2.toFixed(0),bf2.toFixed(0));
   for (let i=0; i<BW; i++) {
     for (let j=0; j<100*BH; j++) {
       //let red=Math.round(csr1+csr2*Math.pow(Math.sin(TP*i/rf+ro+TP*j/rf2),2));
-      let green=Math.round(csg1+csg2*Math.pow(Math.sin(TP*i/gf+ro+TP*j/gf2),2));
+      //let green=Math.round(csg1+csg2*Math.pow(Math.sin(TP*i/gf+ro+TP*j/gf2),2));
       let blue=Math.round(csb1+csb2*Math.pow(Math.sin(TP*i/bf+ro+TP*j/bf2),2));
       pixd.data[(i*4)+j*4*BW]  =Math.round(csr1+csr2*Math.pow(Math.sin(TP*i/rf+ro+TP*j/rf2),2));
-      pixd.data[(i*4)+j*4*BW+1]=green;
+      pixd.data[(i*4)+j*4*BW+1]=Math.round(csg1+csg2*Math.pow(Math.sin(TP*i/gf+ro+TP*j/gf2),2));
       pixd.data[(i*4)+j*4*BW+2]=blue;
     }
   }
@@ -84,24 +81,27 @@ setImageData();
 //ctx.putImageData(pixd,0,0);	// diag
 
 var F1,F2,F3,F4,dur,durc=400;
-var DC={"4":800,"6":1200,"8":1600,"10":2000,"12":2400,"14":2800,"16":3200,"18":1800,"20":2000,"22":2200,
-        "24":2400,"26":2600,"28":2800,"30":3000,"32":1600,"34":1700,"36":1800,"38":1900,"40":2000,
-        "42":2100,"44":2200,"46":2300,"48":1600,"50":2500,"52":1300};
+var DC={"4":800,"5":1000,"6":1200,"7":1400,"8":1600,"10":2000,"11":2200,"12":2400,"13":2600,"14":2800,
+        "15":3000,"16":3200,"17":3400,"18":1800,"19":1900,"20":2000,"21":2100,"22":2200,"23":2300,
+        "24":2400,"25":2500,"26":2600,"27":2700,"28":2800,"29":2900,"30":3000,"31":3100,"32":1600,
+        "33":3300,"34":1700,"35":3500,"36":1800,"37":3700,"38":1900,"39":3900,"40":2000,"41":4100,
+        "42":2100,"43":4300,"44":2200,"45":1500,"46":2300,"47":4700,"48":1600,"49":700,"50":2500,
+        "51":1700,"52":2600};
 //var durc;//=DC[dur/400];
 
 var reset=()=>{
   setImageData();
+/*
   let fa=[7,5,9,3,11,1,13];
   F1=fa[getRandomInt(0,7,true)];
   F2=fa[getRandomInt(0,7,true)];
   F3=fa[getRandomInt(0,7,true)];
   F4=fa[getRandomInt(0,7,true)];
-/*
-  F1=2*getRandomInt(1,8)-1;
-  F2=2*getRandomInt(1,8)-1;
-  F3=2*getRandomInt(1,8)-1;
-  F4=2*getRandomInt(1,8)-1;
 */
+  F1=getRandomInt(1,14);
+  F2=getRandomInt(1,14);
+  F3=getRandomInt(1,14);
+  F4=getRandomInt(1,14);
 //F1=3,F2=5,F3=5,F4=3;
   dur=(F1+F2+F3+F4)*400;
   durc=DC[dur/400];
@@ -115,9 +115,6 @@ var stopped=true;
 var start=()=>{
   if (stopped) { 
     stopped=false;
-//ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
-//ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-//drawPath();
     requestAnimationFrame(animate);
   } else {
     stopped=true;
@@ -140,7 +137,6 @@ var animate=(ts)=>{
     ctx.canvas.style.opacity=1-(t-dur/4-200)/200;
   }
 
-//if (t>Math.round(dur/8)) stopped=true;
   requestAnimationFrame(animate);
 }
 
@@ -164,14 +160,6 @@ ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
 drawPath();
 */
 
-/*
-let a=TP*Math.random();
-let x=340*(Math.cos(F1*a)/2+Math.cos(F2*a)/2);
-let y=340*(Math.sin(F3*a)/2+Math.sin(F4*a)/2);
-//drawPoint(x,y);
-*/
-
-//ctxo.putImageData(ixgd,0,0);
 ctxo2.putImageData(pixs,0,0);
 
 /*
@@ -182,7 +170,7 @@ var DC={"4":400,"6":600,"8":400,"10":500,"12":400,"14":700,"16":400,"18":600,"20
 
 var brush=()=>{ 
   ctx.drawImage(ctxo2.canvas,-82,-4,164,12);
-  ctx.drawImage(ctxo.canvas,-80,-2,160,4); 
+  ctx.drawImage(ctxo.canvas,-BW/2,-BH/2,BW,BH); 
 }
 
 var draw=()=>{
@@ -190,21 +178,17 @@ var draw=()=>{
 //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   let a=TP*t/dur;
   let wf2=Math.sin(TP*t/durc);
-  let x=320*(Math.cos(F1*a)/2+Math.cos(F2*a)/2);
-  let y=320*(Math.sin(F3*a)/2+Math.sin(F4*a)/2);
-/*
-  as=Math.atan2(Math.pow(-F3*Math.sin(F3*a)/2-F4*Math.sin(F4*a)/2,2),Math.pow(-F1*Math.cos(F1*a)/2-F2*Math.cos(F2*a)/2,2));
-  as=as.toFixed(2);
-*/
+  let x=wf2*320*(Math.cos(F1*a)/2+Math.cos(F2*a)/2);
+  let y=wf2*320*(Math.sin(F3*a)/2+Math.sin(F4*a)/2);
   let bh=-396*4*t/dur;
   ctxo.putImageData(pixd,0,bh);
   
+/*
   let wf=1;//Math.sin(TP*t/400);
   x*=wf2;
   y*=wf2;
   let dw=BW*wf;
   let dw2=(BW+4)*wf;
-/*
   let brush=()=>{ 
     //ctx.drawImage(ctxo2.canvas,-dw2/2,-(BH+4)/2,dw2,12);
     //ctx.drawImage(ctxo.canvas,-dw/2,-4/2,dw,4); 
