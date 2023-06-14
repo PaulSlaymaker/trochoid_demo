@@ -14,7 +14,6 @@ const ctx=(()=>{
   return c.getContext("2d");
 })();
 ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
-//ctx.lineCap="round";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
