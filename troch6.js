@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/QWJLBVz
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 const BW=160;
@@ -58,11 +59,11 @@ var setImageData=()=>{
   let rf=(200+300*Math.random())*[-1,1][getRandomInt(0,2)];
   let gf=(200+300*Math.random())*[-1,1][getRandomInt(0,2)];
   let bf=(200+300*Math.random())*[-1,1][getRandomInt(0,2)];
-console.log(rf.toFixed(0),gf.toFixed(0),bf.toFixed(0));
+//console.log(rf.toFixed(0),gf.toFixed(0),bf.toFixed(0));
   let rf2=(200+300*Math.random())*[-1,1][getRandomInt(0,2)];
   let gf2=(200+300*Math.random())*[-1,1][getRandomInt(0,2)];
   let bf2=(200+300*Math.random())*[-1,1][getRandomInt(0,2)];
-console.log(rf2.toFixed(0),gf2.toFixed(0),bf2.toFixed(0));
+//console.log(rf2.toFixed(0),gf2.toFixed(0),bf2.toFixed(0));
   for (let i=0; i<BW; i++) {
     for (let j=0; j<100*BH; j++) {
       //let red=Math.round(csr1+csr2*Math.pow(Math.sin(TP*i/rf+ro+TP*j/rf2),2));
@@ -105,9 +106,9 @@ var reset=()=>{
 //F1=3,F2=5,F3=5,F4=3;
   dur=(F1+F2+F3+F4)*400;
   durc=DC[dur/400];
-console.log("durc "+durc);
-console.log(F1,F2,F3,F4);
-console.log(F1+F2+F3+F4);
+//console.log("durc "+durc);
+//console.log(F1,F2,F3,F4);
+//console.log(F1+F2+F3+F4);
 }
 reset();
 
@@ -135,6 +136,7 @@ var animate=(ts)=>{
     ctx.canvas.style.opacity=1;
   } else if (t>Math.round(dur/4+200)) {
     ctx.canvas.style.opacity=1-(t-dur/4-200)/200;
+if (EM) stopped=true;
   }
 
   requestAnimationFrame(animate);
@@ -161,12 +163,6 @@ drawPath();
 */
 
 ctxo2.putImageData(pixs,0,0);
-
-/*
-var DC={"4":400,"6":600,"8":400,"10":500,"12":400,"14":700,"16":400,"18":600,"20":400,"22":1100,
-        "24":400,"26":1300,"28":700,"30":500,"32":400,"34":1700,"36":600,"38":1900,"40":500,
-        "42":700,"44":400,"46":2300,"48":400,"50":500,"52":1300};
-*/
 
 var brush=()=>{ 
   ctx.drawImage(ctxo2.canvas,-82,-4,164,12);

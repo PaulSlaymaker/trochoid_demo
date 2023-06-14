@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/abRgERR
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=320;
 
@@ -45,20 +46,6 @@ var K4=TP*Math.random();
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-//let t2=TP*Math.sin(t/K1+K2);
-/*
-let t2=TP*(Math.sin(t/K1+K3)/2+Math.sin(t/K2+K4)/2);
-//let domr=new DOMMatrix([0.5+Math.cos(t/K1)/2,Math.sin(t/K2)/2,Math.sin(t/K3)/2,0.5+Math.cos(t/K4)/2,0,0]);
-//let domr=new DOMMatrix([Math.cos(t/K1),Math.sin(t/K1),-Math.sin(t/K1),Math.cos(t/K1),0,0]);
-let domr=new DOMMatrix([Math.cos(t2),Math.sin(t2),-Math.sin(t2),Math.cos(t2),0,0]);
-  //pattern.setTransform(new DOMMatrix([Math.cos(t/200),Math.sin(t/200),-Math.sin(t/200),Math.cos(t/200),0,0]));
-  let domm=domr.multiply(doms);
-//  pattern.setTransform(domm);
-//  ctx.strokeStyle=pattern;
-  //ctx.fillStyle=pattern;
-*/
-//ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-//ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   if (t<600) draw();
   if (t==720) {
     K1=80+100*Math.random();
@@ -69,6 +56,7 @@ let domr=new DOMMatrix([Math.cos(t2),Math.sin(t2),-Math.sin(t2),Math.cos(t2),0,0
     KC2=Math.round(20/KC);
     setPattern();
     t=0;
+if (EM) stopped=true;
   }
   requestAnimationFrame(animate);
 }
