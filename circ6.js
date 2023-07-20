@@ -49,7 +49,7 @@ var Circle=function(x,y,xp,yp,radius,pc) {
 //let col=Math.round(this.radius/10);
 //ctx.fillStyle=colors[col%colors.length];
 //ctx.fillStyle="hsla("+(hue+4*this.radius)+",90%,50%,0.7)";
-ctx.fillStyle="hsl("+(hue+5*this.radius)+",90%,50%)";
+ctx.fillStyle="hsl("+((hue+5*this.radius)%360)+",90%,50%)";
     ctx.fill();
   }
 /*
@@ -209,6 +209,7 @@ var animate=()=>{
       t=0; 
       eg=Math.random()<0.3;
       setCircles();
+      hue=getRandomInt(0,360);
     }
   }
 if (EM && t%200==0) stopped=true;
