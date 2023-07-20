@@ -112,6 +112,7 @@ var animate=(ts)=>{
     reset();
     pauseTS=performance.now()+2000;
     requestAnimationFrame(pause);
+if (EM) stopped=true;
   } else requestAnimationFrame(animate);
 }
 
@@ -135,8 +136,6 @@ const x2=320;
 
 var draw=()=>{
   drawTile();
-//ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
-//ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   let d=-60*Math.sin(t/220);
   let d2=-60*Math.sin(t/230);
   let q=(x1+d)/(2*CSO);
@@ -149,66 +148,7 @@ var draw=()=>{
       ctx.setTransform(qa[j],0,0,qa[i],j*160+da[j],i*160+da[i]);
       ctx.drawImage(ctxo.canvas,0,0);
     }
-/*
-    ctx.setTransform(q,0,0,qa[i],0,i*160+da[i]);
-    ctx.drawImage(ctxo.canvas,0,0);
-    ctx.setTransform(q2,0,0,qa[i],x1+d,i*160+da[i]);
-    ctx.drawImage(ctxo.canvas,0,0);
-    ctx.setTransform(q3,0,0,qa[i],x2+d2,i*160+da[i]);
-    ctx.drawImage(ctxo.canvas,0,0);
-    ctx.setTransform(q2,0,0,qa[i],x3-d2,i*160+da[i]);
-    ctx.drawImage(ctxo.canvas,0,0);
-    ctx.setTransform(q,0,0,qa[i],x4-d,i*160+da[i]);
-    ctx.drawImage(ctxo.canvas,0,0);
-*/
   }
-
-/*
-  ctx.setTransform(q,0,0,q2,0,x1+d);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q2,0,0,q2,x1+d,x1+d);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q3,0,0,q2,x2+d2,x1+d);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q2,0,0,q2,x3-d2,x1+d);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q,0,0,q2,x4-d,x1+d);
-  ctx.drawImage(ctxo.canvas,0,0);
-
-  ctx.setTransform(q,0,0,q3,0,x2+d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q2,0,0,q3,x1+d,x2+d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q3,0,0,q3,x2+d2,x2+d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q2,0,0,q3,x3-d2,x2+d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q,0,0,q3,x4-d,x2+d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-
-  ctx.setTransform(q,0,0,q2,0,x3-d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q2,0,0,q2,x1+d,x3-d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q3,0,0,q2,x2+d2,x3-d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q2,0,0,q2,x3-d2,x3-d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q,0,0,q2,x4-d,x3-d2);
-  ctx.drawImage(ctxo.canvas,0,0);
-
-  ctx.setTransform(q,0,0,q,0,x4-d);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q2,0,0,q,x1+d,x4-d);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q3,0,0,q,x2+d2,x4-d);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q2,0,0,q,x3-d2,x4-d);
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(q,0,0,q,x4-d,x4-d);
-  ctx.drawImage(ctxo.canvas,0,0);
-*/
-
 /*
   for (let i=0; i<5; i++) {
     for (let j=0; j<5; j++) {
