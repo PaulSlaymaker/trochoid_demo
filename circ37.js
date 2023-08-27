@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-const EM=location.href.endsWith("em");
+//const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -15,8 +15,8 @@ const ctx=(()=>{
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,CSIZE);
+ctx.setLineDash([1,3000]);
 ctx.lineCap="round";
-//ctx.globalCompositeOperation="luminosity";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -36,19 +36,12 @@ var Circle=function(x,y,xp,yp,radius,pc) {
   this.radius=radius;
   this.pc=pc;
   this.c=[];
-  this.cua=new Array();
   this.cuidx0=false;
   this.cuidx1=false;
-  this.drawCircle=(rf)=>{
+  this.drawCircle=(rf)=>{	// diag
     ctx.beginPath();
-//ctx.moveTo(this.xp+this.radius/3,this.yp);
-//ctx.arc(this.xp,this.yp,this.radius/3,0,TP);
-      ctx.moveTo(this.x+this.radius*rf,this.y);
-      ctx.arc(this.x,this.y,this.radius*rf,0,TP);
-//let col=Math.round(this.radius/10);
-//ctx.fillStyle=colors[col%colors.length];
-//ctx.fillStyle="hsla("+(hue+4*this.radius)+",90%,50%,0.7)";
-ctx.fillStyle="hsl("+((hue+5*this.radius)%360)+",90%,50%)";
+    ctx.moveTo(this.x+this.radius*rf,this.y);
+    ctx.arc(this.x,this.y,this.radius*rf,0,TP);
     ctx.fill();
   }
   this.draw=()=>{
@@ -66,9 +59,9 @@ function Color() {
   this.GK2=TP*Math.random();
   this.BK2=TP*Math.random();
   this.getRGB=(f)=>{
-    let red=Math.round(CBASE+CT*Math.cos(this.RK2+f/this.RK1+c/160));
-    let grn=Math.round(CBASE+CT*Math.cos(this.GK2+f/this.GK1+c/130));
-    let blu=Math.round(CBASE+CT*Math.cos(this.BK2+f/this.BK1+c/110));
+    let red=Math.round(CBASE+CT*Math.cos(this.RK2+f/this.RK1+c/this.RK3));
+    let grn=Math.round(CBASE+CT*Math.cos(this.GK2+f/this.GK1+c/this.GK3));
+    let blu=Math.round(CBASE+CT*Math.cos(this.BK2+f/this.BK1+c/this.BK3));
     //return "rgba("+red+","+grn+","+blu+",0.7)";
 return "rgb("+red+","+grn+","+blu+")";
   }
@@ -76,6 +69,9 @@ return "rgb("+red+","+grn+","+blu+")";
     this.RK1=(0.4+Math.random())/5;
     this.GK1=(0.4+Math.random())/5;
     this.BK1=(0.4+Math.random())/5;
+    this.RK3=80+120*Math.random();
+    this.GK3=80+120*Math.random();
+    this.BK3=80+120*Math.random();
   }
   this.randomize();
 //  this.set();
@@ -98,6 +94,8 @@ var Curve=function(cs) {
     }
   }
   this.setPath=()=>{
+    const dmx=new DOMMatrix([-1,0,0,1,0,0]);
+    const dmy=new DOMMatrix([1,0,0,-1,0,0]);
     this.len=0;
     this.path=new Path2D();
 this.path.moveTo(this.car[0].x,this.car[0].y);
@@ -116,94 +114,58 @@ this.path.moveTo(this.car[0].x,this.car[0].y);
     }
     this.path.lineTo(this.car[this.car.length-1].x,this.car[this.car.length-1].y);
     this.len+=this.car[this.car.length-1].radius;
-this.path.addPath(this.path, new DOMMatrix([-1,0,0,1,0,0]));
-this.path.addPath(this.path, new DOMMatrix([1,0,0,-1,0,0]));
+    this.path.addPath(this.path,dmx);
+    this.path.addPath(this.path,dmy);
   }
   this.drawCurve=()=>{
     //let tt=this.to+t;
 let tt=t;
-ctx.setLineDash([1,3000]);
-ctx.lineDashOffset=-t;
+//let tt=DUR*Math.pow(Math.sin(t/DUR*TP/4),2);
+ctx.lineDashOffset=-tt;
 //ctx.lineWidth=Math.max(3,40-40*this.len/650);
-ctx.lineWidth=Math.max(4,50-50*this.len/800);
+ctx.lineWidth=Math.max(5,50-50*this.len/800);
 //ctx.lineWidth=Math.max(3,80*(this.len-t)/this.len);
 ctx.globalAlpha=0.7;
-if (this.set) {
-    //ctx.setLineDash([Math.max(1,tt),3000]);
-  //if (S0) ctx.strokeStyle=color.getRGB(this.len/200);
-  if (S0) {
-    ctx.strokeStyle=color.getRGB(tt/300);
-    ctx.stroke(this.path);
-    ctx.strokeStyle="#00000060";
-    ctx.lineWidth+=2;
-  } else {
-    //ctx.lineDashOffset=DUR-t;
-ctx.lineWidth+=2;
-    ctx.strokeStyle="black";
-    ctx.globalAlpha=1;
-    ctx.stroke(this.path);
-    ctx.lineWidth=3;
-    ctx.strokeStyle=color.getRGB(tt/300);
-  }
-} else {
-  tt=DUR-t;
-//  ctx.setLineDash([Math.max(1,tt),3000]);
-ctx.lineDashOffset=-tt;
-  if (S0) {
-ctx.lineWidth+=2;
-    ctx.strokeStyle="black";
-    ctx.globalAlpha=1;
-    ctx.stroke(this.path);
-    ctx.lineWidth=3;
-    ctx.strokeStyle=color.getRGB(tt/300);
-//    ctx.lineDashOffset=t;
-  } else {
-    ctx.strokeStyle=color.getRGB(tt/300);
-    ctx.stroke(this.path);
-//  else ctx.strokeStyle=color.getRGB(this.len/200);
-    ctx.strokeStyle="#00000060";
-    ctx.lineWidth+=2;
-  }
-}
-//  else ctx.strokeStyle=color.getRGB(this.len/200);
 
-//ctx.lineWidth=Math.max(2,34-36*this.len/800);
-//ctx.lineWidth=32-40*this.len/2000;
-    //ctx.strokeStyle="hsla("+(hue+360*this.len/1800)%360+",90%,60%,0.5)";
-    //ctx.strokeStyle="hsla("+(hue+360*this.len/400)%360+",90%,60%,0.5)";
-    //ctx.strokeStyle=color.getRGB(this.len/200);
-
-    ctx.stroke(this.path);
-    if (tt>this.len+120) return false;
-    return true;
-/*
-    if (tt>this.len+40) {
-      this.car[this.car.length-1].drawCircle(0.8);
-      if (tt>this.len+120) return false;
-      else return true;
-    } else if (tt>this.len) {
-      let raf=0.8*(tt-this.len)/40;
-      this.car[this.car.length-1].drawCircle(raf);
-      return true;
+    if (this.set) {
+      //if (inc>0) ctx.strokeStyle=color.getRGB(this.len/200);
+      if (inc>0) {
+	ctx.strokeStyle=color.getRGB(tt/300);
+	ctx.stroke(this.path);
+	ctx.strokeStyle="#00000040";
+	ctx.lineWidth+=2;
+	ctx.stroke(this.path);
+      } else {
+	//ctx.lineDashOffset=DUR-t;
+    ctx.lineWidth+=2;
+	ctx.strokeStyle="black";
+	ctx.globalAlpha=1;
+	ctx.stroke(this.path);
+      }
     } else {
-      return true;
+      tt=DUR-t;
+      ctx.lineDashOffset=-tt;
+      if (inc>0) {
+        ctx.lineWidth+=2;
+	ctx.strokeStyle="black";
+	ctx.globalAlpha=1;
+	ctx.stroke(this.path);
+      } else {
+	ctx.strokeStyle=color.getRGB(tt/300);
+	ctx.stroke(this.path);
+    //  else ctx.strokeStyle=color.getRGB(this.len/200);
+	ctx.strokeStyle="#00000040";
+	ctx.lineWidth+=2;
+	ctx.stroke(this.path);
+      }
     }
-*/
+    ctx.lineWidth=0.6*(ctx.lineWidth-4);
+    ctx.strokeStyle=color.getRGB(tt/300);
+    ctx.stroke(this.path);
   }
-}
-
-var drawPoint=(x,y,col)=>{	// diag
-  ctx.beginPath();
-  ctx.arc(x,y,10,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
 }
 
 var cval=(x,y,rad)=>{
-if (x<0) return false;
-if (y<0) return false;
   if (Math.pow(x*x+y*y,0.5)>CSIZE-rad) return false;
   for (let i=0; i<ca.length; i++) {
     let rt=rad+ca[i].radius;
@@ -213,51 +175,48 @@ if (y<0) return false;
     if (Math.abs(yd)>rt) continue;
 //console.log(i+" "+Math.pow(xd*xd+yd*yd,0.5));
     if (Math.pow(xd*xd+yd*yd,0.5)+1<rt) {
-//drawPoint(x,y);
       return false;
     }
   }
   return true;
 }
 
-var eg=Math.random()<0.3;
-
+var MC=getRandomInt(22,46);
 var grow=()=>{
-  let MC=getRandomInt(22,46);
+//  let MC=getRandomInt(22,46);
 //let MC=getRandomInt(26,56);
 
-for (let i=0; i<97; i++) {
-  //let c=bca[getRandomInt(0,bca.length)];
-  let c=ca[getRandomInt(0,ca.length)];
-  //let c=ca[ca.length-1-getRandomInt(0,ca.length,true)]
-//let rad2=36-i/4;
-let rad2=MC-i/4;
-//let rad2=26-i/4;
-//let rad2=MINR+96/4-i/4;
-/*
-if (rad2<10) {
-console.log(rad2);
-debugger;
-return false;
-}
-*/
-  let a=TP*Math.random();
-  let x=c.x+(c.radius+rad2)*Math.cos(a);
-  let y=c.y+(c.radius+rad2)*Math.sin(a);
-  if (cval(x,y,rad2)) {
-    let xp=c.x+c.radius*Math.cos(a);
-    let yp=c.y+c.radius*Math.sin(a);
-    let circle=new Circle(x,y,xp,yp,rad2,c);
-    c.c.push(circle);
-    ca.push(circle);
-    return true;
+  for (let i=0; i<97; i++) {
+    //let c=bca[getRandomInt(0,bca.length)];
+    let c=ca[getRandomInt(0,ca.length)];
+    //let c=ca[ca.length-1-getRandomInt(0,ca.length,true)]
+  //let rad2=36-i/4;
+  let rad2=MC-i/4;
+  //let rad2=26-i/4;
+  //let rad2=MINR+96/4-i/4;
+  /*
+  if (rad2<10) {
+  console.log(rad2);
+  debugger;
+  return false;
   }
-}	// end of loop
+  */
+    let a=TP*Math.random();
+    let x=c.x+(c.radius+rad2)*Math.cos(a);
+if (x<0) continue;
+    let y=c.y+(c.radius+rad2)*Math.sin(a);
+if (y<0) continue;
+    if (cval(x,y,rad2)) {
+      let xp=c.x+c.radius*Math.cos(a);
+      let yp=c.y+c.radius*Math.sin(a);
+      let circle=new Circle(x,y,xp,yp,rad2,c);
+      c.c.push(circle);
+      ca.push(circle);
+      return true;
+    }
+  }
   return false;
 }
-
-ctx.fillStyle="green";
-ctx.lineWidth=7;
 
 var drawCurveSet=(cuixd, col)=>{	// diag
   ctx.save();
@@ -275,27 +234,7 @@ var draw=()=>{
 //ctx.fillStyle="#00000020";
 //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
 //  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);	// CON
-  //  for (let i=0; i<ca.length; i++) { ca[i].draw(); }
-  //let drawn=0;
-  for (let i=0; i<curves.length; i++) {
-    //if (curves[i].drawCurve()) drawn++;
-//if (curves[i].set==0)	// CON
-    curves[i].drawCurve();
-  }
-  //drawPoint(ca[0].x,ca[0].y,ctx.strokeStyle);
-//if (t>1400) console.log("tt "+t);
-//if (!drawn) console.log("maxt "+t);
-  //return drawn;
-}
-
-var hue=0;
-var reset=()=>{
-  eg=Math.random()<0.3;
-//console.log(eg);
-  setCircles();
-  initCurves();
-//  ctx.strokeStyle="hsla("+getRandomInt(0,360)+",90%,60%,0.6)";
-  hue=getRandomInt(0,360);
+  for (let i=0; i<curves.length; i++) curves[i].drawCurve();
 }
 
 var stopped=true;
@@ -307,53 +246,52 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
-var S0=true;
+var pauseTS=1000;
+var pause=(ts)=>{
+  if (stopped) return;
+  if (ts<pauseTS) {
+    requestAnimationFrame(pause);
+  } else {
+    requestAnimationFrame(animate);
+  }
+}
+
+var f=0;
 var t=0;
 var c=0;
 const INC=2;
 var inc=INC;
 //const DUR=1300;	// vary
-const DUR=1000;	// vary
+const DUR=1200;	// vary
 var animate=()=>{
   if (stopped) return;
   c++;
   t+=inc;
   draw();
-//if (t>DUR/2) stopped=true;	// CON
 //if (t==600) drawCurveSet(1,"red");
   if (t>DUR) {
-//drawCurveSet(1,"red");
-S0=!S0;
-//drawCircles(false,"#FFFFFF40",8);
-//drawCircles(true,"red");
-pruneCircles(0);
-setCircles();
-//drawCircles(false,"green",2);
-setCurves2(0);
+    pruneCircles(0);
+    setCircles();
+    setCurves(0);
     inc=-INC;
+//color.randomize();
   } else if (t<0) {
-S0=!S0;
-pruneCircles(1);
-setCircles();
-//drawCircles(false,"green",2);
-setCurves2(1);
-//pruneCircles(1);
-    // prune circles, 1
+    pruneCircles(1);
+    setCircles();
+    setCurves(1);
     inc=+INC;
     t=0; 
-    //reset();
   }
-  requestAnimationFrame(animate);
+  if (t==DUR/2) {
+    //stopped=true;
+    pauseTS=performance.now()+1200;
+    requestAnimationFrame(pause);
+  } else requestAnimationFrame(animate);
 }
 
-var hue=getRandomInt(0,360);
-//var ca=[new Circle(0,0,0,0,50,0,0)];
-
 var curves=[];
-var cu=new Array(2);
-for (let i=0; i<cu.length; i++) cu[i]=new Array();
 
-var drawCircles=(mark,col,lw)=>{
+var drawCircles=(mark,col,lw)=>{	// diag
   let slw=ctx.lineWidth;
   ctx.lineWidth=lw?lw:1;
   if (col) ctx.strokeStyle=col;
@@ -367,34 +305,25 @@ ctx.fillText(i,ca[i].x,ca[i].y-3);
   ctx.lineWidth=slw;
 }
 
-var tcuidx=0;
-
 var pruneCircles=(cuidx)=>{
   let i=ca.length;
   let pc=ca.length;
-if (cuidx) {
-  while (i--) {
-    if (ca[i].cuidx1 && !ca[i].cuidx0) { ca.splice(i,1); }
-    else ca[i].cuidx1=false;
+  if (cuidx) {
+    while (i--) {
+      if (ca[i].cuidx1 && !ca[i].cuidx0) { ca.splice(i,1); }
+      else ca[i].cuidx1=false;
+    }
+  } else {
+    while (i--) {
+      if (!ca[i].cuidx1 && ca[i].cuidx0) { ca.splice(i,1); }
+      else ca[i].cuidx0=false;
+    }
   }
-} else {
-  while (i--) {
-    if (!ca[i].cuidx1 && ca[i].cuidx0) { ca.splice(i,1); }
-    else ca[i].cuidx0=false;
-  }
-}
-if (ca.length==0) ca.push(new Circle(0,0,0,0,50,0,0));
-// prevent empty ca
-// need to set ca[i].cuidx01
-/*
-  ca.forEach((c,i)=>{
-    if (!c.cuidx1 && c.cuidx0) ca.splice(i,1);
-  });
-*/
+  if (ca.length==0) ca.push(new Circle(0,0,0,0,50,0,0));
 console.log("prune from "+pc+" to "+ca.length);
 }
 
-var setCurves2=(csidx)=>{
+var setCurves=(csidx)=>{
   let i=curves.length;
   while (i--) if (curves[i].set==csidx) curves.splice(i,1); 
   for (let i=0; i<ca.length; i++) {
@@ -412,40 +341,21 @@ var setCurves2=(csidx)=>{
     }
   }
   curves.sort((a,b)=>{ return b.len-a.len; });
-console.log("cuidx "+csidx+" len "+curves.length);
+console.log("curve set "+csidx+" len "+curves.length);
 console.log("MAXL "+curves[curves.length-1].len);
 }
 
-var initCurves=()=>{
-  curves=[];
-  for (let i=0; i<ca.length; i++) {
-    if (ca[i].c.length==0) {
-let csidx=(curves.length%2);
-      var nc=new Curve(csidx);
-      nc.car=[ca[i]];
-      nc.addCurveCircle(ca[i],csidx);
-      nc.setPath();
-      curves.push(nc)
-    }
-  }
-curves.sort((a,b)=>{ return b.len-a.len; });
-console.log("curves "+curves.length);
-}
-
-/*
-let a=TP*Math.random();
-let x=0;//CSIZE*Math.random()*Math.cos(a);
-let y=CSIZE*Math.random()*Math.sin(a);
-*/
 var ca=[new Circle(0,0,0,0,50,0,0)];
 
 var setCircles=()=>{
-  //for (let i=0; i<2000; i++) {
-//ca[0].x+=10;
+//MC=getRandomInt(22,46);
+//MC=getRandomInt(28,42);
+//MC=[32,31,30,32,29,33,28,34,27,35][getRandomInt(0,10,true)];
+  MC=[34,33,35,31,36,30,37,29,38,28][getRandomInt(0,10,true)];
   let counter=0;
   for (let i=0; i<200; i++) {
     if (!grow()) counter++;
-    if (counter>2) {
+    if (counter>1) {
 //console.log("no grow count "+i);
 console.log("grow count "+i+" ca.len "+ca.length);
 //console.log(ca[0]);
@@ -455,9 +365,26 @@ console.log("grow count "+i+" ca.len "+ca.length);
 //console.log("grow count "+counter);
 }
 
+var initCurves=()=>{
+  curves=[];
+  for (let i=0; i<ca.length; i++) {
+    if (ca[i].c.length==0) {
+      let csidx=(curves.length%2);
+      var nc=new Curve(csidx);
+      nc.car=[ca[i]];
+      nc.addCurveCircle(ca[i],csidx);
+      nc.setPath();
+      curves.push(nc)
+    }
+  }
+  curves.sort((a,b)=>{ return b.len-a.len; });
+//console.log("curves "+curves.length);
+}
+
 onresize();
 
-reset();
+setCircles();
+initCurves();
 
 start();
 
