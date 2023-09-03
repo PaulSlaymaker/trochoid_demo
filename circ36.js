@@ -63,6 +63,29 @@ ctx.fillStyle="hsl("+((hue+5*this.radius)%360)+",90%,50%)";
   }
 }
 
+function Color() {
+  const CBASE=160;
+  const CT=255-CBASE;
+  this.RK2=TP*Math.random();
+  this.GK2=TP*Math.random();
+  this.BK2=TP*Math.random();
+  this.getRGB=(f)=>{
+    let red=Math.round(CBASE+CT*Math.cos(this.RK2+f/this.RK1));
+    let grn=Math.round(CBASE+CT*Math.cos(this.GK2+f/this.GK1));
+    let blu=Math.round(CBASE+CT*Math.cos(this.BK2+f/this.BK1));
+    return "rgba("+red+","+grn+","+blu+",0.5)";
+  }
+  this.randomize=()=>{
+    this.RK1=(1+Math.random())/5;
+    this.GK1=(1+Math.random())/5;
+    this.BK1=(1+Math.random())/5;
+  }
+  this.randomize();
+//  this.set();
+}
+
+var color=new Color();
+
 var Curve=function(cs) {
   this.set=cs;
   this.car=[];
@@ -110,12 +133,17 @@ tt=DUR-t;
 ctx.setLineDash([Math.max(1,tt),3000]);
 }
 
-ctx.lineWidth=32-40*this.len/2000;
-ctx.strokeStyle="hsla("+(hue+360*this.len/2000)+",90%,60%,0.5)";
+//let lf=(this.len-curves[0].len)/curves[curves.length-1].len;
+ctx.lineWidth=Math.max(1,34-36*this.len/1600);
+//ctx.lineWidth=32-40*this.len/2000;
+//ctx.lineWidth=33-32*lf;
+    //ctx.strokeStyle="hsla("+(hue+360*this.len/1800)%360+",90%,60%,0.5)";
+    //ctx.strokeStyle="hsla("+(hue+360*this.len/400)%360+",90%,60%,0.5)";
+ctx.strokeStyle=color.getRGB(this.len/400);
 
     ctx.stroke(this.path);
-if (tt>this.len+120) return false;
-return true;
+    if (tt>this.len+120) return false;
+    return true;
 /*
     if (tt>this.len+40) {
       this.car[this.car.length-1].drawCircle(0.8);
@@ -231,8 +259,6 @@ var drawCurveSet=(cuixd)=>{
 }
 
 var draw=()=>{
-//  ctx.strokeStyle="hsla("+hue+",90%,60%,0.4)";
-//ctx.strokeStyle="hsla("+hue+",90%,60%,0.1)";
 //ctx.fillStyle="#00000020";
 //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
@@ -253,34 +279,12 @@ for (let j=0; j<2; j++) {
 }
 */
 
-/*
-  for (let i=0; i<curves.length; i++) {
-    if (i%2) ctx.strokeStyle="hsla("+hue+",90%,60%,0.6)";
-//  ctx.strokeStyle="hsla("+getRandomInt(0,360)+",90%,60%,0.6)";
-    else ctx.strokeStyle="hsla("+270+",90%,60%,0.6)";
-    if (curves[i].drawCurve(i)) drawn++;
-  }
-*/
   //drawPoint(ca[0].x,ca[0].y,"silver");
   drawPoint(ca[0].x,ca[0].y,ctx.strokeStyle);
 //if (t>1400) console.log("tt "+t);
 //if (!drawn) console.log("maxt "+t);
   return drawn;
 }
-
-/*
-var draw2=()=>{
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  for (let i=0; i<ca.length; i++) { ca[i].draw(); }
-  let grown=0;
-  for (let i=0; i<curves.length; i++) {
-    //if (drawCurve(curves[i])) grown++;
-    if (curves[i].drawCurve()) grown++;
-  }
-  drawPoint(0,0,"silver");
-  return grown;
-}
-*/
 
 var hue=0;
 var reset=()=>{
@@ -302,7 +306,7 @@ var start=()=>{
 body.addEventListener("click", start, false);
 
 var t=0;
-const INC=7;
+const INC=3;
 var inc=INC;
 const DUR=1300;
 var animate=()=>{
@@ -397,9 +401,6 @@ if (cuidx) {
 console.log("prune from "+pc+" to "+ca.length);
 }
 
-var lengths=[
-]
-
 var setCurves2=(csidx)=>{
   let i=curves.length;
   while (i--) if (curves[i].set==csidx) curves.splice(i,1); 
@@ -419,6 +420,7 @@ var setCurves2=(csidx)=>{
   }
   curves.sort((a,b)=>{ return a.len-b.len; });
 console.log("cuidx "+csidx+" len "+curves.length);
+console.log("MAXL "+curves[curves.length-1].len);
 }
 
 /*
@@ -472,6 +474,7 @@ ca=[new Circle(x,y,0,0,50,0,0)];
 
 var setCircles=()=>{
   //for (let i=0; i<2000; i++) {
+//ca[0].x+=10;
   let counter=0;
     let r=42;
   for (let i=0; i<200; i++) {
