@@ -112,7 +112,7 @@ var reset=()=>{
     dk4[i]=4+12*Math.random();
   }
   dk3.sort((a,b)=>{ return a-b; });
-console.log( dk3[0].toFixed(0), dk3[1].toFixed(0), dk3[2].toFixed(0));
+//console.log( dk3[0].toFixed(0), dk3[1].toFixed(0), dk3[2].toFixed(0));
 }
 reset();
 
