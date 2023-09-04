@@ -83,6 +83,7 @@ if (EM && t%300==0) stopped=true;
 
 onresize();
 
+/*
 ctxo.beginPath();
 //ctxo.arc(0,0,40,0,TP);
 ctxo.lineWidth=2;
@@ -97,6 +98,7 @@ ctxo.arc(x,-x,r,0,TP);
 ctxo.lineWidth=3;
 ctxo.strokeStyle=color.v;
 ctxo.stroke();
+*/
 
 const S6=Math.sin(TP/6);
 const tta=[0,0.5,S6,1,S6,0.5,0,-0.5,-S6,-1,-S6,-0.5];
@@ -154,6 +156,39 @@ var drawTiles=()=>{
 }
 
 //drawTiles();
+
+/*
+var KK0=TP*Math.random();
+var KK1=60+200*Math.random();
+var KK2=TP*Math.random();
+var KK3=60+200*Math.random();
+const dm1=new DOMMatrix([-1,0,0,1,0,0]);
+const dm2=new DOMMatrix([1,0,0,-1,0,0]);
+var strokeTile3=()=>{
+let a=TP*t/2400;
+  let x=1.42*CSO*Math.cos(a);
+  let y=1.42*CSO*Math.sin(a);
+  let path=new Path2D();
+  path.moveTo(0,0);
+  path.lineTo(x,y);
+  let p=new Path2D(path);
+  p.addPath(p,dm1);
+  p.addPath(p,dm2);
+  let d1=Math.max(10,10+20*Math.cos(KK0+t/KK1));
+  let d2=Math.max(10,10+20*Math.cos(KK2+t/KK3));
+ctxo.setTransform(1,0,0,1,CSO,CSO);
+  color.set(t);
+  color2.set(t);
+  ctxo.setLineDash([d1,d2]);
+  ctxo.lineDashOffset=0;
+  ctxo.strokeStyle=color.v;
+  ctxo.stroke(p);
+  ctxo.setLineDash([d2,d1]);
+  ctxo.lineDashOffset=d2;
+  ctxo.strokeStyle=color2.v;
+  ctxo.stroke(p);
+}
+*/
 
 var K1=0.5+1.5*Math.random();
 var K2=0.5+1.5*Math.random();
@@ -230,7 +265,7 @@ var strokeFct=strokeTile;
 
 var draw=()=>{
   ctxo.clearRect(-CSO,-CSO,2*CSO,2*CSO);
-  //strokeTile2();
+  //strokeTile3();
   strokeFct();
   drawTiles();
 }
