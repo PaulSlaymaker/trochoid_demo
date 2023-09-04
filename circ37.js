@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -173,7 +173,6 @@ var cval=(x,y,rad)=>{
     let yd=ca[i].y-y;
     if (Math.abs(xd)>rt) continue;
     if (Math.abs(yd)>rt) continue;
-//console.log(i+" "+Math.pow(xd*xd+yd*yd,0.5));
     if (Math.pow(xd*xd+yd*yd,0.5)+1<rt) {
       return false;
     }
@@ -283,6 +282,7 @@ var animate=()=>{
     t=0; 
   }
   if (t==DUR/2) {
+if (EM) stopped=true;
     //stopped=true;
     pauseTS=performance.now()+1200;
     requestAnimationFrame(pause);
@@ -319,8 +319,11 @@ var pruneCircles=(cuidx)=>{
       else ca[i].cuidx0=false;
     }
   }
-  if (ca.length==0) ca.push(new Circle(0,0,0,0,50,0,0));
-console.log("prune from "+pc+" to "+ca.length);
+  if (ca.length==0) {
+    ca.push(new Circle(0,0,0,0,50,0,0));
+    color.randomize();
+  }
+//console.log("prune from "+pc+" to "+ca.length);
 }
 
 var setCurves=(csidx)=>{
@@ -341,8 +344,8 @@ var setCurves=(csidx)=>{
     }
   }
   curves.sort((a,b)=>{ return b.len-a.len; });
-console.log("curve set "+csidx+" len "+curves.length);
-console.log("MAXL "+curves[curves.length-1].len);
+//console.log("curve set "+csidx+" len "+curves.length);
+//console.log("MAXL "+curves[curves.length-1].len);
 }
 
 var ca=[new Circle(0,0,0,0,50,0,0)];
@@ -351,18 +354,16 @@ var setCircles=()=>{
 //MC=getRandomInt(22,46);
 //MC=getRandomInt(28,42);
 //MC=[32,31,30,32,29,33,28,34,27,35][getRandomInt(0,10,true)];
-  MC=[34,33,35,31,36,30,37,29,38,28][getRandomInt(0,10,true)];
+//MC=[34,33,35,31,36,30,37,29,38,28][getRandomInt(0,10,true)];
+  MC=[36,35,38,33,40,32,41,31,42,30,43,29][getRandomInt(0,12,true)];
   let counter=0;
   for (let i=0; i<200; i++) {
     if (!grow()) counter++;
     if (counter>1) {
-//console.log("no grow count "+i);
-console.log("grow count "+i+" ca.len "+ca.length);
-//console.log(ca[0]);
+//console.log("grow count "+i+" ca.len "+ca.length);
       break;
     }
   }
-//console.log("grow count "+counter);
 }
 
 var initCurves=()=>{
@@ -378,7 +379,6 @@ var initCurves=()=>{
     }
   }
   curves.sort((a,b)=>{ return b.len-a.len; });
-//console.log("curves "+curves.length);
 }
 
 onresize();
@@ -387,4 +387,3 @@ setCircles();
 initCurves();
 
 start();
-
