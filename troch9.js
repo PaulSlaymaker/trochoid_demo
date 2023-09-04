@@ -73,7 +73,7 @@ var t=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-  if (t%200==0) {
+  if (t%100==0) {
     color.randomize();
     color2.randomize();
     [R1,R2]=[2+80*Math.pow(Math.random()*Math.random(),2),
@@ -139,7 +139,7 @@ var drawN=()=>{
     //ctx.strokeRect(x-rad1/5,y-rad1,2*rad1/5,2*rad1);
     ctx.fillRect(-3,-rad1,6,2*rad1);
     ctx.fillStyle=color2.getRGB();
-    ctx.fillRect(-6,-rad2,12,2*rad2);
+    ctx.fillRect(-5,-rad2,10,2*rad2);
 /*
     ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
     drawPoint(x,y);
@@ -154,7 +154,7 @@ var drawN=()=>{
     ctx.fillStyle=color.getRGB();
     ctx.fillRect(-3,-rad1,6,2*rad1);
     ctx.fillStyle=color2.getRGB();
-    ctx.fillRect(-6,-rad2,12,2*rad2);
+    ctx.fillRect(-5,-rad2,10,2*rad2);
 //    let ap=Math.atan2(-7*Math.cos(7*a)-Math.cos(a),7*Math.sin(a)+Math.sin(a));
   } 
 /*
