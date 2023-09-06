@@ -11,7 +11,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -82,6 +81,7 @@ var animate=(ts)=>{
     E1=[2,4][getRandomInt(0,2)];
     E2=[2,4][getRandomInt(0,2)];
     pauseTS=performance.now()+600;
+if (EM) stopped=true;
     requestAnimationFrame(pause);
   } else {
     draw();
