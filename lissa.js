@@ -303,7 +303,7 @@ const resetTimes=()=>{
 }
 
 var stopped=false;
-var start=()=>{
+function start() {
   if (stopped) { 
     stopped=false;
     resetTimes();
