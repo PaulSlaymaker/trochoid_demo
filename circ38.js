@@ -37,22 +37,16 @@ var Circle=function(x,y,xp,yp,radius,pc,aidx) {
   this.radius=radius;
   this.pc=pc;
   this.eadx=0;	// exit angle index
-/*
-  this.drawCircle=(rf)=>{	// diag
-    ctx.beginPath();
-    ctx.moveTo(this.x+this.radius*rf,this.y);
-    ctx.arc(this.x,this.y,this.radius*rf,0,TP);
-    ctx.fill();
-  }
-*/
-  this.hexant=Math.round(Math.atan2(y,x)/TP*12);
-  this.draw=()=>{	// diag
+  this.hexant=Math.round(Math.atan2(y,x)/TP*12);	// dodecant
+  this.draw=(st)=>{	// diag
     ctx.beginPath();
     ctx.moveTo(this.x+this.radius,this.y);
     ctx.arc(this.x,this.y,this.radius,0,TP);
     ctx.stroke();
-ctx.fillText(this.hexant,this.x,this.y-6);
-if (this.iDir) ctx.fillText(this.iDir,this.x,this.y+16);
+if (st) {
+  ctx.fillText(this.hexant,this.x,this.y-6);
+  if (this.iDir!=undefined) ctx.fillText(this.iDir,this.x,this.y+16);
+}
   }
 }
 
@@ -99,8 +93,33 @@ var getTrisAngleIdx=(an1,an2)=>{	// an1-an2==2
   return 1+Math.min(an1,an2);
 }
 
-var PathArc=function() {
-// x,y,rad,a1,a2
+var CirclePath=function(circ,circ2) {
+  if (circ.pc.eadx==circ.eadx) {
+    this.addCirclePath=(pth)=>{
+      pth.lineTo(circ2.xp,circ2.yp);
+    }
+    this.len=2*circ.radius;
+  } else {
+    let aidx1=circ.eadx;
+    let aidx2=(circ.pc.eadx+3)%6;
+    let aidx3=getTrisAngleIdx(circ.eadx,aidx2);
+    let acx=circ.x+2*circ.radius*Math.cos(aidx3*TP/6);
+    let acy=circ.y+2*circ.radius*Math.sin(aidx3*TP/6);
+    if ((circ.pc.eadx+3)%6==(circ.eadx+2)%6) {
+      let a1=((aidx1+3.5)%6)*TP/6;
+      let a2=((aidx1+4.5)%6)*TP/6;
+      this.addCirclePath=(pth)=>{
+	pth.arc(acx,acy,1.732*circ.radius,a1,a2);
+      }
+    } else if ((circ.pc.eadx+3)%6==(circ.eadx+4)%6) {	// left
+      let a1=((aidx1+2.5)%6)*TP/6;
+      let a2=((aidx1+1.5)%6)*TP/6;
+      this.addCirclePath=(pth)=>{
+        pth.arc(acx,acy,1.732*circ.radius,a1,a2,true);
+      }
+    } else debugger;
+    this.len=1.732*circ.radius*TP/6;
+  }
 }
 
 var Curve=function() {
@@ -126,19 +145,65 @@ var Curve=function() {
       //let rad2=36-i/4;
       //let rad2=30+8*getRandomInt(0,7);
       //let minr=[10,15,20,25,30][Math.floor(i/8)];
-      let minr=[12,16,20,24,28][Math.floor(i/8)];
+      //let minr=[16,18,20,22,24][Math.floor(i/8)];
+      //let minr=[24,26,28,30,32][Math.floor(i/8)];
+      let minr=[28,22,16,10,4][Math.floor(i/8)];
       //let rad2=minr+6*getRandomInt(0,12);
-      let rad2=minr+5*getRandomInt(0,14);
+      let rad2=minr+3*getRandomInt(0,14);
       //let a=TP*Math.random();
       let aidx=getRandomInt(0,6);
       if (c.pc) { 
 	aidx=[c.pc.eadx,(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,3)]; 
 //if (Math.pow(c.x*c.x,0.5)>240) {
-  if (this.hexant==0) {
-    if ([-2,-1,0,1].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
-    else if ([-4,-5,-6,6,5].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
-    //else if (-3==c.pc.iDir)) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
-  } else if (this.hexant==1) {
+  if (c.hexant==0) {
+    if      ([-2,-1,0,1   ].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([-4,-5,-6,6,5].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    //else if (c.pc.iDir==-3) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+    else if (-3==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==1) {
+    if      ([-3,-2,-1,0].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([-5,-6,6,5,4].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (-4==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==2) {
+    if      ([-4,-3,-2,-1].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([-6,6,5,4,3 ].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (-5==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==3) {
+    if      ([-5,-4,-3,-2].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([5,4,3,2    ].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if ([-6,6       ].includes(c.pc.iDir)) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==4) {
+    if      ([6,-6,-5,-4,-3].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([4,3,2,1     ].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (5==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==5) {
+    if      ([5,6,-6,-5,-4].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([3,2,1,0     ].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (4==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==6 || c.hexant==-6) {
+    if      ([4,5,6,-6,-5 ].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([2,1,0,-1    ].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (3==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==-5) {
+    if      ([3,4,5,6,-6  ].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([1,0,-1,-2   ].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (2==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==-4) {
+    if      ([2,3,4,5     ].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([0,-1,-2,-3  ].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (1==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==-3) {
+    if      ([1,2,3,4     ].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([-1,-2,-3,-4 ].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (0==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==-2) {
+    if      ([0,1,2,3     ].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([-2,-3,-4,-5 ].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (-1==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
+  } else if (c.hexant==-1) {
+    if      ([-1,0,1,2    ].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
+    else if ([-3,-4,-5,-6,6].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
+    else if (-2==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
   }
 //}
 	//aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
@@ -151,26 +216,44 @@ var Curve=function() {
 	let xp=c.x+c.radius*Math.cos(a);
 	let yp=c.y+c.radius*Math.sin(a);
         c.iDir=Math.round(Math.atan2(c.xp-xp,c.yp-yp)/TP*12);
+/*
+if (c.pc.eadx==c.eadx) {
+  console.log("straight "+this.car.length);
+}
+*/
 	let circle=new Circle(x,y,xp,yp,rad2,c);
-        //c.cc=circle;
+        c.cc=circle;
         this.car.push(circle);
-        this.gr=true;
+if (c.pc) {
+c.cp=new CirclePath(c,circle);
+}
 //console.log("tries "+i);
+        this.gr=true;
         return true;
       }
     }
     return false;
   }
+  this.setPathD=()=>{
+    this.len=0;
+    this.pathd=new Path2D();
+    this.pathd.moveTo(this.car[1].xp,this.car[1].yp);
+    for (let i=1; i<this.car.length-1; i++) {
+      this.car[i].cp.addCirclePath(this.pathd);
+      this.len+=this.car[i].cp.len;
+    }
+  }
   this.setPathT=()=>{
     this.len=0;
     this.patht=new Path2D();
-    this.path.moveTo(this.car[1].xp,this.car[1].yp);
+    this.patht.moveTo(this.car[1].xp,this.car[1].yp);
     for (let i=1; i<this.car.length-1; i++) {
       if (this.car[i-1].eadx==this.car[i].eadx) {
       }
     }
   }
   this.setPath=()=>{
+debugger;
     this.path=new Path2D();
     this.path.moveTo(this.car[2].xp,this.car[2].yp);	// 0 not draws, drawn back 2->1
 let CC=(this.gr)?this.car.length-2:this.car.length-1;
@@ -251,10 +334,12 @@ let CC=(this.gr)?this.car.length-2:this.car.length-1;
       p.arc(this.frontArcCx,this.frontArcCy,1.732*c1.radius,this.frontA1,this.frontA1-f*TP/6,true);
     }
     ctx.stroke(p);
+/*
 let TTT=Math.atan2(this.car[this.car.length-2].xp-this.car[this.car.length-1].xp,this.car[this.car.length-2].yp-this.car[this.car.length-1].yp);
 TTT=TTT/TP*12;
 ctx.fillText(TTT.toFixed(2),this.car[this.car.length-2].x,this.car[this.car.length-2].y+8);
 //ctx.fillText(this.iDir,this.car[this.car.length-2].x,this.car[this.car.length-2].y+20);
+*/
   }
   this.drawEnd=()=>{
     // punch clear
@@ -271,13 +356,29 @@ ctx.fillText(TTT.toFixed(2),this.car[this.car.length-2].x,this.car[this.car.leng
     ctx.stroke(p);
   }
   this.drawCurve=()=>{
+/*
     ctx.lineWidth=16;	// 4 less than minr*2
     ctx.strokeStyle=col1;
     ctx.stroke(this.path);
-//    ctx.lineWidth=10;
-//    ctx.strokeStyle=color2.getRGB(0);
     this.drawEnd();
     if (this.gr) this.drawFront();
+*/
+
+    if (this.gr) {
+      //ctx.setLineDash([this.len-(1-f)*this.car[this.car.length-2].cp.len,20000]);
+      ctx.setLineDash([this.len-(1-f)*this.car[this.car.length-2].cp.len-f*this.car[1].cp.len,20000]);
+    } else {
+      //ctx.setLineDash([this.len,20000]);
+      ctx.setLineDash([this.len-f*this.car[1].cp.len,20000]);
+    }
+ctx.lineDashOffset=-f*this.car[1].cp.len;
+//console.log(this.len-this.car[this.car.length-2].cp.len);
+//debugger;
+    ctx.lineWidth=18;
+    ctx.strokeStyle=col1;
+    ctx.stroke(this.pathd);
+ctx.setLineDash([]);
+ctx.lineDashOffset=0;
   }
 }
 
@@ -358,12 +459,11 @@ var drawCurveSet=(cuixd, col)=>{	// diag
 }
 
 const annulus=new Path2D();
-annulus .arc(0,0,CSIZE,0,TP);
+annulus.arc(0,0,CSIZE,0,TP);
 var draw=()=>{
 //ctx.fillStyle="#00000020";
 //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-drawCircles();
   for (let i=0; i<curves.length; i++) curves[i].drawCurve();
 
 ctx.lineWidth=1;
@@ -371,12 +471,18 @@ ctx.stroke(annulus);
 }
 
 var transit=()=>{
-  curves[0].gr=false;
-  curves[0].sh=false;
-  curves[0].shrink();
-  curves[0].grow();
-  curves[0].setPath();
-if (curves[0].car.length<4) stopped=true;
+for (let i=0; i<curves.length; i++) {
+  curves[i].gr=false;
+  curves[i].sh=false;
+  curves[i].shrink();
+  curves[i].grow();
+//  curves[0].setPath();
+curves[i].setPathD();
+if (curves[i].car.length<5) {
+  stopped=true;
+  console.log(performance.now());
+}
+}
 }
 
 var stopped=true;
@@ -390,7 +496,8 @@ body.addEventListener("click", start, false);
 
 var f=0;
 var t=0;
-var dur=100;
+var dur=20;
+//var dur=4;
 var animate=()=>{
   if (stopped) return;
   t++;
@@ -400,21 +507,35 @@ var animate=()=>{
     t=0;
     //stopped=true;
     transit();
+//dur=curves[0].car[1].cp.len;
   }
+//drawCircles();
   requestAnimationFrame(animate);
 }
 
-var curves=[];
-
 ctx.font="bold 14px sans-serif";
+ctx.textAlign="center";
 var drawCircles=(col,lw)=>{	// diag
   ctx.save();
   ctx.lineWidth=lw?lw:1;
   if (col) ctx.strokeStyle=col;
-  else ctx.strokeStyle="gray";
+  else ctx.strokeStyle="silver";
   for (let i=0; i<curves[0].car.length; i++) {
     curves[0].car[i].draw();
   }
+  ctx.restore();
+}
+
+var drawCircles2=(col)=>{	// diag
+  ctx.save();
+  ctx.lineWidth=1;
+  if (col) ctx.strokeStyle=col;
+  else ctx.strokeStyle="silver";
+for (let j=0; j<curves.length; j++) {
+  for (let i=0; i<curves[j].car.length; i++) {
+    curves[j].car[i].draw(true);
+  }
+}
   ctx.restore();
 }
 
@@ -427,23 +548,39 @@ var drawPoint=(x,y,col)=>{
   ctx.fill();
 }
 
-onresize();
+const CC=1;
+//var curves=[new Curve(), new Curve()];	// check for overlap
+var curves=[new Curve()];
 
 var initCurves=()=>{
-  curves=[new Curve()];
-  let ccount=30;
-  for (let i=0; i<ccount; i++) if (!curves[0].grow()) break;
-  console.log(" ca.len "+curves[0].car.length);
-  if (curves[0].car.length<3) {
+  let ccount=8;
+for (let k=0; k<CC; k++) {
+//  curves[k]=new Curve();
+//for (let j=0; j<20; j++) {
+  for (let i=0; i<ccount; i++) if (!curves[k].grow()) break;
+  if (curves[k].car.length<3) {
     debugger;	// fixme
+//    if (j>1) debugger;
+//if (curves[i].car.length<ccount) {
   }
-  curves[0].setPath();
-  if (curves[0].car.length<ccount) {
-  } else curves[0].gr=true;
+//}
+console.log("LL");
+}
+//  curves[0].setPath();
+for (let i=0; i<curves.length; i++) {
+  curves[i].setPathD();
+  if (curves[i].car.length<ccount) {
+  } else curves[i].gr=true;
+console.log("ca.len "+curves[i].car.length);
+}
   //             
 }
+
+onresize();
+
 initCurves();
 draw();
+drawCircles();
 drawPoint(curves[0].car[0].x,curves[0].car[0].y,"white");
 ctx.moveTo(-CSIZE,0);
 ctx.lineTo(CSIZE,0);
