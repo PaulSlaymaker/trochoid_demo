@@ -44,8 +44,8 @@ var Circle=function(x,y,xp,yp,radius,pc,aidx) {
     ctx.arc(this.x,this.y,this.radius,0,TP);
     ctx.stroke();
 if (st) {
-  ctx.fillText(this.hexant,this.x,this.y-6);
-  if (this.iDir!=undefined) ctx.fillText(this.iDir,this.x,this.y+16);
+  ctx.fillText(this.hexant,this.x,this.y-4);
+  if (this.iDir!=undefined) ctx.fillText(this.iDir,this.x,this.y+14);
 }
   }
 }
@@ -122,39 +122,37 @@ var CirclePath=function(circ,circ2) {
   }
 }
 
+const STT=4;
+
 var Curve=function() {
   let ar=TP*Math.random();
   this.car=[new Circle((CSIZE-rad2)*Math.cos(ar),(CSIZE-rad2)*Math.sin(ar),0,0,rad2,0,0)];
-/*
-  if (initCircle) {
-    let ar=TP*Math.random();
-    this.car=[new Circle((CSIZE-rad2)*Math.cos(ar),(CSIZE-rad2)*Math.sin(ar),0,0,rad2,0,0)];
-  } else {	// deprecate?
-    this.car=[];
-  }
-*/
+  this.gr=true;
+  this.sh=true;
+this.gt=0;	// growth tries
   this.shrink=()=>{
-    if (this.car.length<4) return false;
+    if (this.car.length<STT) {
+      this.sh=false;
+      return;
+    } else if (this.car.length==STT) {
+      this.car.shift();
+      this.sh=false;
+      return;
+    }
     this.car.shift();
     this.sh=true;
-    return true;
   }
   this.grow=()=>{
     let c=this.car[this.car.length-1];
     for (let i=0; i<40; i++) {
-      //let rad2=36-i/4;
       //let rad2=30+8*getRandomInt(0,7);
-      //let minr=[10,15,20,25,30][Math.floor(i/8)];
-      //let minr=[16,18,20,22,24][Math.floor(i/8)];
-      //let minr=[24,26,28,30,32][Math.floor(i/8)];
-      let minr=[28,22,16,10,4][Math.floor(i/8)];
-      //let rad2=minr+6*getRandomInt(0,12);
+      let minr=[36,28,20,12,4][Math.floor(i/8)];
+//let minr=[46,38,30,22,14][Math.floor(i/8)];
       let rad2=minr+3*getRandomInt(0,14);
-      //let a=TP*Math.random();
       let aidx=getRandomInt(0,6);
       if (c.pc) { 
 	aidx=[c.pc.eadx,(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,3)]; 
-//if (Math.pow(c.x*c.x,0.5)>240) {
+if (Math.pow(c.x*c.x,0.5)>140) {
   if (c.hexant==0) {
     if      ([-2,-1,0,1   ].includes(c.pc.iDir)) aidx=(c.pc.eadx+5)%6;
     else if ([-4,-5,-6,6,5].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
@@ -205,7 +203,7 @@ var Curve=function() {
     else if ([-3,-4,-5,-6,6].includes(c.pc.iDir)) aidx=(c.pc.eadx+1)%6;
     else if (-2==c.pc.iDir) aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
   }
-//}
+}
 	//aidx=[(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,2)]; 
       }
       let a=TP*aidx/6;
@@ -216,13 +214,8 @@ var Curve=function() {
 	let xp=c.x+c.radius*Math.cos(a);
 	let yp=c.y+c.radius*Math.sin(a);
         c.iDir=Math.round(Math.atan2(c.xp-xp,c.yp-yp)/TP*12);
-/*
-if (c.pc.eadx==c.eadx) {
-  console.log("straight "+this.car.length);
-}
-*/
 	let circle=new Circle(x,y,xp,yp,rad2,c);
-        c.cc=circle;
+//        c.cc=circle;
         this.car.push(circle);
 if (c.pc) {
 c.cp=new CirclePath(c,circle);
@@ -232,6 +225,7 @@ c.cp=new CirclePath(c,circle);
         return true;
       }
     }
+    this.gr=false;
     return false;
   }
   this.setPathD=()=>{
@@ -364,17 +358,25 @@ ctx.fillText(TTT.toFixed(2),this.car[this.car.length-2].x,this.car[this.car.leng
     if (this.gr) this.drawFront();
 */
 
-    if (this.gr) {
+    if (this.gr && this.sh) {
       //ctx.setLineDash([this.len-(1-f)*this.car[this.car.length-2].cp.len,20000]);
       ctx.setLineDash([this.len-(1-f)*this.car[this.car.length-2].cp.len-f*this.car[1].cp.len,20000]);
-    } else {
-      //ctx.setLineDash([this.len,20000]);
-      ctx.setLineDash([this.len-f*this.car[1].cp.len,20000]);
-    }
 ctx.lineDashOffset=-f*this.car[1].cp.len;
+    } else if (this.gr) {
+      ctx.setLineDash([this.len-(1-f)*this.car[this.car.length-2].cp.len,20000]);
+ctx.lineDashOffset=0;
+    } else if (this.sh) {
+      ctx.setLineDash([this.len-f*this.car[1].cp.len,20000]);
+ctx.lineDashOffset=-f*this.car[1].cp.len;
+    } else {
+      //debugger;
+      ctx.setLineDash([]);
+ctx.lineDashOffset=0;
+    }
+//ctx.lineDashOffset=-f*this.car[1].cp.len;
 //console.log(this.len-this.car[this.car.length-2].cp.len);
 //debugger;
-    ctx.lineWidth=18;
+    ctx.lineWidth=18;	// variable f(mean radius)
     ctx.strokeStyle=col1;
     ctx.stroke(this.pathd);
 ctx.setLineDash([]);
@@ -416,36 +418,6 @@ var cval=(x,y,rad)=>{
 
 var rad2=50+10*getRandomInt(0,5);
 
-/*
-var grow=()=>{
-  let c=ca[ca.length-1];
-  for (let i=0; i<97; i++) {
-    //let c=ca[getRandomInt(0,ca.length)];
-    //let rad2=36-i/4;
-    let rad2=30+10*getRandomInt(0,6);
-    //let a=TP*Math.random();
-    let aidx=getRandomInt(0,6);
-    if (c.pc) { 
-      aidx=[c.pc.eadx,(c.pc.eadx+1)%6,(c.pc.eadx+5)%6][getRandomInt(0,3)]; 
-    }
-    let a=TP*aidx/6;
-    let x=c.x+(c.radius+rad2)*Math.cos(a);
-    let y=c.y+(c.radius+rad2)*Math.sin(a);
-    if (cval(x,y,rad2)) {
-      c.eadx=aidx;
-      let xp=c.x+c.radius*Math.cos(a);
-      let yp=c.y+c.radius*Math.sin(a);
-      let circle=new Circle(x,y,xp,yp,rad2,c);
-      //c.c.push(circle);
-      c.cc=circle;
-      ca.push(circle);
-      return true;
-    }
-  }
-  return false;
-}
-*/
-
 var drawCurveSet=(cuixd, col)=>{	// diag
   ctx.save();
   if (col) ctx.strokeStyle=col;
@@ -471,18 +443,24 @@ ctx.stroke(annulus);
 }
 
 var transit=()=>{
-for (let i=0; i<curves.length; i++) {
-  curves[i].gr=false;
-  curves[i].sh=false;
-  curves[i].shrink();
-  curves[i].grow();
+  for (let i=0; i<curves.length; i++) {
+    curves[i].gr=false;
+    curves[i].sh=false;
+    curves[i].shrink();
+    curves[i].grow();
+if (curves[i].car.length>=STT) curves[i].sh=true;
+else curves[i].sh=false;
 //  curves[0].setPath();
-curves[i].setPathD();
-if (curves[i].car.length<5) {
-  stopped=true;
-  console.log(performance.now());
-}
-}
+    curves[i].setPathD();
+    if (curves[i].car.length<STT) {	// distinguish permanent and temp
+      this.gt++;
+//      if (this.gt>5) {
+	//stopped=true;
+//console.log("transit stop "+performance.now());
+//debugger;
+//      }
+    }
+  }
 }
 
 var stopped=true;
@@ -496,7 +474,7 @@ body.addEventListener("click", start, false);
 
 var f=0;
 var t=0;
-var dur=20;
+var dur=40;
 //var dur=4;
 var animate=()=>{
   if (stopped) return;
@@ -509,7 +487,7 @@ var animate=()=>{
     transit();
 //dur=curves[0].car[1].cp.len;
   }
-//drawCircles();
+//drawCircles2();
   requestAnimationFrame(animate);
 }
 
@@ -535,14 +513,15 @@ for (let j=0; j<curves.length; j++) {
   for (let i=0; i<curves[j].car.length; i++) {
     curves[j].car[i].draw(true);
   }
+  drawPoint(curves[j].car[0].x,curves[j].car[0].y,"white");
 }
   ctx.restore();
 }
 
 var drawPoint=(x,y,col)=>{
   ctx.beginPath();
-  ctx.moveTo(x+6,y);
-  ctx.arc(x,y,6,0,TP);
+  ctx.moveTo(x+3,y);
+  ctx.arc(x,y,3,0,TP);
   if (col==undefined) ctx.fillStyle="red";
   else ctx.fillStyle=col;
   ctx.fill();
@@ -550,28 +529,29 @@ var drawPoint=(x,y,col)=>{
 
 const CC=1;
 //var curves=[new Curve(), new Curve()];	// check for overlap
-var curves=[new Curve()];
+var curves=new Array(CC);
+for (let i=0; i<CC; i++) curves[i]=new Curve();
 
 var initCurves=()=>{
-  let ccount=8;
+  //let ccount=5;
+  let ccount=4;
 for (let k=0; k<CC; k++) {
 //  curves[k]=new Curve();
 //for (let j=0; j<20; j++) {
   for (let i=0; i<ccount; i++) if (!curves[k].grow()) break;
-  if (curves[k].car.length<3) {
+  if (curves[k].car.length<STT) {
     debugger;	// fixme
 //    if (j>1) debugger;
 //if (curves[i].car.length<ccount) {
   }
 //}
-console.log("LL");
 }
 //  curves[0].setPath();
 for (let i=0; i<curves.length; i++) {
   curves[i].setPathD();
   if (curves[i].car.length<ccount) {
   } else curves[i].gr=true;
-console.log("ca.len "+curves[i].car.length);
+console.log("car.len "+curves[i].car.length);
 }
   //             
 }
@@ -580,8 +560,7 @@ onresize();
 
 initCurves();
 draw();
-drawCircles();
-drawPoint(curves[0].car[0].x,curves[0].car[0].y,"white");
+drawCircles2();
 ctx.moveTo(-CSIZE,0);
 ctx.lineTo(CSIZE,0);
 ctx.moveTo(-CSIZE*0.866,-CSIZE/2);
