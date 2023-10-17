@@ -52,11 +52,9 @@ var stopped=true;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-  k=4+2*Math.sin(O1+t/K1);
-  k2=4+2*Math.sin(O2+t/K2);
-  k3=2+0.5*Math.cos(t/K3);
-  L1=40*Math.sin(t/K4);
-  L2=40*Math.sin(t/K5);
+  //k=4+2*Math.sin(O1+t/K1);
+  //k2=4+2*Math.sin(O2+t/K2);
+  //k3=2+0.5*Math.cos(t/K3);
 
   setFactors();
 
@@ -85,17 +83,25 @@ onresize();
 var O1=TP*Math.random();
 var O2=TP*Math.random();
 
-var K1a=new Array(count);
-//K1a.forEach((p,i)=>{ K1a[i]=120+120*Math.random(); console.log(K1a); });
+var K1x=new Array(count);
+var K1y=new Array(count);
+var K1l=new Array(count);
+var KLx=new Array(count);
 for (let i=0; i<count; i++) { 
-  K1a[i]=120+120*Math.random();
+  K1x[i]=120+120*Math.random();
+  K1y[i]=120+120*Math.random();
+  K1l[i]=120+120*Math.random();
+  KLx[i]=120+120*Math.random();
 }
 var kxa=new Array(count);
 var kya=new Array(count);
+var kla=new Array(count);
 
+/*
 var K1=120+120*Math.random();
 var K2=120+120*Math.random();
 var K3=120+120*Math.random();
+*/
 var K4=120+120*Math.random();
 var K5=120+120*Math.random();
 var K6=120+120*Math.random();
@@ -104,21 +110,26 @@ var L2=40*Math.sin(t/K5);
 
 var D=100+80*Math.sin(t/K6);
 
-var k=4+2*Math.sin(O1+t/K1);
+//var k=4+2*Math.sin(O1+t/K1);
 //var kx1=4+2*Math.sin(O1+t/K1);
 //var kx2=4+2*Math.sin(O1+t/K1);
-var k2=4+2*Math.sin(O2+t/K2);
+//var k2=4+2*Math.sin(O2+t/K2);
 //var k3=2;//1.3+3*Math.random();
-var k3=2+0.5*Math.cos(t/K3);
+//var k3=2+0.5*Math.cos(t/K3);
 
 var setFactors=()=>{
   for (let i=0; i<count; i++) { 
-    kxa[i]=4+2*Math.sin(O1+t/K1a[i]);
+    kxa[i]=4+2*Math.sin(O1+t/K1x[i]);
+    kya[i]=4+2*Math.sin(O2+t/K1y[i]);
+    kla[i]=2+0.5*Math.cos(t/K1l[i]);
   }
+  L1=40*Math.sin(t/K4);
+  L2=40*Math.sin(t/K5);
   D=100+80*Math.sin(t/K6);
 }
+setFactors();
 
-var LW=18;
+var LW=21;
 
 var pa=new Array(count);
 
@@ -174,11 +185,11 @@ dp3=new DOMPoint(x+l,y).matrixTransform(dmt);
 //pa[idx].arc(dp1.x,dp1.y,l/16,0,TP);
 //let  kt=idx%2?10:k;
 
-let kz=kxa[idx];
-  setPath(idx+1,x+l/kxa[idx]+L1,y+l/k2+L2,l/k3);
-  setPath(idx+1,x-l/kxa[idx]-L1,y-l/k2-L2,l/k3);
-  setPath(idx+1,x-l/kz-L1,y+l/k2+L2,l/k3);
-  setPath(idx+1,x+l/kz+L1,y-l/k2-L2,l/k3);
+let kz=kla[idx];
+  setPath(idx+1,x+l/kxa[idx]+L1,y+l/kya[idx]+L2,l/kla[idx]);
+  setPath(idx+1,x-l/kxa[idx]-L1,y-l/kya[idx]-L2,l/kla[idx]);
+  setPath(idx+1,x-l/kxa[idx]-L1,y+l/kya[idx]+L2,l/kla[idx]);
+  setPath(idx+1,x+l/kxa[idx]+L1,y-l/kya[idx]-L2,l/kla[idx]);
   //setPath(idx+1,dp1.x+l/k+L1,dp1.y-l/k2-L2,l/k3);
 }
 
@@ -195,12 +206,12 @@ var draw=()=>{
   ctx.globalCompositeOperation="source-over";
   ctx.setLineDash([]);
 //  ctx.lineWidth=8+LW-3*i;
-  ctx.lineWidth=8+LW-5*(count-1-i);
-  ctx.strokeStyle="black";
-  ctx.stroke(pa[i]);
+    ctx.lineWidth=8+LW-6*(count-1-i);
+    ctx.strokeStyle="black";
+    ctx.stroke(pa[i]);
 
     //ctx.lineWidth=LW-3*i;
-    ctx.lineWidth=LW-5*(count-1-i);
+    ctx.lineWidth=LW-6*(count-1-i);
 //console.log(ctx.lineWidth);
     ctx.strokeStyle=ca[i].v;
     ctx.stroke(pa[i]);
@@ -212,4 +223,5 @@ var draw=()=>{
   }
 }
 
+//draw();
 start();
