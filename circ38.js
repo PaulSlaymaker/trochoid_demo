@@ -122,7 +122,7 @@ var CirclePath=function(circ,circ2) {
   }
 }
 
-const STT=4;
+const STT=20;
 
 var Curve=function() {
   let ar=TP*Math.random();
@@ -131,14 +131,53 @@ var Curve=function() {
   this.sh=true;
 this.gt=0;	// growth tries
   this.shrink=()=>{
-    if (this.car.length<STT) {
+    if (this.car.length<4) {
       this.sh=false;
       return;
+    } else if (this.car.length<STT) {
+if (this.gr) {
+      this.car.shift();
+      this.sh=true;
+      return;
+} else {
+      this.sh=false;
+      return;
+}
+    } else if (this.car.length==STT) {
+if (this.sh==false) {
+      this.car.shift();
+      this.sh=true;
+      return;
+} else {
+      this.car.shift();
+      this.sh=false;
+console.log("what?");
+      return;
+}
+    }
+
+/*
+if (this.sh==false) {
+      this.sh=true;
+      return;
+} else {
+}
+*/
+/*
+if (this.gr) {
+      this.car.shift();
+      this.sh=true;
+      return;
+} else {
+      this.sh=false;
+      return;
+}
     } else if (this.car.length==STT) {
       this.car.shift();
       this.sh=false;
       return;
     }
+*/
     this.car.shift();
     this.sh=true;
   }
@@ -444,12 +483,12 @@ ctx.stroke(annulus);
 
 var transit=()=>{
   for (let i=0; i<curves.length; i++) {
-    curves[i].gr=false;
-    curves[i].sh=false;
+    //curves[i].sh=false;
     curves[i].shrink();
+    curves[i].gr=false;
     curves[i].grow();
-if (curves[i].car.length>=STT) curves[i].sh=true;
-else curves[i].sh=false;
+//if (curves[i].car.length>=STT) curves[i].sh=true;
+//else curves[i].sh=false;
 //  curves[0].setPath();
     curves[i].setPathD();
     if (curves[i].car.length<STT) {	// distinguish permanent and temp
@@ -533,8 +572,8 @@ var curves=new Array(CC);
 for (let i=0; i<CC; i++) curves[i]=new Curve();
 
 var initCurves=()=>{
-  //let ccount=5;
-  let ccount=4;
+  //let ccount=4;
+  let ccount=STT;
 for (let k=0; k<CC; k++) {
 //  curves[k]=new Curve();
 //for (let j=0; j<20; j++) {
