@@ -28,7 +28,7 @@ const getRandomInt=(min,max,low)=>{
 }
 
 function Color() {
-  const CBASE=144;
+  const CBASE=112;
   const CT=255-CBASE;
   this.RK2=TP*Math.random();
   this.GK2=TP*Math.random();
