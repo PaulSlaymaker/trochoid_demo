@@ -213,6 +213,7 @@ var animate=()=>{
   if (stopped) return;
   t++;
   draw();
+  if (EM && t%200==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
@@ -262,5 +263,6 @@ var setPoints=()=>{
 
 onresize();
 
-if (EM) draw();
-else start();
+//if (EM) draw();
+//else start();
+start();
