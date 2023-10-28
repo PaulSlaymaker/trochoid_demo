@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/qBLzOKa
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const TP=2*Math.PI;
@@ -10,7 +10,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -83,7 +82,7 @@ onresize();
 var Ka=new Array(count);
 var Kl=new Array(count);
 for (let i=0; i<count; i++) { 
-  Ka[i]=1000+1000*Math.random();
+  Ka[i]=800+800*Math.random();
 }
 
 var K1=160+160*Math.random();
