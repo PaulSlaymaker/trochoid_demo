@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/gOqOmGG
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -11,7 +11,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -64,6 +63,7 @@ var animate=(ts)=>{
   if (stopped) return;
   t++;
   draw();
+if (EM && t%300==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
@@ -160,24 +160,6 @@ ctx.fill(path);
 ctx.fillStyle="#00000020";
 ctx.fill(path2);
 }
-
-/*
-ctx.strokeStyle="yellow";
-ctx.lineWidth=2;
-var path=new Path2D();
-path.moveTo(CSIZE,0);
-for (let i=0; i<400; i++) {
-  let z=i*TP/400;
-  let x=CSIZE*(kxa[0]*Math.cos(z)+kxa[1]*Math.cos(2*z)+kxa[2]*Math.cos(3*z));
-  let y=CSIZE*(kxa[0]*Math.sin(z)+kxa[1]*Math.sin(2*z)+kxa[2]*Math.sin(3*z));
-//  let x=CSIZE*(Math.sin(1*z)+Math.cos(3*z));//*Math.cos(3*z));
-//  let y=CSIZE*(Math.sin(3*z)+Math.cos(1*z));//*Math.sin(3*z));
-  path.lineTo(x,y);
-//if (i%100==0) drawPoint(x,y,"red",4);
-}
-path.closePath();
-ctx.stroke(path);
-*/
 
 onresize();
 

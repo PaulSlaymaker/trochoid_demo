@@ -57,9 +57,7 @@ var animate=(ts)=>{
   //k3=2+0.5*Math.cos(t/K3);
 
   setFactors();
-
-//if (EM && t%350==0) stopped=true;
-
+if (EM && t%200==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
@@ -212,7 +210,6 @@ var draw=()=>{
 
     //ctx.lineWidth=LW-3*i;
     ctx.lineWidth=LW-6*(count-1-i);
-//console.log(ctx.lineWidth);
     ctx.strokeStyle=ca[i].v;
     ctx.stroke(pa[i]);
 

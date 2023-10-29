@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/qBLzOKa
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -49,11 +50,8 @@ var stopped=true;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-
   setFactors();
-
-//if (EM && t%350==0) stopped=true;
-
+if (EM && t%350==0) stopped=true;
   draw();
 //if (t%50==0) stopped=true;
   requestAnimationFrame(animate);
@@ -223,7 +221,6 @@ ctx.lineWidth=6;
     //ctx.lineWidth=LW-3*i;
     //ctx.lineWidth=LW-5*(count-1-i);
 ctx.lineWidth=2;
-//console.log(ctx.lineWidth);
     ctx.strokeStyle=ca[i].v;
 ctx.lineDashOffset=0;
     ctx.setLineDash([D,D+4]);
