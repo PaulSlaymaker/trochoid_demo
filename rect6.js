@@ -16,9 +16,9 @@ const ctx=(()=>{
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,CSIZE);
-ctx.lineWidth=4;
+ctx.lineWidth=2;
 //ctx.strokeStyle="black";
-ctx.globalAlpha=0.6;
+ctx.globalAlpha=0.7;
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -43,9 +43,9 @@ function Color() {
     return "rgb("+red+","+grn+","+blu+")";
   }
   this.randomize=()=>{
-    this.RK1=400+400*Math.random();
-    this.GK1=400+400*Math.random();
-    this.BK1=400+400*Math.random();
+    this.RK1=300+300*Math.random();
+    this.GK1=300+300*Math.random();
+    this.BK1=300+300*Math.random();
   }
   this.randomize();
 }
@@ -84,35 +84,37 @@ var Distance=function(idx) {
 var Rect=function(ix,iy,ix2,iy2) { 
   //this.pts=[new Point(),new Point(),new Point(),new Point()]; 
   this.getPath=()=>{
+    const dmx=new DOMMatrix([-1,0,0,1,0,0]);
+    const dmy=new DOMMatrix([1,0,0,-1,0,0]);
     let p=new Path2D();
     if (ix==0 && iy==0) {
-      p.moveTo(-xa[ix2].d,-ya[iy2].d);
-      p.lineTo(xa[ix2].d,-ya[iy2].d);
-      p.lineTo(xa[ix2].d,ya[iy2].d);
-      p.lineTo(-xa[ix2].d,ya[iy2].d);
+      p.moveTo(-xa[ix2].d+1,-ya[iy2].d+1);
+      p.lineTo(xa[ix2].d-1,-ya[iy2].d+1);
+      p.lineTo(xa[ix2].d-1,ya[iy2].d-1);
+      p.lineTo(-xa[ix2].d+1,ya[iy2].d-1);
       p.closePath();
     } else if (ix==0) {
-      p.moveTo(-xa[ix2].d,ya[iy].d);
-      p.lineTo(xa[ix2].d,ya[iy].d);
-      p.lineTo(xa[ix2].d,ya[iy2].d);
-      p.lineTo(-xa[ix2].d,ya[iy2].d);
+      p.moveTo(-xa[ix2].d+1,ya[iy].d+1);
+      p.lineTo(xa[ix2].d-1,ya[iy].d+1);
+      p.lineTo(xa[ix2].d+1,ya[iy2].d-1);
+      p.lineTo(-xa[ix2].d-1,ya[iy2].d-1);
       p.closePath();
-      p.addPath(p,new DOMMatrix([1,0,0,-1,0,0]));
+      p.addPath(p,dmy);
     } else if (iy==0) {
-      p.moveTo(xa[ix].d,-ya[iy2].d);
-      p.lineTo(xa[ix2].d,-ya[iy2].d);
-      p.lineTo(xa[ix2].d,ya[iy2].d);
-      p.lineTo(xa[ix].d,ya[iy2].d);
+      p.moveTo(xa[ix].d+1,-ya[iy2].d+1);
+      p.lineTo(xa[ix2].d-1,-ya[iy2].d+1);
+      p.lineTo(xa[ix2].d-1,ya[iy2].d-1);
+      p.lineTo(xa[ix].d+1,ya[iy2].d-1);
       p.closePath();
-      p.addPath(p,new DOMMatrix([-1,0,0,1,0,0]));
+      p.addPath(p,dmx);
     } else {
-      p.moveTo(xa[ix].d,ya[iy].d);
-      p.lineTo(xa[ix2].d,ya[iy].d);
-      p.lineTo(xa[ix2].d,ya[iy2].d);
-      p.lineTo(xa[ix].d,ya[iy2].d);
+      p.moveTo(xa[ix].d+1,ya[iy].d+1);
+      p.lineTo(xa[ix2].d-1,ya[iy].d+1);
+      p.lineTo(xa[ix2].d-1,ya[iy2].d-1);
+      p.lineTo(xa[ix].d+1,ya[iy2].d-1);
       p.closePath();
-      p.addPath(p,new DOMMatrix([1,0,0,-1,0,0]));
-      p.addPath(p,new DOMMatrix([-1,0,0,1,0,0]));
+      p.addPath(p,dmy);
+      p.addPath(p,dmx);
     }
     return p;
   }
@@ -143,16 +145,17 @@ var animate=(ts)=>{
   t++;
   setXYArrays();
   draw();
-  //if (t%800==0) stopped=true;
-//  if (EM && t%200==0) stopped=true;
+  if (EM && t%200==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
-onresize();
+const COUNT=getRandomInt(7,10);
 
-setColors(getRandomInt(2,4));
+if (COUNT==7) setColors(4);
+else if (COUNT==9) setColors(3);
+else setColors(getRandomInt(3,5));
 
-const COUNT=8;
+//console.log(" C:"+COUNT+" COL:"+colors.length);
 var xa=new Array(COUNT);
 var ya=new Array(COUNT);
 for (let i=0; i<COUNT; i++) {
@@ -210,7 +213,6 @@ var draw=()=>{
 
 setXYArrays();
 
-//if (EM) draw();
-//else start();
+onresize();
 
 start();
