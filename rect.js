@@ -225,4 +225,5 @@ rect.split();
 
 transit();
 
-start();
+if (EM) rect.draw3();
+else start();

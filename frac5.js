@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -46,7 +47,7 @@ function Color() {
 
 var pauseTS=1000;
 var pause=(ts)=>{
-//  if (EM) stopped=true;
+  if (EM) stopped=true;
   if (stopped) return;
   if (ts<pauseTS) {
     requestAnimationFrame(pause);
@@ -96,10 +97,13 @@ var setK1a=()=>{
   for (let i=0; i<K1a.length; i++) { 
     //K1a[i]=1000+1000*Math.random();
     //K1a[i]=800+(i%2)*800; //*Math.random();
-    //K1a[i]=800+(i%2)*800; //*Math.random();
+    if (Math.random()<0.5) sum+=K1a[i]=800;
+    else sum+=K1a[i]=1600;
+/*
     if (Math.random()<0.5) K1a[i]=800;
     else K1a[i]=1600;
     sum+=K1a[i];
+*/
   //  K1a[i]=800+(Math.random()<0.5)?800:0;
   }
   if (sum==count*1600 || sum==count*800) K1a=[1600, 800, 1600, 800, 1600];

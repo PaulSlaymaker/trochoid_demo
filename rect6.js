@@ -69,7 +69,7 @@ var Distance=function(idx) {
     this.d=CSIZE;
     this.setD=()=>{ }
   } else {
-    this.K1a=(3200+3200*Math.random())/TP;
+    this.K1a=(2000+2000*Math.random())/TP;
     //this.K1a=(3200+3200*(idx%2))/TP;
     //this.K1a=320+idx*320/COUNT;
     this.K2a=TP*Math.random();
