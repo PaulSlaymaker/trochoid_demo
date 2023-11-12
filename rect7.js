@@ -4,7 +4,7 @@ body.style.background="#000";
 const EM=location.href.endsWith("em");
 
 const TP=2*Math.PI;
-const CSIZE=400;
+const CSIZE=480;
 
 const ctx=(()=>{
   let d=document.createElement("div");
@@ -16,7 +16,7 @@ const ctx=(()=>{
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,CSIZE);
-//ctx.globalAlpha=1; //0.5;
+//ctx.globalAlpha=0.7;
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -41,9 +41,9 @@ function Color() {
     return "rgb("+red+","+grn+","+blu+")";
   }
   this.randomize=()=>{
-    this.RK1=200+200*Math.random();
-    this.GK1=200+200*Math.random();
-    this.BK1=200+200*Math.random();
+    this.RK1=160+160*Math.random();
+    this.GK1=160+160*Math.random();
+    this.BK1=160+160*Math.random();
   }
   this.randomize();
 }
@@ -62,6 +62,23 @@ var Point=function() {
   this.u=false;
 }
 
+var randomizeShapes=()=>{
+  let tp=getRandomInt(0,3);
+  for (let i=0; i<ra.length; i++) {
+    if (tp==2) {
+      //ra[i].type=(Math.random()<0.7)?0:1;
+      ra[i].type=(Math.random()<0.5)?0:1;
+    } else if (tp==1) {
+      ra[i].type=0;
+    } else {
+      ra[i].type=1;
+    }
+  }
+}
+
+//var K2=1;//Math.random()/4;
+var K2=[0,0.5,1][getRandomInt(0,3)];
+
 const DMX=new DOMMatrix([-1,0,0,1,0,0]);
 const DMY=new DOMMatrix([1,0,0,-1,0,0]);
 var Rect2=function(x,y,xd,yd) { 
@@ -73,28 +90,34 @@ var Rect2=function(x,y,xd,yd) {
   this.y2=0;
   this.xd2=0;
   this.yd2=0;
+  this.type=(Math.random()<0.7)?0:1;
   this.setZero=()=>{ this.x2=0; this.y2=0; this.xd2=0; this.yd2=0; }
   this.transit=()=>{ this.x=this.x2; this.y=this.y2; this.yd=this.yd2; this.xd=this.xd2; }
   //this.setValues=(x,y,xd,yd)=>{ this.x2=x; this.y2=y; this.xd2=xd; this.yd2=yd; }
   this.setValues=(xp,yp,xdp,ydp)=>{ this.x2=xp; this.y2=yp; this.xd2=xdp; this.yd2=ydp; }
   this.getPath2=(test)=>{
     let p=new Path2D();
-    if (this.xd==0 || this.yd==0) return p;	// all 4 zero
+//    if (this.xd==0 || this.yd==0) return p;	// all 4 zero
     let x=(1-f)*this.x+f*this.x2;
     let y=(1-f)*this.y+f*this.y2;
     let xd=(1-f)*this.xd+f*this.xd2;
     let yd=(1-f)*this.yd+f*this.yd2;
-//let xdz=xd*(1-0.7*f2);
-//let ydz=yd*(1-0.7*f2);
-    p.rect(del*(x-xd),del*(y-yd),del*2*xd,del*2*yd);
+xd=xd*(1-K2*f2);
+yd=yd*(1-K2*f2);
+    let delt=(1-f)*del+f*del2;
+    //p.rect(del*(x-xd),del*(y-yd),del*2*xd,del*2*yd);
+    if (this.type) p.ellipse(delt*x,delt*y,delt*xd,delt*yd,0,0,TP);
+    else p.rect(delt*(x-xd),delt*(y-yd),delt*2*xd,delt*2*yd);
+/*
+{
+  p.moveTo(delt*x,delt*(y-yd));
+  p.lineTo(delt*(x+xd),delt*y);
+  p.lineTo(delt*x,delt*(y+yd));
+  p.lineTo(delt*(x-xd),delt*y);
+  p.closePath();
+}
+*/
     //p.rect(del*(x-xdz),del*(y-ydz),del*2*xdz,del*2*ydz);
-/*
-    p.moveTo(del*(x-xd),del*(y-yd));
-    p.lineTo(del*(x+xd),del*(y-yd));
-    p.lineTo(del*(x+xd),del*(y+yd));
-    p.lineTo(del*(x-xd),del*(y+yd));
-    p.closePath();
-*/
     if (x && y) {
       p.addPath(p,DMX);
       p.addPath(p,DMY);
@@ -105,28 +128,6 @@ var Rect2=function(x,y,xd,yd) {
     }
     return p;
   }
-  this.label=()=>{
-  }
-/*
-  this.getPath=()=>{
-debugger;
-    let p=new Path2D();
-    p.moveTo(del*(x-xd),del*(y-yd));
-    p.lineTo(del*(x+xd),del*(y-yd));
-    p.lineTo(del*(x+xd),del*(y+yd));
-    p.lineTo(del*(x-xd),del*(y+yd));
-    p.closePath();
-    if (x && y) {
-      p.addPath(p,DMY);
-      p.addPath(p,DMX);
-    } else if (x) {
-      p.addPath(p,DMX);
-    } else if (y) {
-      p.addPath(p,DMY);
-    }
-    return p;
-  }
-*/
 }
 
 var drawPoint=(x,y,col,rad)=>{	// diag
@@ -143,6 +144,14 @@ const transit=()=>{
   for (let i=0; i<ra.length; i++) {
     ra[i].transit();
   }
+  del=del2;
+  count+=[-4,0,4][getRandomInt(0,3)];
+  if (count==0) count=8;
+  if (count==32) count=24;
+  //count=[4,8,12,16,20,24,32][getRandomInt(0,6)];
+  //count=[24,32][getRandomInt(0,2)];
+//console.log(count);
+  del2=CSIZE/count;
 }
 
 var stopped=true;
@@ -175,19 +184,21 @@ var animate=(ts)=>{
   if (stopped) return;
   t++;
   c++;
-  //f=t/500;
-  f=(1-Math.cos(TP*t/1000))/2;
-  //f2=Math.pow(Math.sin(TP*t/1000),2);
-  //f2=Math.sin(TP*t/1000);
+  f=(1-Math.cos(TP*t/800))/2;
+  //f2=Math.pow(Math.sin(TP*t/800),2);
+  f2=Math.pow(Math.sin(TP*t/800),6);
   draw();
   //if (EM && t%200==0) stopped=true;
-//if (t>=250) {
-  if (t>=500) {
+  if (K2==1 && t==200) randomizeShapes();
+  if (t>=400) {
   //  stopped=true;
+//processRectangles();
     transit();
+    setPoints();
+    K2=[0,0.4,0.7,1][getRandomInt(0,4)];
     setRectangles();
     t=0;
-    pauseTS=performance.now()+4000;//3200;
+    pauseTS=performance.now()+3200;
     requestAnimationFrame(pause);
   } else {
     requestAnimationFrame(animate);
@@ -196,15 +207,29 @@ var animate=(ts)=>{
 
 setColors(3);
 
-var count=8;
+var count=8;//[4,8,12,16,20,24,32][getRandomInt(0,6)];
 var del=CSIZE/count;
+var del2=CSIZE/count;
 
 var pts=new Array(count+1);
 
+/*
 for (let i=0; i<count+1; i++) {
   pts[i]=new Array(count+1);
   for (let j=0; j<count+1; j++) {
     pts[i][j]=new Point(del*i,del*j);
+  }
+}
+*/
+
+var setPoints=()=>{
+//  count=[4,8,12,16,20,24,32][getRandomInt(0,6)];
+  pts=new Array(count+1);
+  for (let i=0; i<count+1; i++) {
+    pts[i]=new Array(count+1);
+    for (let j=0; j<count+1; j++) {
+      pts[i][j]=new Point(del*i,del*j);
+    }
   }
 }
 
@@ -238,7 +263,22 @@ const checkPoints=(x,y,xd,yd)=>{
   return [xd,yd];
 }
 
-var setRectangles=()=>{
+/*
+const processRectangles=()=>{
+  for (let i=0; i<ra.length; i++) {
+    if (ra[i].xd2==0) {
+console.log(ra[i]);
+      ra.splice(i,1);
+      return;
+    }
+  }
+  if (ra.length<8) {
+    ra.push(new Rect2());
+  }
+}
+*/
+
+const setRectangles=()=>{
   for (let i=0; i<count+1; i++) {
     for (let j=0; j<count+1; j++) {
       pts[i][j].u=false;
@@ -299,17 +339,11 @@ var setRectangles=()=>{
   }
 }
 
-const RCOUNT=8;
+//const RCOUNT=8;
+const RCOUNT=getRandomInt(5,7);
+console.log(RCOUNT);
 
 var ra=[];
-/*
-for (let i=0; i<RCOUNT; i++) {
-  let rect=getNextRect();
-  if (rect) ra.push(rect);
-  else break;
-}
-if (ra.length<RCOUNT) debugger;
-*/
 
 for (let i=0; i<RCOUNT; i++) {
   ra[i]=new Rect2();
@@ -326,8 +360,10 @@ var draw=()=>{
 //ctx.globalAlpha=1-0.95*f2;
 //ctx.globalAlpha=1-f2;
 //ctx.setLineDash([]);
+//ctx.globalAlpha=1-f2/2;
     ctx.lineWidth=9;
     ctx.strokeStyle="#00000020";
+    //ctx.strokeStyle="rgba(0,0,0,"+((1-f2)*0.08)+")";
     ctx.stroke(p);
     ctx.lineWidth=6;
     ctx.strokeStyle=colors[i%colors.length].getRGB();
@@ -351,26 +387,13 @@ var showPoints=()=>{
   }
 }
 
-var drawRect=(rct)=>{
-  ctx.fillStyle="red";
-  ctx.fill(rct.getPath());
-}
-
 onresize();
 
+setPoints();
 setRectangles();
 transit();
+
+setPoints();
 setRectangles();
 
 start();
-
-ctx.font="20px sans-serif";
-ctx.textAlign="center";
-var drawText=(two,col)=>{	// diag
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="black";
-  for (let i=0; i<ra.length; i++) {
-    if (two) ctx.fillText(i,del*ra[i].x2,del*ra[i].y2);
-    else ctx.fillText(i,del*ra[i].x,del*ra[i].y);
-  }
-}
