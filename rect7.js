@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/VwgbaXM
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -357,7 +357,6 @@ var draw=()=>{
     ctx.fillStyle=colors[i%colors.length].getRGB();
     ctx.fill(p);
 */
-//ctx.globalAlpha=1-0.95*f2;
 //ctx.globalAlpha=1-f2;
 //ctx.setLineDash([]);
 //ctx.globalAlpha=1-f2/2;
