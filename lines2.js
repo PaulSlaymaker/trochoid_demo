@@ -64,9 +64,6 @@ const getHexPath=(spath)=>{
 
 const EDGE=CSIZE-84;
 
-const DMX=new DOMMatrix([-1,0,0,1,0,0]);
-const DMY=new DOMMatrix([1,0,0,-1,0,0]);
-var R=160;
 var Line=function() { 
 this.t=0;
 this.dur=200+getRandomInt(0,200);
@@ -74,6 +71,7 @@ this.dur=200+getRandomInt(0,200);
   this.FK2=100+100*Math.random();
   this.x1=EDGE-2*EDGE*Math.random();
   this.y1=EDGE-2*EDGE*Math.random();
+  let R=40+200*Math.random();
   let a=TP*Math.random();
   this.x2=this.x1+R*Math.cos(a);
   if (this.x2<-EDGE || this.x2>EDGE) this.x2=this.x1-R*Math.cos(a);
@@ -94,7 +92,7 @@ this.dur=200+getRandomInt(0,200);
     this.y1=this.yb1;
     this.x2=this.xb2;
     this.y2=this.yb2;
-    let R=40+120*Math.random();
+    let R=40+200*Math.random();
     let a=TP*Math.random();
 //let a=Math.atan2(this.y1-this.y2,this.x1-this.x2);
     this.xb1=this.x1+R*Math.cos(a);
@@ -110,23 +108,11 @@ this.dur=200+getRandomInt(0,200);
   }
   this.getPath=()=>{
     let p=new Path2D();
-let f=(1-Math.cos(TP*this.t/(2*this.dur)))/2;
+    let f=(1-Math.cos(TP*this.t/(2*this.dur)))/2;
     p.moveTo((1-f)*this.x1+f*this.xb1,(1-f)*this.y1+f*this.yb1);
     p.lineTo((1-f)*this.x2+f*this.xb2,(1-f)*this.y2+f*this.yb2);
-//    p.addPath(p,DMX);
-//    p.addPath(p,DMY);
     return getHexPath(p);
   }
-}
-
-var drawPoint=(x,y,col,rad)=>{	// diag
-  ctx.beginPath();
-  if (rad) ctx.arc(x,y,rad,0,TP);
-  else ctx.arc(x,y,3,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
 }
 
 var stopped=true;
@@ -184,12 +170,9 @@ var draw=()=>{
     ctx.lineWidth=6;
     ctx.strokeStyle="#00000020";
     ctx.stroke(p);
-//ctx.globalAlpha=0.7;
 //let ff=Math.pow(Math.sin(la[i].FK1+c/la[i].FK2),2);
-let ff=(1+Math.sin(la[i].FK1+c/la[i].FK2))/2;
-//ctx.globalAlpha=Math.max(0,0.8-f2);
-//ctx.globalAlpha=Math.max(0,0.9-ff);
-ctx.globalAlpha=1-ff;//Math.min(1,1.1-ff);
+    let ff=(1+Math.sin(la[i].FK1+c/la[i].FK2))/2;
+    ctx.globalAlpha=1-ff;
     ctx.lineWidth=4;
     ctx.strokeStyle=colors[i%colors.length].getRGB();
     ctx.stroke(p);
