@@ -45,8 +45,8 @@ function Color() {
     let blu=Math.round(CBASE+CT*(0.8*Math.cos(this.BK2+t/this.BK1)+0.2*Math.cos(t/this.BK3)));
 */
     return "rgb("+red+","+grn+","+blu+")";
-//    let alpha=(1+Math.sin(t/this.KA))/2;
-//    return "rgba("+red+","+grn+","+blu+","+alpha+")";
+    //let alpha=(1+Math.sin(t/this.KA))/2;
+    //return "rgba("+red+","+grn+","+blu+","+alpha+")";
   }
   this.randomize=()=>{
     this.RK1=180+180*Math.random();
@@ -56,13 +56,14 @@ function Color() {
     this.RK3=4+4*Math.random();
     this.GK3=4+4*Math.random();
     this.BK3=4+4*Math.random();
-this.KA=4+4*Math.random();
 */
+//this.KA=1.1+1*Math.random();
   }
   this.randomize();
 }
 
 const colors=[new Color(),new Color()];//,new Color()];
+//const col2=new Color();
 
 const radius=60;
 
@@ -94,25 +95,32 @@ var Circle=function(x,y) {
       this.hpts[i]=hpm.get(hk);
     }
   }
-
-  this.getHexPath=()=>{
+/*
+  this.getHexPath2=()=>{
     let p=new Path2D();
-    p.moveTo(this.hpts[0].x,this.hpts[0].y);
-    for (let i=1; i<6; i++) {
+    for (let i=0; i<6; i++) {
+      let i1=(i+1)%6;
+      p.moveTo((this.hpts[i].x+this.hpts[i1].x)/2,(this.hpts[i].y+this.hpts[i1].y)/2);
       p.lineTo(this.hpts[i].x,this.hpts[i].y);
+      p.moveTo((this.hpts[i].x+this.hpts[i1].x)/2,(this.hpts[i].y+this.hpts[i1].y)/2);
+      p.lineTo(this.hpts[i1].x,this.hpts[i1].y);
     }
     p.closePath();
 //    p.moveTo(this.hpts[0].x+4,this.hpts[0].y);
 //    p.arc(this.hpts[0].x,this.hpts[0].y,4,0,TP);
-/*
-    //p.rect((this.hpts[0].x+this.hpts[3].x)/2-2,(this.hpts[0].y+this.hpts[3].y)/2-1,4,4);
-    let x=(this.hpts[0].x+this.hpts[3].x)/2;
-    let y=(this.hpts[0].y+this.hpts[3].y)/2;
-    p.moveTo(x+4,y);
-    p.arc(x,y,4,0,TP);
-*/
     return p;
   }
+*/
+  this.getHexPath=()=>{
+    let p=new Path2D();
+    p.moveTo(this.hpts[0].x,this.hpts[0].y);
+    for (let i=1; i<6; i++) p.lineTo(this.hpts[i].x,this.hpts[i].y);
+    p.closePath();
+//    p.moveTo(this.hpts[0].x+4,this.hpts[0].y);
+//    p.arc(this.hpts[0].x,this.hpts[0].y,4,0,TP);
+    return p;
+  }
+
 }
 
 var cm=new Map();
@@ -142,11 +150,7 @@ var generateHexes=()=>{
       }
     }
   });
-  cm.forEach((c)=>{
-    if (c.x<0 || c.y<0) {
-      cm.delete(c.key);
-    }
-  });
+  cm.forEach((c,key)=>{ if (c.x<0 || c.y<0)  cm.delete(key); });
 }
 generateHexes();
 
@@ -183,32 +187,32 @@ var drawHexes=()=>{  // diag
 }
 */
 
-const dmx=new DOMMatrix([-1,0,0,1,0,0]);
-const dmy=new DOMMatrix([1,0,0,-1,0,0]);
-const dmxy=new DOMMatrix([-1,0,0,-1,0,0]);
+const DMX=new DOMMatrix([-1,0,0,1,0,0]);
+const DMY=new DOMMatrix([1,0,0,-1,0,0]);
 
 var draw=()=>{
   setPoints();
   let counter=0;
   cm.forEach((c)=>{
-    if (c.x>=0 && c.y>=0) {
-      let p=c.getHexPath();
-      let dpath=new Path2D(p);
+//    if (c.x>=0 && c.y>=0) {
+//      let p=c.getHexPath();
+      let p=new Path2D(c.getHexPath());
       if (c.x==0 && c.y==0) {
       } else if (c.x==0) {
-        dpath.addPath(p,dmy);
+        p.addPath(p,DMY);
       } else if (c.y==0) {
-        dpath.addPath(p,dmx);
+        p.addPath(p,DMX);
       } else {
-        dpath.addPath(p,dmy);
-        dpath.addPath(p,dmx);
-        dpath.addPath(p,dmxy);
+        p.addPath(p,DMY);
+        p.addPath(p,DMX);
+//        dpath.addPath(p,dmxy);
       }
 
+//ctx.setLineDash([]);
 //ctx.globalAlpha=1;
       ctx.lineWidth=6;
       ctx.strokeStyle="#00000010";
-      ctx.stroke(dpath);
+      ctx.stroke(p);
 
 /*
 if (counter%2) ctx.globalAlpha=(1+Math.sin(t/4))/2;
@@ -217,18 +221,17 @@ else ctx.globalAlpha=(1+Math.sin(t/5))/2;
 
       ctx.lineWidth=4;
       ctx.strokeStyle=colors[counter++%colors.length].getRGB();
-      ctx.stroke(dpath);
+      ctx.stroke(p);
 
 /*
-      ctx.fillStyle=colors[counter++%colors.length].getRGB();
-      ctx.shadowBlur=0;
-      ctx.globalAlpha=0.1;
-      ctx.fill(dpath);
-      ctx.shadowBlur=12;
-      ctx.globalAlpha=1;
+//      ctx.lineWidth=5;
+ctx.setLineDash([6-6*Math.cos(t/4),10000]);
+//ctx.strokeStyle=col2.getRGB(); //"white"; //colors[counter++%colors.length].getRGB();
+      ctx.strokeStyle=colors[counter%colors.length].getRGB();
       ctx.stroke(dpath);
 */
-    }
+
+//    }
   });
 /*
 let path=new Path2D();
@@ -258,6 +261,7 @@ var animate=()=>{
   if (stopped) return;
   t++;
   draw();
+////
   if (EM && t%200==0) stopped=true;
   requestAnimationFrame(animate);
 }
@@ -310,5 +314,4 @@ var setPoints=()=>{
 
 onresize();
 
-//if (EM) draw();
 start();
