@@ -34,31 +34,37 @@ function Color() {
   this.GK2=TP*Math.random();
   this.BK2=TP*Math.random();
   this.getRGB=()=>{
+/*
     let red=Math.round(CBASE+CT*Math.cos(this.RK2+t/this.RK1));
     let grn=Math.round(CBASE+CT*Math.cos(this.GK2+t/this.GK1));
     let blu=Math.round(CBASE+CT*Math.cos(this.BK2+t/this.BK1));
-/*
-    let red=Math.round(CBASE+CT*(0.8*Math.cos(this.RK2+t/this.RK1)+0.2*Math.cos(t/this.RK3)));
-    let grn=Math.round(CBASE+CT*(0.8*Math.cos(this.GK2+t/this.GK1)+0.2*Math.cos(t/this.GK3)));
-    let blu=Math.round(CBASE+CT*(0.8*Math.cos(this.BK2+t/this.BK1)+0.2*Math.cos(t/this.BK3)));
 */
+    let red=Math.round(CBASE+CT*(this.fb*Math.cos(this.RK2+t/this.RK1)+(1-this.fb)*Math.cos(t/this.RK3)));
+    let grn=Math.round(CBASE+CT*(this.fg*Math.cos(this.GK2+t/this.GK1)+(1-this.fg)*Math.cos(t/this.GK3)));
+    let blu=Math.round(CBASE+CT*(this.fb*Math.cos(this.BK2+t/this.BK1)+(1-this.fb)*Math.cos(t/this.BK3)));
+//    let grn=Math.round(CBASE+CT*(0.8*Math.cos(this.GK2+t/this.GK1)+0.2*Math.cos(t/this.GK3)));
+//    let blu=Math.round(CBASE+CT*(0.5*Math.cos(this.BK2+t/this.BK1)+0.5*Math.cos(t/this.BK3)));
     return "rgb("+red+","+grn+","+blu+")";
 /*
     let alpha=1; //(1+Math.sin(t/this.KA))/2;
     return "rgba("+red+","+grn+","+blu+","+alpha+")";
 */
   }
+  this.randomizeF=()=>{
+    this.fr=1-Math.pow(0.9*Math.random(),14);
+    this.fg=1-Math.pow(0.9*Math.random(),14);
+    this.fb=1-Math.pow(0.9*Math.random(),14);
+  }
   this.randomize=()=>{
     this.RK1=180+180*Math.random();
     this.GK1=180+180*Math.random();
     this.BK1=180+180*Math.random();
 //if (s) this.BK1=10+10*Math.random();
-/*
-    this.RK3=4+4*Math.random();
-    this.GK3=4+4*Math.random();
-    this.BK3=4+4*Math.random();
-this.KA=40+40*Math.random();
-*/
+    this.RK3=1+4*Math.random();
+    this.GK3=1+4*Math.random();
+    this.BK3=1+4*Math.random();
+//this.KA=40+40*Math.random();
+    this.randomizeF();
   }
   this.randomize();
 }
@@ -167,16 +173,6 @@ var drawPoint=(x,y,col)=>{	// diag
   else ctx.fillStyle="red";
   ctx.fill();
 }
-var drawCircles=()=>{ // diag
-  let p=new Path2D();
-  cm.forEach((c)=>{
-    p.moveTo(c.x+radius,c.y);
-    p.arc(c.x,c.y,radius,0,TP);
-  });
-  ctx.lineWidth=1;
-  ctx.strokeStyle="yellow";
-  ctx.stroke(p);
-}
 var drawHexes=()=>{  // diag
   let p=new Path2D();
   cm.forEach((c)=>{
@@ -194,6 +190,7 @@ var drawHexes=()=>{  // diag
 
 const dmx=new DOMMatrix([-1,0,0,1,0,0]);
 const dmy=new DOMMatrix([1,0,0,-1,0,0]);
+//var ga=TP*Math.random();
 var draw=()=>{
   setPoints();
   let pa=[new Path2D(), new Path2D()];
@@ -205,6 +202,7 @@ var draw=()=>{
     let r=h.r-h.r*Math.cos(TP*t/DUR);
     let r2=h.r2-h.r2*Math.cos(TP*t/DUR);
 
+//let fr=1+0.005*Math.sin(t/2); r=fr*r; r2=fr*r2;
 //  let rc=Math.max(r,r2);
 //  if (h.x<-CSIZE || this.x2>EDGE) this.x2=this.x1-R*Math.cos(a);
 //  let path=new Path2D();
@@ -241,6 +239,7 @@ var transit=()=>{
     h.ka=(50+150*Math.random())*(Math.random()<0.5?1:-1);
     //h.e=TP*Math.random();
   });
+  colors.forEach((c)=>{ c.randomizeF(); });
 }
 
 var stopped=true;
@@ -270,7 +269,6 @@ var DUR=400;
 var animate=()=>{
   if (stopped) return;
   t++;
-  //if (EM && t%200==0) stopped=true;
   if (t%DUR==0) {//stopped=true;
     transit();
     pauseTS=performance.now()+4000;
@@ -287,14 +285,14 @@ let ypa=Array.from(ySet).sort((a,b)=>{ return a-b; });
 var Kxa=new Array((xSet.size-1)/2);
 var Kxb=new Array((xSet.size-1)/2);
 for (let i=0; i<Kxa.length; i++) {
-  Kxa[i]=320+320*Math.random();
+  Kxa[i]=240+240*Math.random();
   Kxb[i]=TP*Math.random();
 }
 
 var Kya=new Array(ySet.size/2);
 var Kyb=new Array(ySet.size/2);
 for (let i=0; i<Kya.length; i++) {
-  Kya[i]=320+320*Math.random();
+  Kya[i]=240+240*Math.random();
   Kyb[i]=TP*Math.random();
 }
 
@@ -303,7 +301,6 @@ var setPoints=()=>{
   let xpr=[0];
   for (let i=0; i<(xSet.size-1)/2; i++) {
     let rand=EDGE/2*(1+Math.sin(Kxb[i]+t/Kxa[i]));
-    //let rand=CSIZE/4*(2+Math.sin(Kxb[i]+t/Kxa[i])+Math.sin(3*t/Kxa[i]));
     xpr.push(rand);
     xpr.push(-rand);
   }
@@ -318,11 +315,7 @@ var setPoints=()=>{
   for (let i=0; i<xpa.length; i++) {
     for (let j=0; j<ypa.length; j++) {
       let hex=hpm.get([xpa[i],ypa[j]].toString());
-      if (hex) {
-	hex.x=xpr[i];
-	hex.y=ypr[j];
-//hex.r=40+2*(1+Math.sin(t/2));
-      } 
+      if (hex) { hex.x=xpr[i]; hex.y=ypr[j]; } 
     }
   }
 }
