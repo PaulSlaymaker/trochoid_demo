@@ -79,7 +79,9 @@ var Brush=function() {
     //let y=this.ry*(this.yf*Math.sin(this.k1+t/this.k2)+(1-this.yf)*Math.sin(t/this.k5));
     //let r=this.sr*(1+Math.cos(this.k3+t/this.k4))*(Math.cos(Math.PI/2*t/DUR));
     //let r=this.sr*Math.pow(Math.cos(this.k3+t/this.k4),2)*(Math.cos(Math.PI/2*t/DUR));
+//let rc=this.type?Math.min(this.sr,mr):this.sr;
     let r=(6+this.sr*Math.pow(this.rf*Math.cos(this.k3+t/this.k4)+(1-this.rf)*Math.cos(t/this.k6),2))
+    //let r=(6+rc*Math.pow(this.rf*Math.cos(this.k3+t/this.k4)+(1-this.rf)*Math.cos(t/this.k6),2))
             *(Math.cos(Math.PI/2*t/DUR));
 if (this.type) r=Math.min(r,mr);
 /*
