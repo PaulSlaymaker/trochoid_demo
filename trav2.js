@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 
 const TP=2*Math.PI;
 const CSIZE=400;
@@ -73,34 +73,50 @@ var Brush=function() {
     this.r=(this.sr*Math.pow(this.rf*Math.cos(this.k3+t/this.k4)+(1-this.rf)*Math.cos(t/this.k6),2));
 //if (this.type) 
 //r=Math.min(r,mr);
-//r=20;
+    p.moveTo(this.x-this.r,0);
+    p.lineTo(this.x+this.r,0);
+/*
     p.moveTo(this.x,0);
     p.lineTo(this.x+this.r,0);
     p.moveTo(this.x,0);
     p.lineTo(this.x-this.r,0);
+*/
     p.addPath(p,dmx);
     p.addPath(p,dmr);
-//if (r<0.0001) this.randomize();
     return p;
   }
+  this.getPath2=()=>{
+    let p=new Path2D();
+    this.x=200-200*(this.xf*Math.cos(this.k1+t/this.k2)+(1-this.xf)*Math.cos(t/this.k5));
+    this.r=(this.sr*Math.pow(this.rf*Math.cos(this.k3+t/this.k4)+(1-this.rf)*Math.cos(t/this.k6),2));
+    p.moveTo(this.x-this.r,CSIZE);
+    p.lineTo(this.x+this.r,CSIZE);
+    p.addPath(p,dmx);
+    p.addPath(p,dmy);
+    p.addPath(p,dmr);
+    return p;
+  }
+
   this.randomize=()=>{
     this.k1=TP*Math.random();
-    this.k2=160+480*Math.random();
+    //this.k2=160+480*Math.random();
+this.k2=200+400*Math.random();
     this.k3=TP*Math.random();
     this.k4=80+160*Math.random();
-    this.ry=8+80*Math.random();
+//    this.ry=8+80*Math.random();
     this.sr=20+40*Math.random();
     this.xf=1-Math.pow(0.9*Math.random(),10);
-    this.k5=20+60*Math.random();
+    this.k5=30+60*Math.random();
     this.rf=1-Math.pow(0.9*Math.random(),8);
     this.k6=12+60*Math.random();
 //    this.type=Math.random()<0.7;
   }
   this.randomize();
-  this.k1=Math.random();
+  this.k1=1.5*Math.random();	// tend to center, initially
 }
 
 const dmx=new DOMMatrix([-1,0,0,1,0,0]);
+const dmy=new DOMMatrix([1,0,0,-1,0,0]);
 const dmr=new DOMMatrix([0,1,-1,0,0,0]);
 
 var transit=()=>{
@@ -120,25 +136,6 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
-/*
-var pauseTS=1000;
-var pause=(ts)=>{
-  if (EM) stopped=true;
-  if (stopped) return;
-  if (ts<pauseTS) {
-    if (pauseTS-ts<600) {
-      ctx.canvas.style.opacity=Math.max(0,(pauseTS-ts)/600);
-    }
-    requestAnimationFrame(pause);
-  } else {
-    ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
-    ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-ctx.canvas.style.opacity=1;
-    requestAnimationFrame(animate);
-  }
-}
-*/
-
 var t=0;
 //var DUR=400;
 var animate=()=>{
@@ -146,7 +143,6 @@ var animate=()=>{
   t++;
   if (t%2000==0) transit();
   if (!(t%3)) {
-
 /*
     var id1=ctx.getImageData(0,0,CSIZE,CSIZE)
     var id2=ctx.getImageData(CSIZE,0,CSIZE,CSIZE)
@@ -157,6 +153,17 @@ var animate=()=>{
     ctx.putImageData(id3,CSIZE+1,CSIZE)
     ctx.putImageData(id4,0,CSIZE+1)
 */
+/*
+    var id=ctx.getImageData(0,0,CSIZE-1,CSIZE-1)
+    ctx.putImageData(id,1,1)
+    id=ctx.getImageData(CSIZE+1,0,CSIZE-1,CSIZE-1)
+    ctx.putImageData(id,CSIZE,1)
+    id=ctx.getImageData(CSIZE+1,CSIZE+1,CSIZE-1,CSIZE-1)
+    ctx.putImageData(id,CSIZE,CSIZE)
+    id=ctx.getImageData(0,CSIZE+1,CSIZE-1,CSIZE-1)
+    ctx.putImageData(id,1,CSIZE)
+*/
+
     var id=ctx.getImageData(0,0,CSIZE,CSIZE)
     ctx.putImageData(id,-1,-1)
     id=ctx.getImageData(CSIZE,0,CSIZE,CSIZE)
@@ -169,55 +176,23 @@ var animate=()=>{
 //setMidRadius();
     draw();
   }
+if (EM && t%400==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
-
 var mr=200;
-var setMidRadius=()=>{
-  mr=Math.abs(ba[0].x-ba[1].x)/2; 
-}
+var setMidRadius=()=>{ mr=Math.abs(ba[0].x-ba[1].x)/2; }
 
 let ba=[new Brush(),new Brush(),new Brush(),new Brush()];
 
 onresize();
 
 var draw=()=>{
-for (let i=0; i<ba.length; i++) {
-/*
-  let r=40*(1+Math.sin(t/160));
-  let x=-200+100*Math.sin(t/110);
-ctx.beginPath();
-//ctx.arc(x,-8,r,0,Math.PI);
-ctx.ellipse(x,-8,r,2*r,0,0,Math.PI);
-ctx.lineWidth=3;
-ctx.strokeStyle=colors[0].getRGB();
-ctx.stroke();
-
-    ctx.setTransform(1,0,0,1,CSIZE-1,1);
-    ctx.strokeStyle="#00000016";
-    ctx.lineWidth=8;
-    ctx.stroke();
-    ctx.setTransform(1,0,0,1,CSIZE,0);
-*/
-
-/*
-let p=new Path2D();
-let r=4+20*(1+Math.sin(t/100));
-//x=200+80*Math.sin(t/80);
-let x=200+160*Math.sin(t/180);
-p.moveTo(x,0);
-p.lineTo(x+r,0);
-p.moveTo(x,0);
-p.lineTo(x-r,0);
-p.addPath(p,dmx);
-p.addPath(p,dmr);
-//ctx.fillStyle=colors[1].getRGB();
-*/
-ctx.strokeStyle=colors[i%colors.length].getRGB();
-let p=ba[i].getPath();
-ctx.lineWidth=2;
-ctx.stroke(p);
+  for (let i=0; i<ba.length; i++) {
+    ctx.strokeStyle=colors[i%colors.length].getRGB();
+    let p=ba[i].getPath();
+    ctx.lineWidth=2;
+    ctx.stroke(p);
 
 /*
 let d=ba[i].r/4*(1+Math.cos(t/20));
@@ -234,12 +209,11 @@ ctx.setLineDash([]);
 */
 
     ctx.setTransform(1,0,0,1,CSIZE-1,CSIZE+1);
-    ctx.strokeStyle="#00000020";
+    ctx.strokeStyle="#00000028";
     ctx.lineWidth=6;
     ctx.stroke(p);
     ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
-}
-
+  }
 }
 
 start();
