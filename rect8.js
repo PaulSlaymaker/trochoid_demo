@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -143,7 +143,7 @@ body.addEventListener("click", start, false);
 
 var pauseTS=1000;
 var pause=(ts)=>{
-//  if (EM) stopped=true;
+  if (EM) stopped=true;
   if (stopped) return;
   if (ts<pauseTS) requestAnimationFrame(pause);
   else requestAnimationFrame(animate);
@@ -160,7 +160,6 @@ var animate=(ts)=>{
   c++;
   f=(1-Math.cos(TP*t/DUR))/2;
   draw();
-  //if (EM && t%200==0) stopped=true;
   if (t>=DUR/2) {
     t=0;
     hv=(++hv)%4;
@@ -170,7 +169,7 @@ var animate=(ts)=>{
       transit();
       setPoints();
       setRectangles();
-      pauseTS=performance.now()+4000;
+      pauseTS=performance.now()+3600;
     } else {
       pauseTS=performance.now()+100;
     }

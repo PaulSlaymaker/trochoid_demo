@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -93,60 +93,8 @@ var Line=function(type,dx,dy) {
   this.randomize();
 }
 
-//var K2=[0,0.5,1][getRandomInt(0,3)];
-
 const DMX=new DOMMatrix([-1,0,0,1,0,0]);
 const DMY=new DOMMatrix([1,0,0,-1,0,0]);
-
-/*
-var Rect2=function(x,y,xd,yd) { 
-  this.x=x;
-  this.y=y;
-  this.xd=xd;
-  this.yd=yd;
-  this.x2=0;
-  this.y2=0;
-  this.xd2=0;
-  this.yd2=0;
-//  this.type=(Math.random()<0.7)?0:1;
-  //this.setZero=()=>{ this.x2=0; this.y2=0; this.xd2=0; this.yd2=0; }
-this.setZero=()=>{ this.xd2=0; this.yd2=0; }
-  this.transit=()=>{ this.x=this.x2; this.y=this.y2; this.yd=this.yd2; this.xd=this.xd2; }
-  this.setValues=(xp,yp,xdp,ydp)=>{ this.x2=xp; this.y2=yp; this.xd2=xdp; this.yd2=ydp; }
-//this.setValues=(xp,yp,xdp,ydp)=>{ this.x=xp; this.y=yp; this.xd=xdp; this.yd=ydp; }
-  this.getPath2=(test)=>{
-    let p=new Path2D();
-//    if (this.xd==0 || this.yd==0) return p;	// all 4 zero
-    let x=(1-f)*this.x+f*this.x2;
-    let y=(1-f)*this.y+f*this.y2;
-    let xd=(1-f)*this.xd+f*this.xd2;
-    let yd=(1-f)*this.yd+f*this.yd2;
-xd=xd*(1-K2*f2);
-yd=yd*(1-K2*f2);
-    let delt=(1-f)*del+f*del2;
-    if (this.type) p.ellipse(delt*x,delt*y,delt*xd,delt*yd,0,0,TP);
-    else p.rect(delt*(x-xd),delt*(y-yd),delt*2*xd,delt*2*yd);
-    //p.rect(del*(x-xdz),del*(y-ydz),del*2*xdz,del*2*ydz);
-    if (x && y) {
-      p.addPath(p,DMX);
-      p.addPath(p,DMY);
-    } else if (x) {
-      p.addPath(p,DMX);
-    } else if (y) {
-      p.addPath(p,DMY);
-    }
-    return p;
-  }
-}
-*/
-
-/*
-const transit=()=>{
-  for (let i=0; i<ra.length; i++) {
-    ra[i].transit();
-  }
-}
-*/
 
 var stopped=true;
 var start=()=>{
@@ -161,7 +109,7 @@ body.addEventListener("click", start, false);
 
 var pauseTS=600;
 var pause=(ts)=>{
-  //if (EM) stopped=true;
+  if (EM) stopped=true;
   if (stopped) return;
   if (ts<pauseTS) {
     requestAnimationFrame(pause);
@@ -250,19 +198,17 @@ var draw=()=>{
     ctx.lineWidth=3;
     ctx.strokeStyle=colors[i%colors.length].getRGB();
     ctx.stroke(pa[i]);
-
-if (flourish[i].use) {
-  //f2=Math.pow(Math.sin(TP*t/flourish[i].k),2);  // 800 is once
-  f2=(1+Math.sin(TP*t/flourish[i].k))/2;
-  ctx.setLineDash([f2*flourish[i].d,10000]);
-  if (flourish[i].c) ctx.lineDashOffset=-(del-f2*flourish[i].d)/2;
-  //if (flourish[i].c) ctx.lineDashOffset=-f2*(del-flourish[i].d)/2;
-  ctx.strokeStyle=colors[(i+1)%colors.length].getRGB();
-  ctx.lineWidth=4;
-  ctx.stroke(pa[i]);
-  ctx.setLineDash([]);
-}
-
+    if (flourish[i].use) {
+      //f2=Math.pow(Math.sin(TP*t/flourish[i].k),2);  // 800 is once
+      f2=(1+Math.sin(TP*t/flourish[i].k))/2;
+      ctx.setLineDash([f2*flourish[i].d,10000]);
+      if (flourish[i].c) ctx.lineDashOffset=-(del-f2*flourish[i].d)/2;
+      //if (flourish[i].c) ctx.lineDashOffset=-f2*(del-flourish[i].d)/2;
+      ctx.strokeStyle=colors[(i+1)%colors.length].getRGB();
+      ctx.lineWidth=4;
+      ctx.stroke(pa[i]);
+      ctx.setLineDash([]);
+    }
   }
   ctx.strokeStyle="#00000004";
   ctx.lineWidth=2;
@@ -271,7 +217,7 @@ if (flourish[i].use) {
 
 onresize();
 
-draw();
-stopped=false;
-requestAnimationFrame(pause);
-//start();
+//draw();
+//stopped=false;
+//requestAnimationFrame(pause);
+start();

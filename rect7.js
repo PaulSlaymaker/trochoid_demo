@@ -341,7 +341,7 @@ const setRectangles=()=>{
 
 //const RCOUNT=8;
 const RCOUNT=getRandomInt(5,7);
-console.log(RCOUNT);
+//console.log(RCOUNT);
 
 var ra=[];
 

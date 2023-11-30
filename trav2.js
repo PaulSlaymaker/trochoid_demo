@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/WNPzgVP
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -32,7 +32,7 @@ function Color() {
   const CBASE=160;
   const CT=255-CBASE;
   this.getRGB=()=>{
-    let red=Math.round(CBASE+CT*(this.fb*Math.cos(this.RK2+t/this.RK1)+(1-this.fb)*Math.cos(t/this.RK3)));
+    let red=Math.round(CBASE+CT*(this.fr*Math.cos(this.RK2+t/this.RK1)+(1-this.fr)*Math.cos(t/this.RK3)));
     let grn=Math.round(CBASE+CT*(this.fg*Math.cos(this.GK2+t/this.GK1)+(1-this.fg)*Math.cos(t/this.GK3)));
     let blu=Math.round(CBASE+CT*(this.fb*Math.cos(this.BK2+t/this.BK1)+(1-this.fb)*Math.cos(t/this.BK3)));
     return "rgb("+red+","+grn+","+blu+")";
