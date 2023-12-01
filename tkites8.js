@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 const CSO=52;
@@ -81,56 +81,10 @@ const dmx=new DOMMatrix([-1,0,0,1,0,0]);
 const dmy=new DOMMatrix([1,0,0,-1,0,0]);
 const dmr=new DOMMatrix([0,1,-1,0,0,0]);
 
-/*
-var Brush=function() {
-  this.path=new Path2D();
-    this.path.moveTo(CSO,CSO);
-    this.path.lineTo(CSO,0);
-    this.path.addPath(this.path,dmx);
-    this.path.addPath(this.path,dmy);
-    this.path.addPath(this.path,dmr);
-  this.getPath=()=>{
-    let p=new Path2D();
-    //this.x=CSO/2-CSO/2*(this.xf*Math.cos(this.k1+t/this.k2)+(1-this.xf)*Math.cos(t/this.k5));
-    //let r=(6+this.sr*Math.pow(this.rf*Math.cos(this.k3+t/this.k4)+(1-this.rf)*Math.cos(t/this.k6),2));
-//this.x=CSO/2+(CSO-CSO/2)*(1-Math.cos(this.k1+t/this.k2));
-    //this.r=CSO/2; //(this.sr*Math.pow(this.rf*Math.cos(this.k3+t/this.k4)+(1-this.rf)*Math.cos(t/this.k6),2));
-    //this.r=40+(CSO-40)*Math.pow(this.rf*Math.cos(this.k3+t/this.k4)+(1-this.rf)*Math.cos(t/this.k6),2);
-    this.r=10+(CSO/2-10)*Math.pow(this.rf*Math.cos(this.k3+t/this.k4)+(1-this.rf)*Math.cos(t/this.k6),2);
-//this.y=this.r+(CSO-this.r)*(1-Math.cos(this.k1+t/this.k2));
-    p.moveTo(CSO,CSO/2);
-    p.lineTo(CSO,CSO/2+this.r);
-    p.moveTo(CSO,CSO/2);
-    p.lineTo(CSO,CSO/2-this.r);
-    p.addPath(p,dmx);
-    p.addPath(p,dmy);
-    p.addPath(p,dmr);
-    return p;
-  }
-  this.randomize=()=>{
-    this.k1=TP*Math.random();
-    this.k2=40+160*Math.random();
-    this.k3=TP*Math.random();
-    this.k4=40+160*Math.random();
-//    this.ry=8+80*Math.random();
-    //this.sr=20+40*Math.random();
-    this.sr=CSO*(0.1+0.8*Math.random());
-    this.xf=1-Math.pow(0.9*Math.random(),10);
-    this.k5=30+60*Math.random();
-    this.rf=1-Math.pow(0.9*Math.random(),8);
-    this.k6=12+60*Math.random();
-//    this.type=Math.random()<0.7;
-  }
-  this.randomize();
-}
-*/
-
 var stopped=true;
 var start=()=>{
   if (stopped) { 
     stopped=false;
-//ctxo.clearRect(0,0,2*CSO,2*CSO);
-//drawTiles();
     requestAnimationFrame(animate);
   } else {
     stopped=true;
@@ -143,6 +97,7 @@ var animate=(ts)=>{
   if (stopped) return;
   t++;
   if (!(t%5)) draw();
+if (EM && t%200==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
@@ -220,7 +175,6 @@ var drawTiles=()=>{
 }
 
 var col=new Color();
-//var brush=new Brush();
 
 var path=new Path2D();
 path.moveTo(CSO,CSO);
@@ -228,29 +182,8 @@ path.lineTo(CSO,0);
 path.addPath(path,dmx);
 path.addPath(path,dmy);
 path.addPath(path,dmr);
-/*
-  this.path=new Path2D();
-    this.path.moveTo(CSO,CSO);
-    this.path.lineTo(CSO,0);
-    this.path.addPath(this.path,dmx);
-    this.path.addPath(this.path,dmy);
-    this.path.addPath(this.path,dmr);
-*/ 
-
-//var dash;
 
 var draw=()=>{
-//  ctxo.clearRect(-CSO,-CSO,2*CSO,2*CSO);
-/*
-  var id=ctxo.getImageData(CSO,CSO,CSO,CSO);
-  ctxo.putImageData(id,CSO+1,CSO+1);
-  id=ctxo.getImageData(0,CSO,CSO,CSO);
-  ctxo.putImageData(id,-1,CSO+1);
-  id=ctxo.getImageData(CSO,0,CSO,CSO);
-  ctxo.putImageData(id,CSO+1,-1);
-  id=ctxo.getImageData(0,0,CSO,CSO);
-  ctxo.putImageData(id,-1,-1);
-*/
   var id=ctxo.getImageData(CSO+1,CSO+1,CSO-1,CSO-1);
   ctxo.putImageData(id,CSO,CSO);
   id=ctxo.getImageData(0,CSO+1,CSO-1,CSO-1);
@@ -259,7 +192,6 @@ var draw=()=>{
   ctxo.putImageData(id,CSO,1);
   id=ctxo.getImageData(0,0,CSO-1,CSO-1);
   ctxo.putImageData(id,1,1);
-
   ctxo.strokeStyle=col.getRGB();
 //  ctxo.stroke();
 //ctxo.globalAlpha=(1+Math.sin(t/200))/2;
@@ -271,40 +203,11 @@ ctxo.lineDashOffset=t/5;
 //  let p=brush.getPath();
   ctxo.stroke(path);
   drawTiles();
-
-/*
-//  ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
-//  ctx.drawImage(ctxo.canvas,150,150,200,200);
-ctx.lineWidth=4;
-ctx.strokeStyle="white";
-ctx.strokeRect(150,150,200,200);
-*/
 }
 
 onresize();
-
-/*
-ctxo.lineWidth=2;
-ctxo.beginPath();
-ctxo.moveTo(-CSO,0);
-ctxo.lineTo(CSO,0)
-ctxo.lineTo(0,2*CSO)
-ctxo.stroke();
-ctxo.strokeStyle="yellow";
-ctxo.beginPath();
-ctxo.moveTo(2*CSO,0);
-ctxo.lineTo(2*CSO,2*CSO)
-ctxo.lineTo(0,2*CSO)
-ctxo.stroke();
-*/
 
 //ctxo.strokeRect(-CSO,-CSO,2*CSO,2*CSO);
 drawTiles();
 
 start();
-
-var test=()=>{
-  ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  ctx.drawImage(ctxo.canvas,0,0);
-}
