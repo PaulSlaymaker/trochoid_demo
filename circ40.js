@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -11,7 +11,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -62,31 +61,30 @@ const KT=12000;
 
 var Circle=function(k1) { 
   this.randomize=()=>{
-    this.maxr=20+80*Math.random();
-    this.ka=(60+120*Math.random())*[-1,1][getRandomInt(0,2)];
-    this.alpha=TP*Math.random();
-    this.er=1+3*Math.random();
-    this.erk=(40+120*Math.random())*[-1,1][getRandomInt(0,2)];
+    this.maxr=20+60*Math.random();
+    //this.ka=(60+120*Math.random())*[-1,1][getRandomInt(0,2)];
+    this.ka=(80+160*Math.random())*[-1,1][getRandomInt(0,2)];
+    //this.alpha=TP*Math.random();
+    this.alpha=TP/8-TP/4*Math.random();
+    this.er=1+3*Math.pow(Math.random(),4);
+    this.erk=(20+100*Math.random())*[-1,1][getRandomInt(0,2)];
   }
   this.randomize();
-
   this.getPath=()=>{
     let p=new Path2D();
     //p.arc(this.x,this.y,Math.max(1,this.r-1),0,TP);
-    p.ellipse(this.x,this.y,this.r,this.r/this.er,t/this.erk,0,TP);
+    let rr=Math.max(0,this.r);
+    p.ellipse(this.x,this.y,rr,rr/this.er,t/this.erk,0,TP);
     return p;
   }
-
   this.extend=()=>{
     if (this.cc) {
-      let cx=this.x+this.r*Math.cos(this.alpha+t/this.ka);
-      let cy=this.y+this.r*Math.sin(this.alpha+t/this.ka);
+      let ccz=this.alpha+t/this.ka;
+      let cx=Math.min((CSIZE-this.r),this.x+this.r*Math.cos(ccz));
+      let cy=Math.min((CSIZE-this.r),this.y+this.r*Math.sin(ccz));
       let d=Math.pow(cx*cx+cy*cy,0.5);
-//let cr=Math.min(this.maxr*(2*d)/CSIZE,maxr);
-//let cr=Math.min(this.maxr*(2*d)/CSIZE,Math.abs(cx),Math.abs(cy));
-      let cr=Math.min(this.maxr*(2*d)/CSIZE,this.maxr,CSIZE-Math.abs(cx),CSIZE-Math.abs(cy));
-//if (cr+Math.abs(cx)>CSIZE) { console.log(cx,cr,d); debugger; }
-//if (cr+Math.abs(cy)>CSIZE) { console.log(cy,cr,d); debugger; }
+      //let cr=Math.min(this.maxr*(2*d)/CSIZE,this.maxr,CSIZE-Math.abs(cx),CSIZE-Math.abs(cy));
+let cr=Math.min(d,this.maxr,CSIZE-Math.abs(cx)-this.r,CSIZE-Math.abs(cy)-this.r);
       this.cc.x=this.x+(this.r+cr/2)*Math.cos(this.alpha+t/this.ka);
       this.cc.y=this.y+(this.r+cr/2)*Math.sin(this.alpha+t/this.ka);
       this.cc.r=cr/2;
@@ -102,8 +100,9 @@ var Circle=function(k1) {
     //this.r=Math.min(d,CSIZE-d,maxr);
     //this.r=Math.min(this.maxr*(2*d)/CSIZE,this.maxr);
     //this.r=Math.min(this.maxr*(2*d)/CSIZE,this.maxr,CSIZE-Math.abs(this.x),CSIZE-Math.abs(this.y));
-let rf=(1-Math.cos(d*TP/CSIZE/2))/2;
-    this.r=Math.min(this.maxr*rf,this.maxr,CSIZE-Math.abs(this.x),CSIZE-Math.abs(this.y));
+//let rf=(1-Math.cos(d*TP/CSIZE/2))/2;
+    //this.r=Math.min(this.maxr*rf,this.maxr,CSIZE-Math.abs(this.x),CSIZE-Math.abs(this.y));
+this.r=Math.min(d,this.maxr,CSIZE-Math.abs(this.x),CSIZE-Math.abs(this.y));
     this.extend();
   }
 }
@@ -129,7 +128,6 @@ var animate=(ts)=>{
   t++;
   ca[0].move();
   draw();
-//if (EM && t%400==0) stopped=true;
   if (t>KTD-100)   ctx.canvas.style.opacity=(KTD-t)/100;
   if (t%KTD==0) {
     ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
@@ -139,10 +137,9 @@ var animate=(ts)=>{
     t=0;
 report();
   }
+if (EM && t%400==0) stopped=true;
   requestAnimationFrame(animate);
 }
-
-onresize();
 
 var ca=[new Circle(TP/4)];
 
@@ -157,7 +154,7 @@ const getHexPath=(spath)=>{
   const dm2=new DOMMatrix([-0.5,0.866,-0.866,-0.50,0,0]);
   const dmy=new DOMMatrix([1,0,0,-1,0,0]);
   const dmx=new DOMMatrix([-1,0,0,1,0,0]);
-let p=new Path2D(spath);
+  let p=new Path2D(spath);
   p.addPath(p,dmy);
   p.addPath(p,dmx);
   let hpath=new Path2D(p);
@@ -165,21 +162,6 @@ let p=new Path2D(spath);
   hpath.addPath(p,dm2);
   return hpath;
 }
-
-/*
-const getHexPath=(spath)=>{
-  const dm1=new DOMMatrix([0.5,0.866,-0.866,0.50,0,0]);
-  const dm2=new DOMMatrix([-0.5,0.866,-0.866,-0.50,0,0]);
-  const dmy=new DOMMatrix([1,0,0,-1,0,0]);
-  const dmx=new DOMMatrix([-1,0,0,1,0,0]);
-  let hpath=new Path2D(spath);
-  hpath.addPath(hpath,dmy);
-  hpath.addPath(hpath,dmx);
-  hpath.addPath(hpath,dm1);
-  hpath.addPath(hpath,dm2);
-  return hpath;
-}
-*/
 
 var draw=()=>{
   let pa=[new Path2D(),new Path2D()];
@@ -212,6 +194,8 @@ p.addPath(p,new DOMMatrix([0,1,-1,0,0,0]));
 */
 }
 
+onresize();
+
 start();
 
 //// full screen, no?, selected trochoids, speed-length matching problems?, 1,3,then 5
@@ -232,8 +216,9 @@ var report=()=>{
     info.push({
       "maxr":Math.round(ca[i].maxr),
       "ka":Math.round(ca[i].ka),
-      "er":Math.round(ca[i].er),
-      "erk":Math.round(ca[i].erk)
+      "er":ca[i].er.toFixed(2),
+      "erk":Math.round(ca[i].erk),
+      "alpha":ca[i].alpha.toFixed(1),
     });
   }
   console.table(info);
