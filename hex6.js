@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/poGGOgq
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -12,7 +12,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -190,7 +189,7 @@ if (t%24==0) {
   });
 }
 
-  //if (EM && t%200==0) stopped=true;
+if (EM && t%200==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
