@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/jOdJzgz
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -135,7 +135,7 @@ var animate=(ts)=>{
     ca.forEach((circ)=>{ circ.randomize(); });
     ctx.canvas.style.opacity=1;
     t=0;
-report();
+//report();
   }
 if (EM && t%400==0) stopped=true;
   requestAnimationFrame(animate);
@@ -223,4 +223,3 @@ var report=()=>{
   }
   console.table(info);
 }
-report();
