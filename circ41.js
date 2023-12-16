@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/LYqvYPB
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -73,32 +73,19 @@ var t=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-//if (EM && t%400==0) stopped=true;
+if (EM && t%300==0) stopped=true;
   draw();
 //if (t==KT/5-101) stopped=true;
-if (t>KTD-100)   ctx.canvas.style.opacity=(KTD-t)/100;
-if (t>KTD) {
-  randomizeCircles();
-  color.randomize();
-  D=8*Math.random();
-  D2=8*Math.random();
-
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  ctx.canvas.style.opacity=1;
-/*
-if (ctxa==ctx) {
-//  ctx2.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  ctx.canvas.parentElement.appendChild(ctx2.canvas)
-  ctxa=ctx2;
-} else {
-//  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  ctx.canvas.parentElement.appendChild(ctx.canvas)
-  ctxa=ctx;
-}
-*/
-  t=0;
-//for (let i=0; i<pts.length; i++) { ctx.fillRect(pts[i].x-4,pts[i].y-4,8,8); }
-}
+  if (t>KTD-100)   ctx.canvas.style.opacity=(KTD-t)/100;
+  if (t>KTD) {
+    randomizeCircles();
+    color.randomize();
+    D=8*Math.random();
+    D2=8*Math.random();
+    ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+    ctx.canvas.style.opacity=1;
+    t=0;
+  }
   requestAnimationFrame(animate);
 }
 
@@ -130,23 +117,19 @@ var Circle=function() {
 }
 var ca=[new Circle()];
 
-var pts=[];
 var count=getRandomInt(2,8);
 //console.log("count "+count);
 
 var randomizeCircles=()=>{
   ca=[];
   count=getRandomInt(2,8);
-console.log("count "+count);
+//console.log("count "+count);
   for (let i=0; i<count; i++) {
     let z=TP*Math.random();
     let r=CSIZE*Math.random();
     let x=r*Math.cos(z);
     let y=r*Math.sin(z);
-    //pts.push({"x":0.707*CSIZE*(1-2*Math.random()),"y":0.707*CSIZE*(1-2*Math.random())});
-//    pts.push({"x":x,"y":y});
     ca.push(new Circle());
-    //pts.push({"x":0,"y":0});
   }
 }
 randomizeCircles();
@@ -154,48 +137,31 @@ randomizeCircles();
 const KT=4000; 
 const KTD=KT/5; 
 
-const dmx=new DOMMatrix([-1,0,0,1,0,0]);
-const dmy=new DOMMatrix([1,0,0,-1,0,0]);
-
 ctx.fillStyle="#00000044";
 let D=8*Math.random();
 let D2=8*Math.random();
 
 var draw=()=>{
-  //let pa=[new Path2D(),new Path2D()];
   let p=new Path2D();
   let r=CSIZE*(Math.sin(TP*t/KT));
   for (let i=0; i<ca.length; i++) {
     p.moveTo(ca[i].x+r*Math.cos(ca[i].ka+t/ca[i].et),ca[i].y+r*Math.sin(ca[i].ka+t/ca[i].et));
-    //p.arc(pts[i].x,pts[i].y,r,0,TP);
     p.ellipse(ca[i].x,ca[i].y,r,r/ca[i].erk,ca[i].ka+t/ca[i].et,0,TP);
   }
   ctx.setLineDash([D*r,D2*r]);
-
-//  p.addPath(p,dmx);
-//  p.addPath(p,dmy);
   let p2=getHexPath(p);
-//for (let i=0; i<pa.length; i++) {
-
   ctx.setTransform(1,0,0,1,CSIZE-1,CSIZE+1);
-//ctx.lineWidth=8;
   ctx.lineWidth=Math.min(r,8);
 // only inner circle?  
   ctx.strokeStyle="#00000014";
   ctx.stroke(p2);
-
   ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
   ctx.lineWidth=Math.min(r,2);
   ctx.strokeStyle=color.getRGB();
   ctx.stroke(p2);
-//}
-
 }
 
 onresize();
 
 start();
-
-//ctx.fillStyle = "rgba(0,0,0,1)"; // (Drawing with 0 alpha pretty much means doing nothing)
-//ctx.globalCompositeOperation = "destination-out";
 
