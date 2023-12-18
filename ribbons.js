@@ -1,44 +1,27 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
-
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/bPozZQ
 const EM=location.href.endsWith("em");
-//const EMA=location.href.endsWith('ema');
 const CSIZE=400;
 
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 body.style.margin="20";
 
-/*
-var MO=false;
-if (EM) {
-  body.addEventListener("mouseover", ()=>{ MO=true; if (stopped) start(); }, false);
-  body.addEventListener("mouseout", ()=>{ MO=false; }, false);
-  body.onmouseover=()=>{ MO=true; if (stopped) start(); }
-  body.onmouseout=()=>{ MO=false; }
-}
-*/
-
 const ctx=(()=>{
   let d=document.createElement("div");
   d.style.textAlign="center";
   body.append(d);
   let c=document.createElement("canvas");
-  c.width="800";
-  c.height="800";
+  c.width=c.height=2*CSIZE;
   d.append(c);
   return c.getContext("2d");
 })();
-
 ctx.translate(CSIZE,CSIZE);
-ctx.rotate(-Math.PI/2);
 ctx.lineWidth=4;
-ctx.strokeStyle='hsl(180,90%,80%)';
-ctx.fillStyle='hsla(0,0%,0%,0.05)';
+ctx.fillStyle="hsla(0,0%,0%,0.05)";
 
 onresize=function() { 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
-  ctx.canvas.style.width=D+"px";
-  ctx.canvas.style.height=D+"px";
+  ctx.canvas.style.width=ctx.canvas.style.height=D+"px";
 }
 
 function powerRandom(p) {
