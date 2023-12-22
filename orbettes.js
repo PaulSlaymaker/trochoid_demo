@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/NWPvRgQ
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -11,8 +11,7 @@ ctx.rotate(-Math.PI/2);
 ctx.fillStyle="hsla(0,0%,0%,0.05)";
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
-  ctx.canvas.style.width=D+"px";
-  ctx.canvas.style.height=D+"px";
+  ctx.canvas.style.width=ctx.canvas.style.height=D+"px";
 }
 const PUBLISH=true;
 

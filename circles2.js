@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/poEdOBb
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
 const EM=location.href.endsWith("em");
@@ -10,8 +10,7 @@ const SCALE=40;
 
 var ctx=(()=>{
   let c=document.createElement("canvas");
-  c.width="800";
-  c.height="800";
+  c.width=c.height=2*CSIZE;
   let co=document.createElement("div");
   co.style.textAlign="center";
   co.append(c);
@@ -24,16 +23,12 @@ ctx.fillStyle="#AAD";
 
 onresize=function() {
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
-  ctx.canvas.style.width=D+"px";
-  ctx.canvas.style.height=D+"px";
+  ctx.canvas.style.width=ctx.canvas.style.height=D+"px";
 }
 
 var getRandomInt=(min,max,low)=>{
-  if (low) {
-    return Math.floor(Math.random()*Math.random()*(max-min))+min;
-  } else {
-    return Math.floor(Math.random()*(max-min))+min;
-  }
+  if (low) return Math.floor(Math.random()*Math.random()*(max-min))+min;
+  else return Math.floor(Math.random()*(max-min))+min;
 }
 
 const randomOdd=()=>{ return [1,-1,3,-3,5,-5][getRandomInt(0,6)]; }

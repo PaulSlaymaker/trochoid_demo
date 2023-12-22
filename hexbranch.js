@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/oNBjbwd
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="black";
 const EM=location.href.endsWith("em");
@@ -7,8 +7,7 @@ const CSIZE=600;
 
 var ctx=(()=>{
   let c=document.createElement("canvas");
-  c.width=2*CSIZE;
-  c.height=2*CSIZE;
+  c.width=c.height=2*CSIZE;
   c.style.position="absolute";
   c.style.top="0px";
   c.style.left="0px";
@@ -31,16 +30,12 @@ onresize=function() {
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
   container.style.height=D+"px";
   container.style.width=D+"px";
-  ctx.canvas.style.width=D+"px";
-  ctx.canvas.style.height=D+"px";
+  ctx.canvas.style.width=ctx.canvas.style.height=D+"px";
 }
 
 var getRandomInt=(min,max,low)=>{
-  if (low) {
-    return Math.floor(Math.random()*Math.random()*(max-min))+min;
-  } else {
-    return Math.floor(Math.random()*(max-min))+min;
-  }
+  if (low) return Math.floor(Math.random()*Math.random()*(max-min))+min;
+  else return Math.floor(Math.random()*(max-min))+min;
 }
 
 function Line(x,y) {

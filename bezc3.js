@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/details/MWOgrWP
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -10,8 +10,7 @@ const ctx=(()=>{
   d.style.textAlign="center";
   body.append(d);
   let c=document.createElement("canvas");
-  c.width=2*CSIZE;
-  c.height=2*CSIZE;
+  c.width=c.height=2*CSIZE;
   d.append(c);
   return c.getContext("2d");
 })();
@@ -20,16 +19,12 @@ ctx.lineJoin="round";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
-  ctx.canvas.style.width=D+"px";
-  ctx.canvas.style.height=D+"px";
+  ctx.canvas.style.width=ctx.canvas.style.height=D+"px";
 }
 
 const getRandomInt=(min,max,low)=>{
-  if (low) {
-    return Math.floor(Math.random()*Math.random()*(max-min))+min;
-  } else {
-    return Math.floor(Math.random()*(max-min))+min;
-  }
+  if (low) return Math.floor(Math.random()*Math.random()*(max-min))+min;
+  else return Math.floor(Math.random()*(max-min))+min;
 }
 
 const syma=(()=>{
