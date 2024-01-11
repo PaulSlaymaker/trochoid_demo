@@ -156,41 +156,18 @@ var setTile=()=>{
   ctxo.stroke(p);
 }
 
-/*
-const Kxa=[TP*Math.random(),TP*Math.random(),TP*Math.random(),TP*Math.random()];
-const getNormalizedWave=()=>{
-var sa=Array(4);
-  let sum=0;
-  for (let i=0; i<4; i++) {
-    //kxa[i]=(1+Math.cos(TP*t/K1a[i]))/2;
-    sa[i]=1+0.3*Math.sin(Kxa[i]+4*TP*t/KT);
-    //sa[i]=(1+Math.cos(TP*t/K1a[i]))/2;
-//kxa[i]=(1+Math.cos(Math.random()+TP*t/200))/2;
-    sum+=sa[i];
-  }
-  for (let i=0; i<4; i++) {
-    sa[i]=4*sa[i]/sum;
-  }
-//sa.sort((a,b)=>{ return a-b; });
-  return sa;
-}
-*/
-
 const Ks=TP*Math.random();
 const Ks2=TP*Math.random();
 
 var draw=()=>{
   setTile();
-let f3=0.8;
-  let f=1+0.5*Math.sin(Ks+to/310);
+  let f=1+0.3*Math.sin(Ks+to/510);
   let s1=f;
   let s2=(2-s1);
 
-  let f2=1+0.5*Math.sin(Ks2+to/350);
+  let f2=1+0.3*Math.sin(Ks2+to/550);
   let ss1=f2;
   let ss2=(2-ss1);
-
-  //let sa4=getNormalizedWave();
 
   //let sa=[s1,s2,s2,s1,s1,s2,s2,s1];
   let sa=[s1,s2,ss1,ss2,ss2,ss1,s2,s1];
@@ -216,9 +193,3 @@ let f3=0.8;
 onresize();
 
 start();
-
-var test=()=>{
-  ctx.drawImage(ctxo.canvas,-CSIZE,-CSIZE);
-  ctx.drawImage(ctxo.canvas,0,0);
-}
-
