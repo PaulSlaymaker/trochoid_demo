@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/details/YzyaqyP
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const TP=2*Math.PI;
@@ -12,18 +12,14 @@ ctx.rotate(-Math.PI/2);
 ctx.fillStyle="hsla(0,0%,0%,0.05)";
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
-  ctx.canvas.style.width=D+"px";
-  ctx.canvas.style.height=D+"px";
+  ctx.canvas.style.width=ctx.canvas.style.height=D+"px";
 }
 var stopped=true;
 const PUBLISH=true;
 
 var getRandomInt=(min,max,low)=>{
-  if (low) {
-    return Math.floor(Math.random()*Math.random()*(max-min))+min;
-  } else {
-    return Math.floor(Math.random()*(max-min))+min;
-  }
+  if (low) return Math.floor(Math.random()*Math.random()*(max-min))+min;
+  else return Math.floor(Math.random()*(max-min))+min;
 }
 
 var coprime=(a,b)=>{
