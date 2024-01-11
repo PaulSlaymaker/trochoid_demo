@@ -57,7 +57,7 @@ function Color() {
 }
 
 var colors=[new Color(),new Color()];
-const KT=12000; 
+const KT=14000; 
 
 var Circle=function(k1) { 
   this.randomize=()=>{
@@ -176,7 +176,8 @@ var draw=()=>{
 p.addPath(p,new DOMMatrix([0,1,-1,0,0,0]));
 */
     pa[i%colors.length].addPath(p);
-    ctx.strokeStyle="rgba(0,0,0,"+(0.1-0.08*(ca[i].maxr-ca[0].r)/ca[i].maxr)+")";
+    //ctx.strokeStyle="rgba(0,0,0,"+(0.1-0.08*(ca[i].maxr-ca[0].r)/ca[i].maxr)+")";
+ctx.strokeStyle="rgba(0,0,0,"+(0.08-0.06*(ca[i].maxr-ca[0].r)/ca[i].maxr)+")";
 //ctx.strokeStyle="rgba(0,0,0,"+(0.12-0.1*(maxr-ca[0].r)/maxr)+")";
     ctx.stroke(p);
   }
