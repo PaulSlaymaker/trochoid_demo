@@ -13,7 +13,7 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
+//c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -95,14 +95,12 @@ var t=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-ctx.lineDashOffset=LDF*t;
 //if (EM && t%300==0) stopped=true;
   draw();
   if (t==KTD) {
     color.randomize();
     D=4*Math.random();
     D2=2*Math.random();
-    LDF=10-20*Math.random();
     circ.randomize();
     t=0;
 //stopped=true;
@@ -136,9 +134,9 @@ var Circle=function() {
 const circ=new Circle();
 const KT=3200; 
 const KTD=KT/4; 
-var D=4*Math.random();
+//var D=4; //*Math.random();
+var D=2+2*Math.random();
 var D2=2*Math.random();
-var LDF=10-20*Math.random();
 const SO=2*(1-S6);
 
 const symArray=[
