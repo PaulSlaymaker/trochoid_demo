@@ -1,4 +1,4 @@
-"use strict"; // Paul Slaymaker, paul25882@gmail.com
+"use strict"; // Paul Slaymaker, paul25882@gmail.com, not published
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
 const EM=location.href.endsWith("em");
@@ -24,6 +24,7 @@ const ctxo=(()=>{
   //return c.getContext("2d");
 })();
 ctxo.setTransform(1,0,0,1,CSO,CSO);
+ctxo.lineCap="round";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -85,8 +86,8 @@ var animate=(ts)=>{
   draw();
   if (t==KTD) {
     color.randomize();
-    D=4*Math.random();
-    D2=4*Math.random();
+    D=6*Math.random();
+    D2=6*Math.random();
     circ.randomize();
     t=0;
 //stopped=true;
@@ -101,6 +102,8 @@ var Circle=function() {
     this.x=r*Math.cos(z);
     this.y=r*Math.sin(z);
     this.ka=TP*Math.random();		// vary
+    //this.ka2=0.005-0.01*Math.pow(Math.random(),5);
+this.ka2=0.003*Math.pow([-1,1][getRandomInt(0,2)]*Math.random(),5);
     this.et=(80+160*Math.random())*[-1,1][getRandomInt(0,2)];
     this.erk=1+3*Math.random();		// vary
   }
@@ -112,22 +115,25 @@ var Circle=function() {
   }
   this.getPath=(r,t)=>{
     let p=new Path2D();
-    p.moveTo(this.x+r*Math.cos(this.ka+t/this.et),this.y+r*Math.sin(this.ka+t/this.et));
-    p.ellipse(this.x,this.y,r,r/this.erk,this.ka+t/this.et,0,TP);
+let ko=this.ka+TP*Math.sin(this.ka2*t);
+    //p.moveTo(this.x+r*Math.cos(this.ka+t/this.et),this.y+r*Math.sin(this.ka+t/this.et));
+    //p.ellipse(this.x,this.y,r,r/this.erk,this.ka+t/this.et,0,TP);
+    p.moveTo(this.x+r*Math.cos(ko+t/this.et),this.y+r*Math.sin(ko+t/this.et));
+    p.ellipse(this.x,this.y,r,r/this.erk,ko+t/this.et,0,TP);
     return p;
   }
 }
 //var ca=[new Circle()];
 
 const circ=new Circle();
-const KT=2800; 
+const KT=3200; 
 const KTD=KT/4; 
-var D=4*Math.random();
-var D2=4*Math.random();
+var D=6*Math.random();	// vary
+var D2=6*Math.random();
 
 var draw=()=>{
   //r=3.2*CSO*(Math.sin(TP*t/KT));
-  let r=circ.erk*1.4*CSO*(Math.sin(TP*t/KT));
+  let r=circ.erk*2*CSO*(Math.sin(TP*t/KT));
   let p=circ.getPath(r,t);
   ctxo.setLineDash([D*r,D2*r]);
   ctxo.lineWidth=Math.min(r,6);
