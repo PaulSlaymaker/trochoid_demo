@@ -20,6 +20,7 @@ ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
 const ctxo=(()=>{
   let c=document.createElement("canvas");
   c.width=c.height=2*CSO;
+  //return c.getContext("2d");
   return c.getContext("2d", {"willReadFrequently": true});
 })();
 ctxo.setTransform(1,0,0,1,CSO,CSO);
@@ -157,7 +158,7 @@ var drawTiles=()=>{
       CSIZE+(1.5*ttb[b1]+2*ttb[b2]*S6)*CSO,CSIZE+(1.5*ttb[b3]+2*ttb[b4]*S6)*CSO);
     ctx.drawImage(ctxo2.canvas,0,0);
   }
-  let id=ctxo.getImageData(0,0,2*CSO,2*CSO);
+//  let id=ctxo.getImageData(0,0,2*CSO,2*CSO);
   ctxo2.fillStyle="#00000040";
   ctxo2.fillRect(-CSO,-CSO,2*CSO,2*CSO);
   for (let i=0; i<12; i+=2) {

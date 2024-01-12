@@ -270,5 +270,6 @@ var draw=()=>{
   drawTiles();
 }
 
+//ctxo.strokeRect(-CSO,-CSO,2*CSO,2*CSO);
 start();
 //drawTiles();
