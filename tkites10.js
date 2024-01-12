@@ -5,8 +5,8 @@ body.style.background="#000";
 const TP=2*Math.PI;
 const S8=Math.sin(Math.PI/4);
 const CSIZE=400;
-//const CSO=86;
-const CSO=64;
+const CSO=86;
+//const CSO=64;
 
 const ctx=(()=>{
   let d=document.createElement("div");
@@ -88,7 +88,7 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
-var t=200;
+var t=0; //getRandomInt(0,300);
 var animate=(ts)=>{
   if (stopped) return;
   t++;
@@ -107,13 +107,13 @@ var animate=(ts)=>{
 
 var Circle=function() { 
   this.randomize=()=>{
-    let z=TP/4*Math.random();
+    let z=TP*Math.random();
     let r=0.8*CSO*Math.random();
     this.x=r*Math.cos(z);
     this.y=r*Math.sin(z);
     this.ka=TP*Math.random();
     this.ka2=0.003*Math.pow([-1,1][getRandomInt(0,2)]*Math.random(),5);
-    this.et=(120+240*Math.random())*[-1,1][getRandomInt(0,2)];
+    this.et=(160+320*Math.random())*[-1,1][getRandomInt(0,2)];
     this.erk=1+3*Math.random();	
   }
   this.randomize();
@@ -132,7 +132,7 @@ const circ=new Circle();
 const KT=3200; 
 const KTD=KT/4; 
 var D=2+2*Math.random();
-var D2=2*Math.random();
+var D2=1+Math.random();
 
 var setTile=()=>{
   //let r=circ.erk*2*CSO*(Math.sin(TP*t/KT));
@@ -162,8 +162,8 @@ const SS=Math.sin(TP/16);
 
 var sma= new DOMMatrix([ S8,1-S8,1-S8, S8,0,0]);
 var smb= new DOMMatrix([-S8,1-S8,S8-1, S8,0,0]);
-var smc= new DOMMatrix([ S8,1-S8,S8-1,-S8,0,0]);
-var smd= new DOMMatrix([-S8,1-S8,1-S8,-S8,0,0]);
+const smc= new DOMMatrix([ S8,1-S8,S8-1,-S8,0,0]);
+const smd= new DOMMatrix([-S8,1-S8,1-S8,-S8,0,0]);
 
 /*
 var sme= new DOMMatrix([ S8,S8-1,S8-1, S8,0,0]);
@@ -172,14 +172,31 @@ var smg= new DOMMatrix([ S8,S8-1,1-S8,-S8,0,0]);
 var smh= new DOMMatrix([-S8,S8-1,S8-1,-S8,0,0]);
 */
 
-var os1=(4-2*SC)*CSO;	// 2.15=4-2*SC
-var os2=(4-SC)*CSO;	// 3.076=4-SC
-var os3=(8-3*SC)*CSO;	// 5.23=8-3*SC		probably not right
-var os4=(8-4*SC)*CSO;	// 4.304=8-4*SC
+// not geometrically correct, just convenient estimates
+const os1=(4-2*SC)*CSO;	// 2.15=4-2*SC
+const os2=(4-SC)*CSO;	// 3.076=4-SC
+const os3=(8-3*SC)*CSO;	// 5.23=8-3*SC
+const os4=(8-4*SC)*CSO;	// 4.304=8-4*C
 
+const xosa=[
+[0,-os3,os2,os1,os1,os4,os3,-os3,-os2],		// -6
+[0,-os2,-os1,os3,os2,-os1,-os4,-os3,os3],	// 6
+[0,0,-os1,os1,-os1,0,os1,-os4,-os1],		// 0
+[0,0,-os1,os1,-os1,0,os1,-os4,-os1],		// 0
+[0,-os2,-os1,os3,os2,-os1,-os4,-os3,os3],	// 6
+[0,-os3,os2,os1,os1,os4,os3,-os3,-os2],		// -6
+[0,0,os1,-os1,0,os4,-os1,os1,os1],		// 0 end
+[0,0,os1,-os1,0,os4,-os1,os1,os1]		// 6.13 end
+];
 const yosa=[
-,,,,,,,
-2
+[0,-os1,0,os1,os1,os4,os1,-os1,0],		// 0
+[0,0,os1,-os1,0,os1,os4,os1,-os1],		// 0
+[0,os2,os1,-os3,os1,-os2,-os3,os4,os3],		// -6
+[0,-os2,-os1,os3,-os1,os2,os3,-os4,-os3],	// 6
+[0,0,-os1,os1,0,-os1,-os4,-os1,os1],		// 0
+[0,os1,0,-os1,-os1,-os4,-os1,os1,0],		// 0
+[0,-os2,-os1,os3,os2,-os4,os3,-os1,-os3],	// 6.13
+[0,os2,os1,-os3,-os2,os4,-os3,os1,os3]		// 0 end
 ];
 
 /*
@@ -187,7 +204,7 @@ var draw=()=>{
   setTile();
   let S6=0.7; //Math.sin(TP/3);
   let dm= new DOMMatrix([S6,1-S6,1-S6,S6,0,0]);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);		// l1 - 1
+  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);
   ctx.drawImage(ctxo.canvas,0,0);
 }
 */
@@ -200,219 +217,30 @@ for (let i=0; i<8; i++) {
   rma[i]=new DOMMatrix([cos,sin,-sin,cos,0,0]);
 }
 
-var draw=()=>{
-  setTile();
-
-let rm=new DOMMatrix([SC,-SS,SS,SC,0,0]);	// -TP/16
-let dm=rm.multiply(sma);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);		// l1 - 1
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os3,CSIZE-os1);	// l3 - 14
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os2,CSIZE);	// l3 - 1
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE+os1);	// l3 - 3
-  ctx.drawImage(ctxo.canvas,0,0);
-dm=rm.multiply(smc);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE+os1);	// l2 - 2
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os4,CSIZE+os4);	// l4 - 4
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os3,CSIZE+os1);	// l4 - 2
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os3,CSIZE-os1);	// l4 - 19
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os2,CSIZE);	// l2 - 9
-  ctx.drawImage(ctxo.canvas,0,0);
-//  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-6.12*CSO,CSIZE);	// l4 - 17 - end
-//  ctx.drawImage(ctxo.canvas,0,0);
-
-rm=new DOMMatrix([SC,SS,-SS,SC,0,0]);		// 1*TP/16
-dm=rm.multiply(smb);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);		// l1 - 4
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os2,CSIZE);	// l3 - 12
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE+os1);	// l3 - 10
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os3,CSIZE-os1);	// l3 - 23
-  ctx.drawImage(ctxo.canvas,0,0);
-dm=rm.multiply(smd);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os2,CSIZE);	// l2 - 16
-  ctx.drawImage(ctxo.canvas,0,0);
-//  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+6.12*CSO,CSIZE);	// l4 - 32 - end
-//  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE+os1);	// l2 - 7
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os4,CSIZE+os4);	// l4 - 13
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os3,CSIZE+os1);	// l4 - 15
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os3,CSIZE-os1);	// l4 - 30
-  ctx.drawImage(ctxo.canvas,0,0);
-
-rm=new DOMMatrix([SS,SC,-SC,SS,0,0]);		// 3*TP/16
-dm=rm.multiply(sma);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);		// l1 - 3
-  ctx.drawImage(ctxo.canvas,0,0);		
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE+os2);	// l3 - 7
-  ctx.drawImage(ctxo.canvas,0,0);		
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE+os1);	// l3 - 9
-  ctx.drawImage(ctxo.canvas,0,0);		
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE-os3);	// l3 - 20
-  ctx.drawImage(ctxo.canvas,0,0);		
-dm=rm.multiply(smc);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE+os1);	// l2 - 6
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE-os2);	// l2 - 13
-  ctx.drawImage(ctxo.canvas,0,0);
-//  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE-6.12*CSO);	// l4 - 25 - end
-//  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE-os3);	// l4 - 27
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os4,CSIZE+os4);	// l4 - 12
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE+os3);	// l4 - 10
-  ctx.drawImage(ctxo.canvas,0,0);
-
-rm=new DOMMatrix([-SS,SC,-SC,-SS,0,0]);		// 5*TP/16
-dm=rm.multiply(smb);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);		// l1 - 6
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE-os2);	// l3 - 18
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE-os1);	// l3 - 16
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE+os3);	// l3 - 5
-  ctx.drawImage(ctxo.canvas,0,0);
-dm=rm.multiply(smd);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE-os1);	// l2 - 11
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE+os2);	// l2 - 4
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE+os3);	// l4 - 6
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os4,CSIZE-os4);	// l4 - 21
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE-os3);	// l4 - 23
-  ctx.drawImage(ctxo.canvas,0,0);
-//  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE+6.13*CSO);	// l4 - 8 - end
-//  ctx.drawImage(ctxo.canvas,0,0);
-
-rm=new DOMMatrix([-SC,SS,-SS,-SC,0,0]);		// 7*TP/16
-dm=rm.multiply(sma);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);		// l1 - 5
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os2,CSIZE);	// l3 - 13
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE-os1);	// l3 - 15
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os3,CSIZE+os1);	// l3 - 2
-  ctx.drawImage(ctxo.canvas,0,0);
-dm=rm.multiply(smc);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os2,CSIZE);	// l2 - 1
-  ctx.drawImage(ctxo.canvas,0,0);
-//  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+6.12*CSO,CSIZE);	// l4 - 1 - end
-//  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE-os1);	// l2 - 10
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os4,CSIZE-os4);	// l4 - 20
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os3,CSIZE-os1);	// l4 - 18
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os3,CSIZE+os1);	// l4 - 3
-  ctx.drawImage(ctxo.canvas,0,0);
-
-rm=new DOMMatrix([-SC,-SS,SS,-SC,0,0]);		// 9*TP/16
-dm=rm.multiply(smb);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);		// l1 - 8
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os3,CSIZE+os1);	// l3 - 11
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os2,CSIZE);	// l3 - 24
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE-os1);	// l3 - 22
-  ctx.drawImage(ctxo.canvas,0,0);
-dm=rm.multiply(smd);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE-os1);	// l2 - 15
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os4,CSIZE-os4);	// l4 - 28
-  ctx.drawImage(ctxo.canvas,0,0);
-  //ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-6.13*CSO,CSIZE);	// l4 - 16 - end
-  //ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os3,CSIZE-os1);	// l4 - 31
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os3,CSIZE+os1);	// l4 - 14
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os2,CSIZE);	// l2 - 8
-  ctx.drawImage(ctxo.canvas,0,0);
-
-rm=new DOMMatrix([-SS,-SC,SC,-SS,0,0]);		// 11*TP/16
-dm=rm.multiply(sma);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);		// l1 - 7
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE-os2);	// l3 - 19
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE-os1);	// l3 - 21
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE+os3);	// l3 - 8
-  ctx.drawImage(ctxo.canvas,0,0);
-dm=rm.multiply(smc);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE+os2);	// l2 - 5
-  ctx.drawImage(ctxo.canvas,0,0);
-//  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE+6.13*CSO);	// l4 - 9 - end
-//  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os4,CSIZE-os4);	// l4 - 28
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE+os3);	// l4 - 11
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE-os1);	// l2 - 14
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE-os3);	// l4 - 25
-  ctx.drawImage(ctxo.canvas,0,0);
-
-for (let i=7; i<8; i++) {
-rm=new DOMMatrix([SS,-SC,SC,SS,0,0]);		// 13*TP/16
-let yosa=[0,os2,os1,-os3,-os2,os4,-os3,os1,os3];
-dm=rma[i].multiply(smb);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE);		// l1 - 2
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE+os2);	// l3 - 6
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE+os1);	// l3 - 4
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE-os3);	// l3 - 17
-  ctx.drawImage(ctxo.canvas,0,0);
-dm=rma[i].multiply(smd);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE-os2);	// l2 - 12
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os4,CSIZE+os4);	// l4 - 5
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE-os1,CSIZE-os3);	// l2 - 3
-  ctx.drawImage(ctxo.canvas,0,0);
-//  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE,CSIZE-6.13*CSO);	// l4 - 24 - end
-//  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE+os1);	// l2 - 3
-  ctx.drawImage(ctxo.canvas,0,0);
-  ctx.setTransform(dm.a,dm.b,dm.c,dm.d,CSIZE+os1,CSIZE+os3);	// l4 - 7
-  ctx.drawImage(ctxo.canvas,0,0);
+const ta=new Array(8);		// transformation array, 8x10
+for (let i=0; i<8; i++) {
+  ta[i]=new Array(10);
+  let xos=xosa[i];
+  let yos=yosa[i];
+  let dm1=(i%2)?rma[i].multiply(smb):rma[i].multiply(sma);
+  let dm2=(i%2)?rma[i].multiply(smd):rma[i].multiply(smc);
+  for (let j=0; j<9; j++) {
+    let dm=(j<4)?dm1:dm2;
+    ta[i][j]=[dm.a,dm.b,dm.c,dm.d,CSIZE+xos[j],CSIZE+yos[j]];
+  }
 }
 
+var draw=()=>{
+  setTile();
+  for (let i=0; i<8; i++) {
+    for (let j=0; j<9; j++) {
+      ctx.setTransform(ta[i][j][0],ta[i][j][1],ta[i][j][2],ta[i][j][3],ta[i][j][4],ta[i][j][5]);
+      ctx.drawImage(ctxo.canvas,0,0);
+    }
+  }
 }
 
 onresize();
 
 start();
-
-var test=()=>{
-  ctx.drawImage(ctxo.canvas,-CSIZE,-CSIZE);
-  ctx.drawImage(ctxo.canvas,0,0);
-}
-
-var test2=()=>{
-  for (let i=-6; i<7; i++) {
-    console.log(i,(i*(1-SC)).toFixed(3));
-  }
-}
-//test2();
 
