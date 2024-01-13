@@ -285,7 +285,7 @@ ha.forEach((h)=>{ if (h.lid==2) h.generate7(); });
 hexMap.get(2).ld=200;
 hexMap.get(2).lw=20;
 
-console.log(hexMap);
-console.log(ha.length);
+//console.log(hexMap);
+//console.log(ha.length);
 
 start();
