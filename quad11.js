@@ -1,6 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/details/VwRZdao
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -95,8 +96,8 @@ ctx.canvas.addEventListener("click", start, false);
 
 var pauseTS=1000;
 var pause=(ts)=>{
-//  if (EM) stopped=true;
   if (stopped) return;
+if (EM) stopped=true;
   if (ts<pauseTS) requestAnimationFrame(pause);
   else requestAnimationFrame(animate);
 }
@@ -118,14 +119,15 @@ function animate(ts) {
     D1=[-1,1][getRandomInt(0,2)];
     D2=[-1,1][getRandomInt(0,2)];
     D3=[-1,1][getRandomInt(0,2)];
-console.log(K1,K2,K3,K4);
-console.log(D1,D2,D3);
+//console.log(K1,K2,K3,K4);
+//console.log(D1,D2,D3);
 if (t>=KT) t=0;
       pauseTS=performance.now()+3600;
     requestAnimationFrame(pause);
 //stopped=true;
   } else 
   requestAnimationFrame(animate);
+if (EM && t==747) stopped=true;
 }
 
 var K1=2*getRandomInt(0,4,true)+1;
@@ -135,8 +137,8 @@ var K4=2*getRandomInt(0,4,true)+1;
 var D1=[-1,1][getRandomInt(0,2)];
 var D2=[-1,1][getRandomInt(0,2)];
 var D3=[-1,1][getRandomInt(0,2)];
-console.log(K1,K2,K3,K4);
-console.log(D1,D2,D3);
+//console.log(K1,K2,K3,K4);
+//console.log(D1,D2,D3);
 
 const KT=3000;
 

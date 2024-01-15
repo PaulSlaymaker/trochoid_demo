@@ -1,5 +1,6 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/details/abMzyVJ
 const body=document.getElementsByTagName("body").item(0);
+const EM=location.href.endsWith("em");
 body.style.background="#000";
 const TP=2*Math.PI;
 const CSIZE=400;
@@ -98,6 +99,7 @@ function animate(ts) {
   if (t%4==0) for (let i=0; i<qa.length; i++) qa[i].move();
   if (t%800==0) color.randomizeF();
   draw();
+if (EM && t%400==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
