@@ -78,23 +78,12 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
-/*
-var pauseTS=1000;
-var pause=(ts)=>{
-//  if (EM) stopped=true;
-  if (stopped) return;
-  if (ts<pauseTS) requestAnimationFrame(pause);
-  else requestAnimationFrame(animate);
-}
-*/
-
 var t=0;
 var to=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
   to++;
-//if (EM && t%300==0) stopped=true;
   draw();
   if (t==KTD) {
     color.randomize();
@@ -102,8 +91,8 @@ var animate=(ts)=>{
     D2=6*Math.random();
     circ.randomize();
     t=0;
-//stopped=true;
   }
+if (EM && t%300==0) stopped=true;
   requestAnimationFrame(animate);
 }
 

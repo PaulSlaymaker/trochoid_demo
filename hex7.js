@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com, https://codepen.io/aymak/pen/LYaprJm
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(Math.PI/3);
 const CSIZE=360;
@@ -95,7 +95,6 @@ var t=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-//if (EM && t%300==0) stopped=true;
   draw();
   if (t==KTD) {
     color.randomize();
@@ -103,8 +102,8 @@ var animate=(ts)=>{
     D2=2*Math.random();
     circ.randomize();
     t=0;
-//stopped=true;
   }
+if (EM && t%300==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
