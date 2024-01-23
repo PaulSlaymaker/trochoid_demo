@@ -87,8 +87,9 @@ var animate=(ts)=>{
   draw();
   if (t==KTD) {
     color.randomize();
-    D=6*Math.random();
-    D2=6*Math.random();
+    //D=6*Math.random();
+    D=0.1+6*Math.pow(Math.random(),2);
+    D2=0.1+6*Math.pow(Math.random(),2);
     circ.randomize();
     t=0;
   }
@@ -124,12 +125,11 @@ let ko=this.ka+TP*Math.sin(this.ka2*t);
     return p;
   }
 }
-//var ca=[new Circle()];
 
 const circ=new Circle();
 const KT=3200; 
 const KTD=KT/4; 
-var D=6; //6*Math.random();	// vary
+var D=3+3*Math.random();	// vary
 var D2=6*Math.random();
 
 var setTile=()=>{
@@ -150,18 +150,18 @@ const Ks2=TP*Math.random();
 
 var draw=()=>{
   setTile();
+/*
   let f=1+0.3*Math.sin(Ks+to/510);
   let s1=f;
   let s2=(2-s1);
-
   let f2=1+0.3*Math.sin(Ks2+to/550);
   let ss1=f2;
   let ss2=(2-ss1);
-
   //let sa=[s1,s2,s2,s1,s1,s2,s2,s1];
   let sa=[s1,s2,ss1,ss2,ss2,ss1,s2,s1];
   //let sa=[ sa4[0],sa4[1],sa4[2],sa4[3],sa4[3],sa4[2],sa4[1],sa4[0] ];
   //let sa=[ sa4[0],2-sa4[0],sa4[1],2-sa4[1],sa4[3],sa4[2],sa4[1],sa4[0] ];
+*/
 
   for (let j=0; j<8; j++) {
     let pry=[1,-1][j%2];
@@ -170,10 +170,9 @@ var draw=()=>{
       let prx=[1,-1][i%2];
       let xos=((2*i)%4+2*i)*CSO;
       //ctx.setTransform(prx*sa[i],0,0,s1,xos,0);
-      ctx.setTransform(prx*sa[i],0,0,pry*sa[j],xos,yos);
+      //ctx.setTransform(prx*sa[i],0,0,pry*sa[j],xos,yos);
+ctx.setTransform(prx,0,0,pry,xos,yos);
       ctx.drawImage(ctxo.canvas,0,0);
-  //ctx.strokeStyle="red";
-  //ctx.strokeRect(0,0,2*CSO,2*CSO);
     }
   }
 
