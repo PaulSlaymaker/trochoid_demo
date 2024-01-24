@@ -12,7 +12,7 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
+//c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -25,12 +25,11 @@ const ctxo=(()=>{
   //return c.getContext("2d");
 })();
 ctxo.setTransform(1,0,0,1,CSO,CSO);
-//ctxo.globalAlpha=0.6;
-ctx.globalAlpha=0.6;
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
   ctx.canvas.style.width=ctx.canvas.style.height=D+"px";
+//ctxo.canvas.style.width=ctxo.canvas.style.height=D/4+"px";
 }
 
 const getRandomInt=(min,max,low)=>{
@@ -68,7 +67,6 @@ function Color() {
 }
 
 var color=new Color();
-var color2=new Color();
 
 var stopped=true;
 var start=()=>{
@@ -83,7 +81,7 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
-var t=0;
+var t=getRandomInt(0,300);
 var c=0;
 var animate=(ts)=>{
   if (stopped) return;
@@ -101,31 +99,25 @@ var animate=(ts)=>{
     lya.unshift(lya.splice(eidy,1)[0]);
     ydir=++ydir%2;
   }
-setTileT();
-
-//  if (t%400==0) reset();
+  if (t>600) { // 600 arbitrary
+    t=0;
+    color.randomizeF();
+    circ.randomize();
+if (EM && t%300==0) stopped=true;
+  } 
 
   draw();
-/*
-  if (t==KTD) {
-    color.randomize();
-    D=6*Math.random();
-    D2=6*Math.random();
-    circ.randomize();
-    t=0;
-//stopped=true;
-  }
-//if (EM && t%300==0) stopped=true;
-*/
   requestAnimationFrame(animate);
 }
 
 var Circle=function() { 
   this.randomize=()=>{
     let z=TP*Math.random();
-    this.r=CSO/2*(1+Math.random());
-    //let r=1.2*CSO*Math.random();
-    let lr=1.2*CSO*Math.random();
+    //this.r=CSO/2*(1+Math.random());
+    //this.r=1.7*CSO/2*(1+Math.random());
+    this.r=1.4*CSO*(1+Math.random());
+    this.r2=1.7*CSO/2*(1+Math.random());
+    let lr=1.7*CSO*Math.random();
     this.x=lr*Math.cos(z);
     this.y=lr*Math.sin(z);
     this.ka=TP*Math.random();		// vary
@@ -135,50 +127,31 @@ this.ka2=0.003*Math.pow([-1,1][getRandomInt(0,2)]*Math.random(),5);
     this.erk=1+3*Math.random();		// vary
   }
   this.randomize();
+/*
   this.rand2=()=>{
     this.ka=TP*Math.random();
     this.et=(100+200*Math.random())*[-1,1][getRandomInt(0,2)];
     this.erk=1+2*Math.random();
   }
   this.getRectPathT=()=>{
-if (t>600) { 
-  t=0;
-color.randomizeF();
-  this.randomize();
-}
 let f=(1+Math.cos(TP/2+TP*t/1200))/2;
 //if (this.t>=this.k) this.t=0;
     let r=f*this.r; //CSO/2*(1+Math.random());
+    let r2=f*this.r2;
     let p=new Path2D();
-    p.moveTo(this.x-r,this.y-r);
-    p.lineTo(this.x+r,this.y-r);
-    p.lineTo(this.x+r,this.y+r);
-    p.lineTo(this.x-r,this.y+r);
+    p.moveTo(this.x-r,this.y-r2);
+    p.lineTo(this.x+r,this.y-r2);
+    p.lineTo(this.x+r,this.y+r2);
+    p.lineTo(this.x-r,this.y+r2);
     p.closePath();
     return p;  
   }
-  this.getRectPath=()=>{
-//let f=(1+Math.cos(TP/2+TP*t/1000))/2;
-//if (this.t>=this.k) this.t=0;
-    let r=this.r; //CSO/2*(1+Math.random());
+*/
+  this.getPath=()=>{
     let p=new Path2D();
-    p.moveTo(this.x-r,this.y-r);
-    p.lineTo(this.x+r,this.y-r);
-    p.lineTo(this.x+r,this.y+r);
-    p.lineTo(this.x-r,this.y+r);
-    p.closePath();
-    return p;  
-  }
-  this.getPathd=()=>{
-let r=CSO/2*(1+Math.random());
-    let p=new Path2D();
-    p.moveTo(this.x+r,this.y);
-    p.arc(this.x,this.y,r,0,TP);
-    return p;
-  }
-  this.getPath=(r,t)=>{
-    let p=new Path2D();
-let ko=this.ka+TP*Math.sin(this.ka2*t);
+    let ko=this.ka+TP*Math.sin(this.ka2*t);
+    let f=(1+Math.cos(TP/2+TP*t/1200))/2;
+    let r=f*this.r;
     //p.moveTo(this.x+r*Math.cos(this.ka+t/this.et),this.y+r*Math.sin(this.ka+t/this.et));
     //p.ellipse(this.x,this.y,r,r/this.erk,this.ka+t/this.et,0,TP);
     p.moveTo(this.x+r*Math.cos(ko+t/this.et),this.y+r*Math.sin(ko+t/this.et));
@@ -186,7 +159,6 @@ let ko=this.ka+TP*Math.sin(this.ka2*t);
     return p;
   }
 }
-//var ca=[new Circle()];
 
 var Loc=function() { 
   this.k=600+2*getRandomInt(0,300);
@@ -195,73 +167,48 @@ var Loc=function() {
     this.t++;
     this.f=(1+Math.cos(TP/2+TP*this.t/this.k))/2;
     if (this.t>=this.k) this.t=0;
-/*
-if (this.f>=0.9999) {
-  console.log(this.t,this.k);
-debugger;
-  this.t=0;
-}
-*/
   }
-  this.move();
+//  this.move();
 }
 
 const circ=new Circle();
-const circ2=new Circle();
-const KT=3200; 
-const KTD=KT/4; 
-var D=6; //6*Math.random();	// vary
-var D2=6*Math.random();
 
 ctxo.lineWidth=2;
 ctxo.fillStyle="black";
 ctxo.fillRect(-CSO,-CSO,2*CSO,2*CSO);
-var setTile=(v)=>{
-  //r=3.2*CSO*(Math.sin(TP*t/KT));
-/*
-  let r=circ.erk*2*CSO*(Math.sin(TP*t/KT));
-  let p=circ.getPath(r,t);
-  ctxo.lineWidth=Math.min(r,6);
-  ctxo.strokeStyle="#00000014";
+
+var setTile=()=>{
+  let p=circ.getPath();
+  ctxo.lineWidth=8;
+  ctxo.strokeStyle="#0000000C";
   ctxo.stroke(p);
-  ctxo.lineWidth=Math.min(r,1);
+  ctxo.lineWidth=2;
   ctxo.strokeStyle=color.getRGB();
   ctxo.stroke(p);
-*/
-if (v) {
-  ctxo.strokeStyle="yellow";
-  ctxo.strokeRect(-CSO,-CSO,2*CSO,2*CSO);
-}
-
-  ctxo.fillStyle=color.getRGB();
-  //ctxo.fill(circ.getPathd());
-  ctxo.fill(circ.getRectPath());
-
-//  ctxo.fillStyle=color2.getRGB();
-//  ctxo.fill(circ2.getRectPath());
-//  circ.randomize();
-//  color.randomize();
-//  ctxo.fillStyle=color2.getRGB();
-//  ctxo.fill(circ.getRectPath());
-
-}
-
-var setTileT=(v)=>{
-  ctxo.strokeStyle=color.getRGB();
-  ctxo.stroke(circ.getRectPathT());
 }
 
 onresize();
+const XTO=20+getRandomInt(0,240);
+const YTO=20+getRandomInt(0,240);
+//console.log(XTO,YTO);
 
-var lxa=[new Loc(),new Loc(),new Loc(),new Loc(),new Loc()];
-var lya=[new Loc(),new Loc(),new Loc(),new Loc(),new Loc()];
+var lxa=[new Loc(),new Loc(),new Loc(),new Loc(),new Loc(),new Loc()];
+var lya=[new Loc(),new Loc(),new Loc(),new Loc(),new Loc(),new Loc()];
+/*
+var lxa=[];
+var lya=[];
+for (let i=0; i<16; i++) {
+  lxa.push(new Loc());
+  lya.push(new Loc());
+}
+*/
 for (let i=0; i<lxa.length; i++) {
-  lxa[i].t=i*200;
-  lxa[i].k=4000;
-lxa[i].move();
-  lya[i].t=i*200;
-  lya[i].k=3000;
-lya[i].move();
+  lxa[i].t=i*XTO;
+  lxa[i].k=1900;
+  lxa[i].move();
+  lya[i].t=i*YTO;
+  lya[i].k=1600;
+  lya[i].move();
 }
 
 var setNormalInterval=(a)=>{
@@ -276,203 +223,65 @@ var setNormalInterval=(a)=>{
 
 var xa;		// redundant
 var ya;
-var K=0;
 var xdir=0;
 var ydir=0;
 var draw=()=>{
 //ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
 //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);	// remove
+  setTile();
   xa=[], ya=[];
   for (let i=0; i<lxa.length; i++) {
     xa.push(lxa[i].f);
     ya.push(lya[i].f);
   }
-
   setNormalInterval(xa);
   setNormalInterval(ya);
 
   let sxa=[0],sya=[0];
   for (let i=0; i<xa.length; i++) { sxa.push(xa[i]+sxa[i]); }
   for (let i=0; i<ya.length; i++) { sya.push(ya[i]+sya[i]); }
-
-  if (xdir) {
-    if (ydir) {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([-2,2][i%2]*xa[i],0,0,[-2,2][j%2]*ya[j],
-                           CSIZE+sxa[(i+1)%2+i]*CSIZE,CSIZE+sya[(j+1)%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
+  for (let xr of [1,-1]) for (let yr of [1,-1]) { 	// quadrant reflections
+    if (xdir) {	// 4 tile flip states
+      if (ydir) {
+	for (let i=0; i<xa.length; i++) {
+	  for (let j=0; j<ya.length; j++) {
+	    ctx.setTransform(xr*[-2,2][i%2]*xa[i],0,0,yr*[-2,2][j%2]*ya[j],
+			     CSIZE+xr*sxa[(i+1)%2+i]*CSIZE,CSIZE+yr*sya[(j+1)%2+j]*CSIZE);
+	    ctx.drawImage(ctxo.canvas,0,0);
+	  }
+	}
+      } else {
+	for (let i=0; i<xa.length; i++) {
+	  for (let j=0; j<ya.length; j++) {
+	    ctx.setTransform(xr*[-2,2][i%2]*xa[i],0,0,yr*[2,-2][j%2]*ya[j],
+			     CSIZE+xr*sxa[(i+1)%2+i]*CSIZE,CSIZE+yr*sya[j%2+j]*CSIZE);
+	    ctx.drawImage(ctxo.canvas,0,0);
+	  }
 	}
       }
     } else {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([-2,2][i%2]*xa[i],0,0,[2,-2][j%2]*ya[j],
-                           CSIZE+sxa[(i+1)%2+i]*CSIZE,CSIZE+sya[j%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
+      if (ydir) {
+	for (let i=0; i<xa.length; i++) {
+	  for (let j=0; j<ya.length; j++) {
+	    ctx.setTransform(xr*[2,-2][i%2]*xa[i],0,0,yr*[-2,2][j%2]*ya[j],
+			     CSIZE+xr*sxa[i%2+i]*CSIZE,CSIZE+yr*sya[(j+1)%2+j]*CSIZE);
+	    ctx.drawImage(ctxo.canvas,0,0);
+	  }
 	}
-      }
-    }
-  } else {
-    if (ydir) {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([2,-2][i%2]*xa[i],0,0,[-2,2][j%2]*ya[j],
-//    console.log(i,(i+1)%2+i);		// 1,1,3,3,5 on y   0,2,2,4,4 on x
-                           CSIZE+sxa[i%2+i]*CSIZE,CSIZE+sya[(j+1)%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    } else {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([2,-2][i%2]*xa[i],0,0,[2,-2][j%2]*ya[j],
-				// 0,2,2,4,4 on x and y
-                           CSIZE+sxa[i%2+i]*CSIZE,CSIZE+sya[j%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    }
-  }
-
-  // y reflect
-  if (xdir) {
-    if (ydir) {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([-2,2][i%2]*xa[i],0,0,[2,-2][j%2]*ya[j],
-                           CSIZE+sxa[(i+1)%2+i]*CSIZE,CSIZE-sya[(j+1)%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    } else {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([-2,2][i%2]*xa[i],0,0,[-2,2][j%2]*ya[j],
-                           CSIZE+sxa[(i+1)%2+i]*CSIZE,CSIZE-sya[j%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    }
-  } else {
-    if (ydir) {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([2,-2][i%2]*xa[i],0,0,[2,-2][j%2]*ya[j],
-                           CSIZE+sxa[i%2+i]*CSIZE,CSIZE-sya[(j+1)%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    } else {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([2,-2][i%2]*xa[i],0,0,[-2,2][j%2]*ya[j],
-                           CSIZE+sxa[i%2+i]*CSIZE,CSIZE-sya[j%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
+      } else {
+	for (let i=0; i<xa.length; i++) {
+	  for (let j=0; j<ya.length; j++) {
+	    ctx.setTransform(xr*[2,-2][i%2]*xa[i],0,0,yr*[2,-2][j%2]*ya[j],
+			     CSIZE+xr*sxa[i%2+i]*CSIZE,CSIZE+yr*sya[j%2+j]*CSIZE);
+	    ctx.drawImage(ctxo.canvas,0,0);
+	  }
 	}
       }
     }
   }
-
-  // x reflect
-  if (xdir) {
-    if (ydir) {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([2,-2][i%2]*xa[i],0,0,[-2,2][j%2]*ya[j],
-                           CSIZE-sxa[(i+1)%2+i]*CSIZE,CSIZE+sya[(j+1)%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    } else {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([2,-2][i%2]*xa[i],0,0,[2,-2][j%2]*ya[j],
-                           CSIZE-sxa[(i+1)%2+i]*CSIZE,CSIZE+sya[j%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    }
-  } else {
-    if (ydir) {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([-2,2][i%2]*xa[i],0,0,[-2,2][j%2]*ya[j],
-                           CSIZE-sxa[i%2+i]*CSIZE,CSIZE+sya[(j+1)%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    } else {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([-2,2][i%2]*xa[i],0,0,[2,-2][j%2]*ya[j],
-                           CSIZE-sxa[i%2+i]*CSIZE,CSIZE+sya[j%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    }
-  }
-
-  // x-y reflect
-  if (xdir) {
-    if (ydir) {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([2,-2][i%2]*xa[i],0,0,[2,-2][j%2]*ya[j],
-                           CSIZE-sxa[(i+1)%2+i]*CSIZE,CSIZE-sya[(j+1)%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    } else {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([2,-2][i%2]*xa[i],0,0,[-2,2][j%2]*ya[j],
-                           CSIZE-sxa[(i+1)%2+i]*CSIZE,CSIZE-sya[j%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    }
-  } else {
-    if (ydir) {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([-2,2][i%2]*xa[i],0,0,[2,-2][j%2]*ya[j],
-                           CSIZE-sxa[i%2+i]*CSIZE,CSIZE-sya[(j+1)%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    } else {
-      for (let i=0; i<xa.length; i++) {
-	for (let j=0; j<ya.length; j++) {
-	  ctx.setTransform([-2,2][i%2]*xa[i],0,0,[-2,2][j%2]*ya[j],
-                           CSIZE-sxa[i%2+i]*CSIZE,CSIZE-sya[j%2+j]*CSIZE);
-	  ctx.drawImage(ctxo.canvas,0,0);
-	}
-      }
-    }
-  }
-
-ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
-ctx.fill(cdot);
 }
-var cdot=new Path2D();
-cdot.arc(0,0,3,0,TP);
-ctx.fillStyle="red";
 
-setTile();
-circ.randomize();
-color.randomize();
-setTile();
-circ.randomize();
-color.randomize();
-setTile(true);
-
-draw();
-
-var reset=()=>{
-  circ.randomize();
-  setTile();
-}
+start();
 
 var test=()=>{
   for (let i=0; i<5; i++) {
