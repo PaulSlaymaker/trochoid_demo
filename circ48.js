@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -73,7 +73,7 @@ var t=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-//if (EM && t%300==0) stopped=true;
+if (EM && t%400==0) stopped=true;
   if (t%100==0) {
     var L=ca.length;
     for (let i=0; i<L; i++) ca[i].split();
@@ -169,8 +169,10 @@ this.et=(30+50*Math.random())*[-1,1][getRandomInt(0,2)];
     let c=new Circle();
     c.x=this.x;
     c.y=this.y;
-    c.ka=this.ka;	// initial rotation
-    c.et=this.et;
+//    c.ka=this.ka;	// initial rotation
+//    c.et=this.et;
+    c.ka=this.ka+2*t/this.et;
+    c.et=-this.et;
     c.erk=this.erk;
     return c; 
   }
