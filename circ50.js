@@ -259,7 +259,7 @@ onresize();
 
 var ca=[];
 var LW=20;
-var WK=60;
+//var WK=60;
 var symf=getHexPath;
 var limit=160;
 const sym=[
@@ -277,8 +277,8 @@ var reset=()=>{
   limit=s.limit;
 //  LW=36*Math.pow(Math.random(),2);
 //LW=(24+24/s.level)*Math.random();
-LW=(20+48/s.level)*Math.random();
-  WK=30+90*Math.pow(Math.random(),2);
+LW=(18+48/s.level)*Math.random();
+  //WK=30+90*Math.pow(Math.random(),2);
   ca=[new Circle()];
   ca[0].randomize();
   ca[0].setPath();
@@ -297,7 +297,7 @@ var draw=()=>{
 
     ctx.setTransform(1,0,0,1,CSIZE-2,CSIZE+2);
     ctx.strokeStyle="#0000000A";
-    ctx.lineWidth=lw+10;
+    ctx.lineWidth=lw+10;	// 10 as f(lw)?
     ctx.stroke(p);
 
     ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
