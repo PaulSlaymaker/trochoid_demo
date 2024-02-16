@@ -119,14 +119,14 @@ var Circle=function() {
 //    return 200/Math.pow(ca.length,0.48);
 //return 8+200*(1-tt/dur);
     return 8+200*(1-tt/dur)*(1+Math.random())/2;
+//return 8+200*(1-tt/dur)*(1+Math.pow(Math.random(),4))/2;
   }
   this.getRandomA=()=>{ 
 //return TP/24+5*TP/12*Math.random(); 
-//return 26*TP/64;
-//return 11*TP/24;
 //return 11*TP/24-ca.length/10;
 //return 11*TP/24-10*TP/24*tt/dur;
 return 11*TP/24-(10*TP/24*tt/dur)*(1+Math.random())/2;
+//return 11*TP/24-(10*TP/24*tt/dur)*(1+Math.pow(Math.random(),4))/2;
   }
   this.randomize=()=>{
     this.r=this.getRandomR();
