@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -80,7 +80,7 @@ var animate=(ts)=>{
   if (tt%dur==0) {
     //tt=0;
     //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-    //stopped=true;
+    if (EM) stopped=true;
     color.randomize();
     for (let i=0; i<ca.length; i++) ca[i].randomize();
 /*

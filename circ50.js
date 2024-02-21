@@ -284,7 +284,7 @@ LW=(18+48/s.level)*Math.random();
   ca[0].randomize();
   ca[0].setPath();
 //console.log("LW:",LW.toFixed(0),"WK:",WK.toFixed(0),symf.name);
-console.log("LW:",LW.toFixed(0),symf.name);
+//console.log("LW:",LW.toFixed(0),symf.name);
 }
 reset();
 

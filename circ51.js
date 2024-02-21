@@ -82,7 +82,7 @@ var animate=(ts)=>{
     if (!trans) {
       trans=true;
       pause=tt+200;
-//if (EM) stopped=true;
+if (EM) stopped=true;
 //stopped=true;
     } else {
       if (tt>pause) {
