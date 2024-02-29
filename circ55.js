@@ -78,12 +78,14 @@ var animate=(ts)=>{
       if (ca.length<2) {
 	gs=true;
 	color.randomize();
+        KF=0.07+0.06*Math.random();
+        sym=[getRPath,getHexPath][getRandomInt(0,2)];
       }
   //    if (ca[ca.length-1].lvl<2) gs=true;
     }
   }
   draw();
-//if (EM && tt%200==0) stopped=true;
+if (EM && tt%200==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
@@ -104,7 +106,7 @@ var Circle=function() {
   this.randomize();
   //this.a2=TP/24+5*TP/12*Math.random(); 
   this.setRA=()=>{
-    //this.r=16+12*Math.sin(tt/this.kr2);
+    this.r=16+10*Math.sin(tt/this.kr2);
 //this.r=2+100*(1+Math.sin(this.kr+tt/this.kr2));
 //this.r=40;
 //this.r=60*(1+Math.sin(this.kr+tt/this.kr2));
@@ -161,6 +163,8 @@ var reset=()=>{
 }
 reset();
 
+var KF=0.07+0.06*Math.random();
+
 var addCircle=(c)=>{
   let c2=new Circle();
   c2.a=c.a-c.a2;
@@ -179,7 +183,7 @@ var addCircle=(c)=>{
   ca.push(c2);
 
 //if (Math.random()<0.5) {
-if (Math.random()<0.1) {
+if (Math.random()<KF) {
   let c3=new Circle();
   c3.a=TP/2+c.a-c.a2;
   c3.dir=c.dir;
@@ -301,5 +305,5 @@ var grow=()=>{
 }
 for (let i=0; i<12; i++) grow();
 
-draw();
+start();
 
