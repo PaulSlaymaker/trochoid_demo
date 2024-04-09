@@ -4,7 +4,6 @@ body.style.background="#000";
 const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
-const CSO=200;
 
 const ctx=(()=>{
   let d=document.createElement("div");
@@ -12,7 +11,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -23,7 +21,6 @@ const ctxo=(()=>{
   c.width=c.height=CSIZE;
   return c.getContext("2d", {"willReadFrequently": true});
 })();
-//ctxo.setTransform(1,0,0,1,CSO,CSO);
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -68,36 +65,13 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
-var t=0; //getRandomInt(0,1000);
+var t=0;
 const DUR=800;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-//if (t==300) stopped=true;
-//if (t%2400==900) {
-/*
-if (ca[0].r<0.01) {
-  console.log(t,ca[0].r,ca[1].r);
-let rm=ca[1].r;
-  ca.push(ca.shift());
-  if (ca[0].r>ca[0].maxr) {
-    //console.log("shift",ca[0].maxr,ca[0].r);
-    ca[0].maxr=ca[0].r;
-  }
-  // else reset maxr to construct value
-  //K1=Math.asin(2*ca[0].r/ca[0].maxr-1)-3*TP/4;
-K1=Math.asin(2*ca[0].r/ca[0].maxr-1)-t*TP/DUR;
-//console.log(test());
-//console.log(rm,ca[-1].r);
-ca[0].r=ca[0].maxr*(1+Math.sin(K1+TP*t/DUR))/2;
-//console.log(ca[0].r,ca[0].maxr);
-//  console.log(K1);
-if (isNaN(K1)) debugger;
-//stopped=true;
-}
-*/
   draw();
-//if (EM && tt%200==0) stopped=true;
+if (EM && t%100==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
@@ -108,15 +82,7 @@ var Circle=function(x,y) {
   this.K2x=200+200*Math.random();
   this.K1y=TP*Math.random();
   this.K2y=200+200*Math.random();
-  //this.maxr=Math.min(CSIZE-x,CSIZE-y);
-//this.maxr=Math.min(200,Math.min(CSIZE-x,CSIZE-y));
-/*
-if (x==0 && y==0) this.maxr=CSIZE;
-else if (x==0) this.maxr=Math.min(y,CSIZE-y);
-else if (y==0) this.maxr=Math.min(x,CSIZE-x);
-else this.maxr=Math.min(x,y);
-*/
-this.maxr=160;
+//this.maxr=160;
   this.r=0;
   this.nd=false;
   this.setPath=()=>{
@@ -134,25 +100,8 @@ if (this.r>0)
     r=Math.max(0,r);
     let p=new Path2D();
     p.arc(this.x,this.y,r,0,TP);
-/*
-p.moveTo(this.x-r,this.y-r);
-p.lineTo(this.x+r,this.y-r);
-p.lineTo(this.x+r,this.y+r);
-p.lineTo(this.x-r,this.y+r);
-p.closePath();
-*/
     return p;
   }
-}
-
-var drawPoint=(x,y,col,rad)=>{	// diag
-  ctx.beginPath();
-  if (rad) ctx.arc(x,y,rad,0,TP);
-  else ctx.arc(x,y,3,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
 }
 
 var getDistance=(p1,p2)=>{
@@ -163,28 +112,14 @@ var getDistance=(p1,p2)=>{
 
 var ca=[];
 
-/*
-for (let i=0; i<6; i++) {
-  for (let j=0; j<6; j++) {
-//    if (i==0 && j==0) continue;
-    ca.splice(getRandomInt(0,ca.length+1),0,new Circle(i*60,j*60)); 
-  }
-}
-*/
 for (let i=0; i<40; i++) ca.push(new Circle());
 
-var K1=0; //TP*Math.random();
-//var K1=TP*(getRandomInt(0,100)/100);
-// init ca path=undefined?
 var cpath=new Path2D();
-
 
 var setRadii=()=>{
   for (let i=0; i<ca.length; i++) ca[i].reset();
-  //ca[0].r=ca[0].maxr*(1+Math.sin(K1+TP*t/DUR))/2;	// ? dupe
-ca[0].r=20+100*(1+Math.sin(K1+TP*t/DUR))/2;
+  ca[0].r=20+100*(1+Math.sin(TP*t/DUR))/2;
   ca[0].setPath();
-//if (ca[0].r==0) ctx.strokeStyle="white";
   cpath=new Path2D(); 
   cpath.addPath(ca[0].path);
   for (let i=1; i<ca.length; i++) {	// evaluate each ca[i]
@@ -225,14 +160,8 @@ ctx.strokeStyle="red";
   }
 }
 
-const clip=new Path2D();
-clip.moveTo(0,0);
-clip.lineTo(CSIZE,0);
-clip.lineTo(CSIZE,CSIZE);
-clip.lineTo(0,CSIZE);
-clip.closePath();
-
 ctxo.fillStyle="#00000008";
+ctxo.lineWidth=12;
 
 var draw=()=>{
   setRadii();
@@ -240,16 +169,8 @@ var draw=()=>{
   for (let i=0; i<ca.length; i++) {
     if (!ca[i].nd) {
       for (let j=0; j<8; j++) {
-let p=ca[i].getPath(ca[i].r-(j*32)-6);
-/*
-      ctxo.lineWidth=10;
-      ctxo.strokeStyle="#00000018";
-      ctxo.stroke(p);
-*/
-      ctxo.lineWidth=12;
         ctxo.strokeStyle=color.getRGB(ca[i].r-(j*32)-6+t/10);
-        //ctxo.stroke(ca[i].getPath(ca[i].r-(j*60)-4));
-        ctxo.stroke(p);
+        ctxo.stroke(ca[i].getPath(ca[i].r-(j*32)-6));
       }
     }
   }
@@ -263,49 +184,6 @@ let p=ca[i].getPath(ca[i].r-(j*32)-6);
   ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
 }
 
-/*
-var drawO=()=>{
-  setRadii();
-  //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  ctx.fillRect(0,0,CSIZE,CSIZE);
-ctx.save();
-ctx.clip(clip);
-  for (let i=0; i<ca.length; i++) {
-    if (!ca[i].nd) {
-//      let p=new Path2D(ca[i].path);
-      ctx.lineWidth=8;
-//      for (let i=0; i<4; i++) {}
-      ctx.strokeStyle=color.getRGB(ca[i].r-4+t/100);
-      ctx.stroke(ca[i].getPath(ca[i].r-4));
-//ctx.strokeStyle=color.getRGB(ca[i].r/2+t);
-ctx.strokeStyle=color.getRGB(ca[i].r-64+t/100);
-      ctx.stroke(ca[i].getPath(ca[i].r-64));
-ctx.strokeStyle=color.getRGB(ca[i].r-124+t/100);
-      ctx.stroke(ca[i].getPath(ca[i].r-124));
-ctx.strokeStyle=color.getRGB(ca[i].r-184+t/100);
-      ctx.stroke(ca[i].getPath(ca[i].r-184));
-    }
-  }
-ctx.restore();
-//  ctx.setTransform(1,0,0,-1,CSIZE,CSIZE);
-//  ctx.drawImage(ctx.canvas,-CSIZE,-CSIZE);
-//  ctx.setTransform(-1,0,0,-1,CSIZE,CSIZE);
-//  ctx.drawImage(ctx.canvas,-CSIZE,-CSIZE);
-//  ctx.setTransform(-1,0,0,1,CSIZE,CSIZE);
-//  ctx.drawImage(ctx.canvas,-CSIZE,-CSIZE);
-//  ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
-}
-*/
-
 onresize();
 
-draw();
-
-ctx.font="bold 20px sans-serif";
-var show=()=>{
-  for (let i=0; i<ca.length; i++) {
-    drawPoint(ca[i].x,ca[i].y);
-    ctx.fillText(i,ca[i].x,ca[i].y);  
-  }
-}
-//show();
+start();
