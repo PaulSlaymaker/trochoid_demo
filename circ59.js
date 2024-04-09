@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -73,7 +73,7 @@ var t=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-//if (EM && t%300==0) stopped=true;
+if (EM && t%300==0) stopped=true;
   draw();
   if (t==DUR) {
     reset();
@@ -98,19 +98,19 @@ var drawPoint=(x,y,col)=>{	// diag
   ctx.fill();
 }
 
-var KA=new Array(12);
+var KA=new Array(9);
 KA.fill(0);
-var KB=new Array(12);
+var KB=new Array(9);
 KB.fill(100);
 
-var FA=new Array(12);
+var FA=new Array(5);
 FA.fill(false);
 
 const dmx=new DOMMatrix([-1,0,0,1,0,0]);
 const dmy=new DOMMatrix([1,0,0,-1,0,0]);
 const SQ3=Math.pow(3,0.5);	// 2*Math.sin(TP/6)
 
-//ctx.lineJoin="round";
+ctx.lineCap="round";
 var DUR=1000;
 var dash1,dash2,maxDash=120;;
 //const DO1=0; //TP*Math.random();
@@ -202,8 +202,6 @@ var draw=()=>{
   p.arc(x3,y3,r3,ad-TP/2,ad);
 }
 */
-  //p.moveTo(x3,y3-r3);
-  //p.arc(x3,y3,r3,3*TP/4,TP/4,true);
 
   let x4=3*R+R*Math.sin(KA[4]+t/KB[4]);
   let y4=0;
@@ -216,18 +214,15 @@ var draw=()=>{
 
   let x5=R+R*Math.sin(KA[5]+t/KB[5]);
   let y5=2*SQ3*R+R*Math.sin(KA[6]+t/KB[6]);
-//  let r5=Math.min(x5,R);
   let d6=getDistance(x2,y2,x5,y5);
   let d7=getDistance(x3,y3,x5,y5);
   let r5=Math.min(R,x5,d6-r2,d7-r3);
   r5=Math.max(0,r5);
-  //let ad2=Math.PI+Math.atan2(y5,x5);
   let ad2=(FA[3]?Math.PI:0)+Math.atan2(y5,x5);
   let rx5=x5+r5*Math.cos(ad2);
   let ry5=y5+r5*Math.sin(ad2);
   //p.moveTo(x5-r5,y5);
 //    p.arc(x5,y5,r5,TP/2,0,true);
-//drawPoint(rx5,ry5,"yellow");
   p.moveTo(rx5,ry5);
   p.arc(x5,y5,r5,ad2,ad2+TP/2);
   p.moveTo(rx5,ry5);
@@ -242,7 +237,6 @@ var draw=()=>{
   let ad3=(FA[4]?Math.PI:0)+Math.atan2(y6,x6);
   let rx6=x6+r6*Math.cos(ad3);
   let ry6=y6+r6*Math.sin(ad3);
-//drawPoint(rx6,ry6,"yellow");
   p.moveTo(rx6,ry6);
   p.arc(x6,y6,r6,ad3,ad3+TP/2);
   p.moveTo(rx6,ry6);
@@ -256,9 +250,12 @@ dash1=maxDash*(1-Math.cos(TP*t/DT1));	// ? max 120 to 240?
   dash2=24+120*(1-Math.cos(DO2+TP*t/DT2));
   ctx.setLineDash([dash1,dash2]);
 
-  ctx.strokeStyle="#00000020";
+ctx.setTransform(1,0,0,1,CSIZE-1,CSIZE+1);
+  //ctx.strokeStyle="#00000020";
+  ctx.strokeStyle="#00000014";
   ctx.lineWidth=8
   ctx.stroke(p);
+ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
   ctx.lineWidth=2
   ctx.strokeStyle=color.getRGB();
   ctx.stroke(p);
@@ -267,7 +264,7 @@ dash1=maxDash*(1-Math.cos(TP*t/DT1));	// ? max 120 to 240?
 
 onresize();
 
-draw();
+start();
 
 /*
   ctx.setLineDash([]);
