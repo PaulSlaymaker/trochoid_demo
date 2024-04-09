@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -73,7 +73,7 @@ var t=0;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-//if (EM && t%300==0) stopped=true;
+if (EM && t%300==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
@@ -103,7 +103,7 @@ const dmx=new DOMMatrix([-1,0,0,1,0,0]);
 const dmy=new DOMMatrix([1,0,0,-1,0,0]);
 const SQ3=Math.pow(3,0.5);	// 2*Math.sin(TP/6)
 
-ctx.lineJoin="round";
+//ctx.lineJoin="round";
 var DUR=1000;
 var d1,d2;
 //const DO1=0; //TP*Math.random();
@@ -218,7 +218,7 @@ if (t<0) return;
   p.addPath(p,dmy);
 
   d1=120*(1-Math.cos(TP*t/DT1));
-  d2=2+120*(1-Math.cos(DO2+TP*t/DT2));
+  d2=24+120*(1-Math.cos(DO2+TP*t/DT2));
   //d2=121+120*Math.sin(t/DT2);
   if (t==DUR) {
     reset();
@@ -242,4 +242,4 @@ DT2=400+2000*Math.random();
 
 onresize();
 
-draw();
+start();
