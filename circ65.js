@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -81,9 +81,8 @@ var animate=(ts)=>{
   t++,c++;
   draw();
   container.firstChild.style.opacity=1-c/DUR;
-//if (EM && t%200==0) stopped=true;
   if (c%DUR==0) {
-  //  stopped=true;
+if (EM) stopped=true;
     c=0;
     cycle();
   }
@@ -95,13 +94,12 @@ var animate=(ts)=>{
 
 function Dist(v) {
   this.val=0;
-  //this.KA=200; //(100+100*Math.random())*[-1,1][getRandomInt(0,2)];
   this.KA=(100+100*Math.random())*[-1,1][getRandomInt(0,2)];
   //this.KA=200+50*v;
   //this.KB=0; //TP*v/30; //TP*Math.random();
   this.KB=TP*Math.random();
   this.setLocation=()=>{
-    this.val=CSIZE/2+CSIZE/2*Math.sin(this.KB+t/this.KA);
+    return this.val=CSIZE/2+CSIZE/2*Math.sin(this.KB+t/this.KA);
   }
   this.setLocation();
 }
@@ -146,8 +144,9 @@ for (let i=0; i<3; i++) distya.push(new Dist(i));
 var draw=()=>{
   let xa=new Array();
   for (let i=0; i<distxa.length; i++) {
-    distxa[i].setLocation();
-    xa.push(distxa[i].val);
+//    distxa[i].setLocation();
+//    xa.push(distxa[i].val);
+    xa.push(distxa[i].setLocation());
   }
   xa.sort((a,b)=>{ return a-b; });
   xa.unshift(0);
