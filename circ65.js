@@ -108,14 +108,16 @@ var getPath1=(x1,y1,x2,y2)=>{	// 4-stroke can be in 2 directions
   let p=new Path2D();
   let mx=x1/2+x2/2;
   let my=y1/2+y2/2;
+  let rx=(x2-x1)/2;
+  let ry=(y2-y1)/2;
   p.moveTo(mx,y2);
-  p.ellipse(mx,my,(x2-x1)/2,(y2-y1)/2,0,TP/4,TP/2);
+  p.ellipse(mx,my,rx,ry,0,TP/4,TP/2);
   p.moveTo(mx,y2);
-  p.ellipse(mx,my,(x2-x1)/2,(y2-y1)/2,0,TP/4,0,true);
+  p.ellipse(mx,my,rx,ry,0,TP/4,0,true);
   p.moveTo(mx,y1);
-  p.ellipse(mx,my,(x2-x1)/2,(y2-y1)/2,0,3*TP/4,TP/2,true);
+  p.ellipse(mx,my,rx,ry,0,3*TP/4,TP/2,true);
   p.moveTo(mx,y1);
-  p.ellipse(mx,my,(x2-x1)/2,(y2-y1)/2,0,3*TP/4,0);
+  p.ellipse(mx,my,rx,ry,0,3*TP/4,0);
   return p;
 }
 
@@ -123,14 +125,16 @@ var getPath2=(x1,y1,x2,y2)=>{
   let p=new Path2D();
   let mx=x1/2+x2/2;
   let my=y1/2+y2/2;
+  let rx=(x2-x1)/2;
+  let ry=(y2-y1)/2;
   p.moveTo(x2,my);
-  p.ellipse(mx,my,(x2-x1)/2,(y2-y1)/2,0,0,TP/4);
+  p.ellipse(mx,my,rx,ry/2,0,0,TP/4);
   p.moveTo(x2,y1/2+y2/2);
-  p.ellipse(mx,my,(x2-x1)/2,(y2-y1)/2,0,0,3*TP/4,true);
+  p.ellipse(mx,my,rx,ry,0,0,3*TP/4,true);
   p.moveTo(x1,y1/2+y2/2);
-  p.ellipse(mx,my,(x2-x1)/2,(y2-y1)/2,0,TP/2,TP/4,true);
+  p.ellipse(mx,my,rx,ry,0,TP/2,TP/4,true);
   p.moveTo(x1,my);
-  p.ellipse(mx,my,(x2-x1)/2,(y2-y1)/2,0,TP/2,3*TP/4);
+  p.ellipse(mx,my,rx,ry,0,TP/2,3*TP/4);
   return p;
 }
 
