@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 
@@ -43,9 +43,9 @@ function Color() {
     return "rgb("+red+","+grn+","+blu+")";
   }
   this.randomize=()=>{
-    this.RK1=80+80*Math.random();
-    this.GK1=80+80*Math.random();
-    this.BK1=80+80*Math.random();
+    this.RK1=100+100*Math.random();
+    this.GK1=100+100*Math.random();
+    this.BK1=100+100*Math.random();
     this.RK2=TP*Math.random();
     this.GK2=TP*Math.random();
     this.BK2=TP*Math.random();
@@ -81,21 +81,18 @@ var animate=(ts)=>{
   t++,c++;
   draw();
   container.firstChild.style.opacity=1-c/DUR;
-//if (EM && t%100==0) stopped=true
   if (c%DUR==0) {
     c=0;
     cycle();
     KD=2+100*Math.random();
     ncount=getRandomInt(0,11,true);
-//KD=2+200*Math.random();
-//stopped=true;
+if (EM) stopped=true
   }
- 
   requestAnimationFrame(animate);
 }
 
 const getDualPath=(spath)=>{
-  let ra=t/300;
+  let ra=t/500;
   let sp=Math.sin(ra);
   let cp=Math.cos(ra);
   let dmr=new DOMMatrix([cp,sp,-sp,cp,0,0]);
@@ -152,11 +149,6 @@ var setCircle=(idx,cxp,cyp,rp)=>{
   let cx=(x+px)/2;
   let cy=(y+py)/2;
   let r=getDistance(cx,cy,x,y);
-/*
-  ctx.beginPath();
-  ctx.arc(cx,cy,r,0,TP);
-  ctx.stroke();
-*/
   let p=new Path2D();
 //let rr=r*(1-Math.cos(TP*t/DUR))/2;
 //let rr=r*(1-Math.cos(TP*t/DUR))/4;
@@ -166,11 +158,9 @@ var setCircle=(idx,cxp,cyp,rp)=>{
   //ctt.lineWidth=Math.min(2,rr+0.001);
   ctt.lineWidth=Math.min(2,r);
   ctt.stroke(p);
-
   ctt.strokeStyle="#00000010";
   ctt.lineWidth=8;
   ctt.stroke(p);
-
   setCircle(idx+1,cx,cy,r);
 }
 
@@ -183,17 +173,19 @@ let aa=new Array();
 
 var ncount=5;
 
+/*
 let r1=ra[0]/2.414;
 let cx1=r1;
 let cy1=r1;
-var path=new Path2D();
+//var path=new Path2D();
 ctt.lineWidth=2;
 ctt.setLineDash([20,10000]);
+*/
 
 var draw=()=>{
 ra=[];
 aa=[];
-path=new Path2D();
+//path=new Path2D();
   //ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
 //ctx.fillStyle="#00000010";
 //ctx.fillRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
@@ -202,20 +194,9 @@ path=new Path2D();
   for (let i=0; i<distaa.length-ncount; i++) aa.push(distaa[i].getAngle());
   aa.sort((a,b)=>{ return a-b; });
   for (let i=0; i<aa.length-ncount; i++) aa[i]=TP/8+TP/8*Math.sin(KK+aa[i]);
-
-r1=ra[0];
-cx1=0;
-cy1=0;
-//r1=ra[0]/2.414;
-//cx1=r1;
-//cy1=r1;
-//ctt.beginPath();
-//ctt.arc(cx1,cy1,r1,0,TP);
-//ctt.stroke();
   ctt=container.lastChild.ctx;
   dash=KD*(1-Math.cos(TP*c/DUR));
   ctt.setLineDash([dash,400]);
-  //setCircle(0,cx1,cy1,r1);
   setCircle(0,0,0,ra[0]);
 }
 
