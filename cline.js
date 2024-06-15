@@ -70,7 +70,7 @@ function Point() {
   this.setLocation=(a)=>{
     const A1=TP/8,A2=3*TP/8,A3=5*TP/8,A4=7*TP/8;
     const K=2*Math.sin(TP/8);
-if (a<0) debugger;
+//if (a<0) debugger;
     if (a>TP) a-=TP;
     if (a<A1) {
       this.x=CSIZE/2;
@@ -103,7 +103,6 @@ var cycle=()=>{
   p3.randomize();
   p4.randomize();
   KD2=TP*Math.random();
-console.log("cyc");
 }
 
 var stopped=true;
@@ -125,12 +124,12 @@ var animate=(ts)=>{
   t++;
   c++;
   draw();
-//if (EM && t%100==0) stopped=true
   container.firstChild.style.opacity=1-c/DUR;
   if (t%DUR==0) {
     c=0;
     cycle();
   }
+if (EM && t%400==0) stopped=true
   requestAnimationFrame(animate);
 }
 
