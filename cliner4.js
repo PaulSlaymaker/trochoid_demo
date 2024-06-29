@@ -172,10 +172,10 @@ var draw=()=>{
   p.moveTo(p1.x,p1.y);
   p.bezierCurveTo(x0,y0,x0,y0,p2.x,p2.y);
   //p.quadraticCurveTo(x0,y0,p2.x,p2.y);
-  p.moveTo(p2.x,p2.y);
+//  p.moveTo(p2.x,p2.y);
   p.bezierCurveTo(x0,y0,x0,y0,p3.x,p3.y);
   //p.quadraticCurveTo(x0,y0,p3.x,p3.y);
-  p.moveTo(p3.x,p3.y);
+//  p.moveTo(p3.x,p3.y);
   p.bezierCurveTo(x0,y0,x0,y0,p1.x,p1.y);
   //p.quadraticCurveTo(x0,y0,p1.x,p1.y);
 /*
@@ -222,7 +222,7 @@ let dmtz=dmos.multiply(dmr2.multiply(dmb));
   path2.addPath(p,dmt7);
 
   
-  let os2=(2*S4+1)*EDGE;
+  const os2=(2*S4+1)*EDGE;
   let paths=new Path2D();
   paths.addPath(p);
   paths.addPath(p,new DOMMatrix([1,0,0,1,os2,0]).multiply(dmr2));

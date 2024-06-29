@@ -1,11 +1,10 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(Math.PI/3);
 const CSIZE=360;
-//const CSIZE=480;
 
 const container=document.createElement("div");
 container.style.margin="auto";
@@ -136,8 +135,8 @@ var animate=(ts)=>{
   if (t%DUR==0) {
     c=0;
     cycle();
+if (EM) stopped=true
   }
-//if (EM && t%400==0) stopped=true
   requestAnimationFrame(animate);
 }
 
@@ -213,12 +212,6 @@ ctx.stroke(tri);
   pf.addPath(p,dmd);
   pf.addPath(p,dme);
   pf.addPath(p,dmf);
-/*
-  pf.addPath(p,new DOMMatrix([-0.5,-S6,-S6,0.5,-3*EDGE/2,S6*EDGE]));	// 3rd rotation
-  pf.addPath(p,new DOMMatrix([1,0,0,1,-6*EDGE/2,0]));	// 0 rotation
-  pf.addPath(p,new DOMMatrix([1,0,0,-1,3*EDGE/2,S6*EDGE]));	// 5th rotation
-  pf.addPath(p,new DOMMatrix([-0.5,S6,-S6,-0.5,6*EDGE/2,0]));	// 2nd rotation
-*/
 
   pf.addPath(pf,dmos1)
   pf.addPath(pf,dmos2)

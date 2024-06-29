@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(Math.PI/3);
 const CSIZE=400;
@@ -13,7 +13,6 @@ for (let i=0; i<4; i++) {
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
   c.style.position="absolute";
-//c.style.outline="1px dotted gray";
   c.ctx=c.getContext("2d");
   c.ctx.setTransform(1,0,0,1,CSIZE,CSIZE);
   c.ctx.lineCap="round";
@@ -138,22 +137,10 @@ var animate=(ts)=>{
   if (t%DUR==0) {
     c=0;
     cycle();
-//if (EM) stopped=true
+if (EM) stopped=true
   }
   requestAnimationFrame(animate);
 }
-
-/*
-var drawPoint=(x,y,col)=>{	// diag
-  let ctx=container.lastChild.ctx;
-  ctx.beginPath();
-  ctx.arc(x,y,3,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
-}
-*/
 
 var p1=new Point();
 var p2=new Point();
@@ -259,7 +246,7 @@ const drc3=dmos.multiply(dmy.multiply(drc));
   const dmrp=new DOMMatrix([-1,0,0,-1,0,0]);
   pf.addPath(pf,dmrp);	// flip
 
-  ctx.strokeStyle="#00000010";
+  ctx.strokeStyle="#0000000E";
   ctx.lineWidth=9;
   ctx.stroke(pf);
   ctx.strokeStyle=color.getRGB();
