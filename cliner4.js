@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(Math.PI/3);
 const S4=Math.sin(Math.PI/4);
@@ -82,12 +82,12 @@ var animate=(ts)=>{
   t++;
 //  c++;
   draw();
+if (EM && t%200==0) stopped=true
 //  container.firstChild.style.opacity=1-c/DUR;
 /*
   if (t%DUR==0) {
     c=0;
 //    cycle();
-//if (EM) stopped=true
 //stopped=true
   }
 */
