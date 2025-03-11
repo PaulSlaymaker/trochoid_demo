@@ -166,7 +166,7 @@ onresize();
 
 var getStems=()=>{
   let count=getRandomInt(1,10,true);
-console.log("count: "+count);
+//console.log("count: "+count);
   let a=[];
   for (let i=0; i<=count; i++) a.push(new Stem(TP/8*i/count));
   return a;
