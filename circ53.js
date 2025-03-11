@@ -62,7 +62,6 @@ body.addEventListener("click", start, false);
 
 var dur=2000;
 var tt=0;
-var pause=0;
 var trans=false;
 var animate=(ts)=>{
   if (stopped) return;
