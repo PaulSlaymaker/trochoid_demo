@@ -63,7 +63,6 @@ body.addEventListener("click", start, false);
 
 var dur=2000;
 var tt=0; //getRandomInt(0,1000);
-var pause=0;
 var gs=true;
 var animate=(ts)=>{
   if (stopped) return;
