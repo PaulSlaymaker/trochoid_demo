@@ -20,7 +20,7 @@ for (let i=0; i<3; i++) {
   c.ctx.lineCap="round";
   c.ctx.setLineDash([160,420]);
   //c.ctx.setLineDash([60,120]);
-c.ctx.globalCompositeOperation="destination-over";
+  c.ctx.globalCompositeOperation="destination-over";
   container.append(c);
 }
 
@@ -34,39 +34,16 @@ onresize=()=>{
 }
 
 /*
-const ctx=(()=>{
-  let d=document.createElement("div");
-  d.style.textAlign="center";
-  body.append(d);
-  let c=document.createElement("canvas");
-  c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted silver";
-  d.append(c);
-  return c.getContext("2d");
-})();
-ctx.translate(CSIZE,CSIZE);
-//ctx.setLineDash([2,100]);
-
-onresize=()=>{ 
-  let D=Math.min(window.innerWidth,window.innerHeight)-40; 
-  ctx.canvas.style.width=ctx.canvas.style.height=D+"px";
-}
-*/
-
 const getRandomInt=(min,max,low)=>{
   if (low) return Math.floor(Math.random()*Math.random()*(max-min))+min;
   else return Math.floor(Math.random()*(max-min))+min;
 }
+*/
 
 function Color() {
   const CBASE=164;
   const CT=255-CBASE;
   this.getRGB=()=>{
-/*
-    let red=Math.round(CBASE+CT*Math.cos(this.RK2+t/this.RK1));
-    let grn=Math.round(CBASE+CT*Math.cos(this.GK2+t/this.GK1));
-    let blu=Math.round(CBASE+CT*Math.cos(this.BK2+t/this.BK1));
-*/
     let red=Math.round(CBASE+CT*(this.fr*Math.cos(this.RK2+t/this.RK1)+(1-this.fr)*Math.cos(t/this.RK3)));
     let grn=Math.round(CBASE+CT*(this.fg*Math.cos(this.GK2+t/this.GK1)+(1-this.fg)*Math.cos(t/this.GK3)));
     let blu=Math.round(CBASE+CT*(this.fb*Math.cos(this.BK2+t/this.BK1)+(1-this.fb)*Math.cos(t/this.BK3)));
@@ -98,26 +75,13 @@ function Point(xp,yp) {
   this.x=xp;
   this.y=yp;
   this.randomize=()=>{
-    this.K1=-400-400*Math.random();
+    this.K1=400+400*Math.random();
     this.K2=TP*Math.random();
     this.K3=400+400*Math.random();
     this.K4=TP*Math.random();
   }
   this.randomize();
 }
-
-function Fraction() {
-  this.randomize=()=>{
-    this.K1=800+800*Math.random();
-    this.K2=TP*Math.random();
-  }
-  this.randomize();
-  this.setFraction=()=>{ this.f=(1+0.8*Math.sin(this.K2+TP*t/this.K1))/2; }
-}
-
-var f1=new Fraction();
-var f2=new Fraction();
-var f3=new Fraction();
 
 var cycleCanvas=()=>{
   let canv1=container.removeChild(container.firstChild);
@@ -131,9 +95,7 @@ var start=()=>{
   if (stopped) { 
     stopped=false;
     requestAnimationFrame(animate);
-  } else {
-    stopped=true;
-  }
+  } else stopped=true;
 }
 body.addEventListener("click", start, false);
 
@@ -152,10 +114,10 @@ var animate=(ts)=>{
   if (stopped) return;
   t++;
   draw();
-if (t>1500) container.firstChild.style.opacity=Math.pow(1-(t-1500)/1100,3);
-if (t>2600) {
+if (t>1700) container.firstChild.style.opacity=Math.pow(1-(t-1700)/1000,3);
+if (t>2700) {
 //stopped=true;
-    t=1500;
+    t=1700;
     [p1,p2,p3,p4].forEach((p)=>{ p.randomize(); });
     color.randomize();
     cycleCanvas();
@@ -195,43 +157,19 @@ const p4=new Point();
 p4.setLocation=()=>{
   p4.x=C6*2*CSIZE/3+CSIZE/3*Math.cos(p4.K2+TP*t/p4.K1);
   p4.y=-S6*2*CSIZE/3+CSIZE/3*Math.sin(p4.K4+TP*t/p4.K3);
-//  p4.z=-S6*2*CSIZE/3*(1+Math.cos(p4.K4+TP*t/p4.K3));
+//  p4.x=(CSIZE/3)*(   C6+Math.cos(p4.K2+TP*t/p4.K1));
+//  p4.y=(CSIZE/3)*(-S6*2+Math.sin(p4.K4+TP*t/p4.K3));
 }
+
+const pa=[p1,p2,p3,p4];
 
 const dmx=new DOMMatrix([-1,0,0,1,0,0]);
-const dmy=new DOMMatrix([1,0,0,-1,0,0]);
-const dmr=(()=>{
-  let da=[];
-  for (let i=0; i<6; i++) {
-    da.push(new DOMMatrix([Math.cos(i*TP/6),Math.sin(i*TP/6),-Math.sin(i*TP/6),Math.cos(i*TP/6),0,0]));
-  }
-  return da;
-})();
-
-var getTriPath=(xc,yc,pp1,pp2,pp3)=>{
-  let p=new Path2D();
-  p.moveTo(xc,yc);
-  p.lineTo(pp1.x,pp1.y);
-  p.moveTo(xc,yc);
-  p.lineTo(pp2.x,pp2.y);
-  p.moveTo(xc,yc);
-  p.lineTo(pp3.x,pp3.y);
-  return p;
-}
 
 onresize();
 
-//start();
-//ctx.setLineDash([100,160]);
-//ctx.setLineDash([160,400]);
-/*
-let ctx=container.lastChild.ctx;
-ctx.setLineDash([160,420]);
-ctx.lineCap="round";
-*/
 var draw=()=>{
 //  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-  [p1,p2,p3,p4].forEach((p)=>{ p.setLocation(); });
+  pa.forEach((p)=>{ p.setLocation(); });
 /*
   drawPoint(p1.x,p1.y,"magenta");
   drawPoint(p2.x,p2.y,"white");
@@ -246,6 +184,7 @@ var draw=()=>{
   path.lineTo(p3.x,p3.y);
   path.moveTo(p1.x,p1.y);
   path.lineTo(p4.x,p4.y);
+//let dmt=new DOMMatrix([-1+Math.sin(t/200),0,0,1,0,0]);
   path.addPath(path,dmx);
 
 //ctx.setLineDash([100+80*Math.cos(t/40),100]);
