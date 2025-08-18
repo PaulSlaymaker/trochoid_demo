@@ -17,6 +17,7 @@ c.style.outline="1px dotted gray";
 })();
 ctx.translate(CSIZE,2*CSIZE);
 ctx.lineCap="round";
+ctx.globalCompositeOperation="destination-over";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -72,47 +73,32 @@ function Circle(x,y,r,a1,a2,d,ci) {
     //let p=new Path2D();
     if (this.dir==1) {
       p.arc(this.x,this.y,this.r,TP/2-this.a1,TP/2+this.a2);
+//this.dist=this.r*(this.a2+this.a1);
     } else {
       p.arc(this.x,this.y,this.r,this.a1,-this.a2,true);
     }
+this.dist=this.r*(this.a1+this.a2);
     //return p;
   }
-
-  this.getPathS=(da)=>{
-    let p=new Path2D();
-    let az2=this.a+Math.PI;
-    if (this.dir==1) {
-      //p.arc(x,y,r,da,az2);
-p.arc(x,y,r,az2,da,true);
-    } else {
-      //p.arc(x,y,r,da,az2,true);
-p.arc(x,y,r,az2,da);
-    }
-    return p;
+  this.getNodePoint=()=>{
+    let xp=this.x-this.dir*this.r*Math.cos(this.a2);
+    let yp=this.y-         this.r*Math.sin(this.a2);
+    return {"x":xp,"y":yp};
   }
-/*
-  this.getPathF=(da,f)=>{  // odd for now, dir==1
-    let p=new Path2D();
-    if (this.dir==1) {
-      let az2=this.a+Math.PI;
-      //p.arc(x,y,r,da,az2);
-      p.arc(x,y,r,(f)*da+(1-f)*az2,az2);	// good, count odd
-    } else {
-      let az2=this.a-Math.PI;
-      p.arc(x,y,r,az2,(f)*da+(1-f)*az2);
-//p.arc(x,y,r,(f)*da+(1-f)*az2,da,true);
-//p.arc(x,y,r,(1-f)*az2+f*da,az2);
-//p.arc(x,y,r,da,az2,true);
-    }
-    return p;
+  this.checkPoint=()=>{
+    let pt=this.getNodePoint();
+    //let xp=      this.x-this.dir*this.r*Math.cos(this.a2);
+    //let yd=CSIZE+this.y-         this.r*Math.sin(this.a2);
+    let yd=CSIZE+pt.y;
+    if (Math.pow(pt.x*pt.x+yd*yd,0.5)<CSIZE) return true;
+    return false;
   }
-*/
 }
 
 function Curve() {
   this.ca=[];
+  this.path=new Path2D();
   this.setPath=()=>{
-    this.path=new Path2D();
     for (let i=0; i<this.ca.length; i++) {
       //this.path.addPath(this.ca[i].getPath());
       this.ca[i].setPath(this.path);
@@ -121,21 +107,38 @@ function Curve() {
 }
 
 var f=1;
-//ctx.setLineDash([820,1000]);
+//ctx.setLineDash([1,1000]);
 var draw=()=>{	// ? states: moving, growing, shrinking
   //ctx.clearRect(0,0,2*CSIZE,2*CSIZE);
-  //for (let i=1; i<ca.length; i++) {
   //f=1-t/800;
 
 ctx.lineWidth=8;
   
   ctx.strokeStyle=color.getRGB(0);
-  ctx.stroke(cua[0].path);
+  for (let i=0; i<cua.length; i++) {
+//ctx.lineDashOffset=-dist-t;	// dist for each curve
+//    if (cua[i].oc) ctx.strokeStyle="white";
+//    else ctx.strokeStyle=color.getRGB(0);
+ctx.lineDashOffset=-t+2;
+
+ctx.strokeStyle="#FFFFFF33";
+ctx.lineWidth=2;
+ctx.stroke(cua[i].path);
+
+    //ctx.strokeStyle="#0000003C";
+    ctx.strokeStyle="#0000008C";
+    ctx.lineWidth=12;
+    ctx.stroke(cua[i].path);
+
+//ctx.lineDashOffset=-t;
+    ctx.strokeStyle=color.getRGB(i);
+    ctx.lineWidth=8;
+    ctx.stroke(cua[i].path);
+  }
 }
 
 var stopped=true;
-//const DUR=36;
-const DUR=20;
+const DUR=1000;
 var start=()=>{
   if (stopped) { 
     stopped=false;
@@ -144,7 +147,7 @@ var start=()=>{
     stopped=true;
   }
 }
-//body.addEventListener("click", start, false);
+body.addEventListener("click", start, false);
 
 var t=0;
 var animate=(ts)=>{
@@ -158,6 +161,11 @@ return;	// test
   }
   draw();
   requestAnimationFrame(animate);
+}
+
+var checkPoint=(x,y)=>{
+  if (Math.pow(x*x+y*y,0.5)>CSIZE) return true;
+  return false;
 }
 
 var checkCircle=(x,y,r)=>{	// ? remove corners, spacer+lineWidth
@@ -179,7 +187,7 @@ return true;
 
 var drawPoint=(x,y,col)=>{	// diag
   ctx.beginPath();
-  ctx.arc(x,y,4,0,TP);
+  ctx.arc(x,y,3,0,TP);
   ctx.closePath();
   if (col) ctx.fillStyle=col;
   else ctx.fillStyle="red";
@@ -192,40 +200,16 @@ onresize();
 const MAXR=CSIZE/2;
 const MINR=CSIZE/4;
 
+/*
 let x=2*CSIZE+CSIZE*Math.random(); //MAXR+2*(CSIZE-MAXR)*Math.random();
 let y=2*CSIZE; //MAXR+2*(CSIZE-MAXR)*Math.random();
 let r=x-CSIZE; //MINR+(MAXR-MINR)*Math.random();
 let a=TP/2; //Math.PI/4; //0.3+0.7*TP*Math.random();
+*/
 
 ctx.strokeStyle="green";
 //ctx.stroke(new Path2D(ca[ca.length-2].getPath(ca[ca.length-1].a,1)));
 //ctx.stroke(new Path2D(ca[ca.length-3].getPath(ca[ca.length-2].a,1)));
-
-/*
-var grow=()=>{
-  let circle=ca[ca.length-1].generate2(0);
-  if (circle) {
-    let circle2=ca[ca.length-1].generate2(0);
-    if (circle2) {
-//console.log(circle.getD().toFixed(1),circle2.getD().toFixed(1));
-      if (circle.getD()>circle2.getD()) {
-        circle=circle2;
-      }
-
-let circle3=ca[ca.length-1].generate2(0);
-if (circle3) {
-  if (circle.getD()>circle3.getD()) circle=circle3;
-}
-    }  // else
-    ca.shift();
-    ca.push(circle);
-    return true;
-  } else {
-    ca.shift();
-    return false;
-  }
-}
-*/
 
 /*
 var drawCircle=(x,y,r)=>{
@@ -244,16 +228,104 @@ var getAngle=(a1,at,n)=>{
 
 //let rd=1.8;	// ? curve specific, varying about some value, larger rd, shorter r
 let rd=1.3;	// diag, MAXR=CSIZE/2
-//let ad=1.2;
-let ad=1.3;
+//let ad=0.8;
+let ad=0.92;
+var branch_start=0;
+
+var createBranchN=(cu)=>{
+  let start=getRandomInt(0,cu.ca.length);	// also need distance
+  let curve=new Curve();
+  for (let i=0; i<8-start; i++) {
+  let circle=(i==0)?cu.ca[start]:curve.ca[i-1];
+    let c=getCircle(circle);
+    if (c instanceof Circle) curve.ca.push(c);
+    else {
+console.log("failed curve");
+      return false;
+    }
+  }
+  curve.setPath();
+curve.branch_start=start;
+  return curve;
+}
 
 var createBranch=(cu)=>{
-  let curve=new Curve();
-  let start=getRandomInt(0,cu.ca.length);	// also need distance
-  let bc=cu.ca[start];
+branch_start=start;
 
-  let d=-1;	// random?
-  r=(MAXR+MAXR*Math.random())/Math.pow(rd,i);
+for (let i=0; i<8-start; i++) {
+  let circle=(i==0)?cu.ca[start]:curve.ca[i-1];
+  //let d=d*=-1;	// random?
+  let d=-circle.dir;
+//  let d=(i==1)?-circle.dir:-d;	// random?
+//console.log("branch dir "+d);
+  let r=(MAXR+MAXR*Math.random())/Math.pow(rd,circle.ci+1+i);
+  let x=circle.x+d*(circle.r+r)*Math.cos(circle.a2);
+  let y=circle.y-(circle.r+r)*Math.sin(circle.a2);
+//  let a=TP/48+TP/16*Math.random();	// need minimum angle, TP/24?
+  //let a=((start+1+i)%4==0)?circle.a2:TP/24+TP/(2+6/Math.pow(ad,circle.ci+1+i))*Math.random();
+  let a=((start+1+i)%4==0)?circle.a2:TP/24+TP/(2+6/Math.pow(ad,1/(circle.ci+1+i)))*Math.random();
+//let a=((start+1+i)%4==0)?circle.a2:TP/24+TP/(2+6/Math.pow(ad,Math.random()/(circle.ci+1+i)));
+  //let a=((start+1+i)%4==0)?circle.a2:TP/24+TP/(2+6*Math.pow(Math.random(),circle.ci+1+i))*Math.random();
+if (2*circle.a2<-a)  {
+  //debugger;
+console.log("branch overcircle idx "+i);
+  a-=2*circle.a2;
+curve.oc=true;
+}
+
+  let az=a-circle.a2;
+  let xp=x-d*r*Math.cos(az);
+  let yd=y-r*Math.sin(az)+CSIZE;
+  //if (checkPoint(xp,yd)) return undefined;
+  if (checkPoint(xp,yd)) break;	
+  else curve.ca.push(new Circle(x,y,r,circle.a2,az,d,0));
+
+//console.log(x,y);
+//drawPoint(x,y);
+}
+  if (curve.ca.length==0) return undefined;
+  curve.setPath();
+console.log("branch start idx "+start);
+  return curve;
+}
+
+var getCircle=(pc)=>{
+  for (let m=0; m<4; m++) {
+    let d=-1*pc.dir;
+    let r=(MAXR+MAXR*Math.random())/Math.pow(rd,pc.ci+1)/m;
+    let x=pc.x+d*(pc.r+r)*Math.cos(pc.a2);
+    let y=pc.y  -(pc.r+r)*Math.sin(pc.a2);
+    let a=TP/24+TP*20/24*(1-Math.pow(ad,pc.ci+1))*Math.random();
+    let az=(a-pc.a2)/m;
+    if (Math.abs(az)>TP) az/=4;
+    else if (Math.abs(az)>Math.PI) az/=2;
+    let c=new Circle(x,y,r,pc.a2,az,d,pc.ci+1);
+    if (c.checkPoint()) {
+//console.log("m "+m);
+      return c;
+    }
+  }
+  return false;
+}
+
+var createCurveN=(d)=>{	// left or right, non-0 start
+  let curve=new Curve();
+  let r=MAXR+MAXR*Math.random();
+  let x=d*r;
+  let y=0;
+  let a=TP/48+TP/16*Math.random();	// need minimum angle, TP/24?
+  let c=new Circle(x,y,r,0,a,d,0);
+  curve.ca.push(new Circle(x,y,r,0,a,d,0));
+  for (let i=1; i<8; i++) {
+    let c=getCircle(curve.ca[i-1]);
+    if (c instanceof Circle) curve.ca.push(c);
+    else {
+console.log("failed curve");
+      return false;
+    }
+  }
+  curve.setPath();
+  return curve;
 }
 
 var createCurve=(d)=>{	// left or right, non-0 start
@@ -262,32 +334,75 @@ var createCurve=(d)=>{	// left or right, non-0 start
   let x=d*r;
   let y=0;
   let a=TP/48+TP/16*Math.random();	// need minimum angle, TP/24?
+
 //  let az=a;
+  //let xp=x-d*r*Math.cos(a);
   curve.ca.push(new Circle(x,y,r,0,a,d,0));
   for (let i=1; i<8; i++) {
-    d*=-1;
+//    d*=-1;
+    d=curve.ca[i-1].dir*-1;
     r=(MAXR+MAXR*Math.random())/Math.pow(rd,i);
     x=curve.ca[i-1].x+d*(curve.ca[i-1].r+r)*Math.cos(curve.ca[i-1].a2);
     y=curve.ca[i-1].y-(curve.ca[i-1].r+r)*Math.sin(curve.ca[i-1].a2);
     //let a=TP/24+TP/(2+6/Math.pow(ad,i-1))*Math.random();
-    let a=((i+1)%4==0)?curve.ca[i-1].a2:TP/24+TP/(2+6/Math.pow(ad,i-1))*Math.random();
+//    if ((i+1)%4==0) {
+    //let a=((i+1)%4==0)?curve.ca[i-1].a2:TP/24+TP/(2+6*Math.pow(ad,curve.ca[i-1].ci+i+1))*Math.random();
+    //let a=((i+1)%4==0)?curve.ca[i-1].a2:TP/24+TP/(2+6*Math.pow(ad,curve.ca[i-1].ci+i+1))*Math.random();
+    //let a=((i+1)%4==0)?curve.ca[i-1].a2:TP/24+TP/(2+6*Math.pow(ad,curve.ca[i-1].ci+i+1))*Math.random();
+//let a=((i+1)%4==0)?curve.ca[i-1].a2:TP/(24-22*Math.pow(ad,curve.ca[i-1].ci+i+1));
+//let a=TP/(24-22*Math.pow(ad,curve.ca[i-1].ci+i+1));
+    //let a=TP/(24-22*Math.pow(0.92,curve.ca[i-1].ci+i+1));
+    //let a=TP/24+23/24*(1-Math.pow(ad,curve.ca[i-1].ci+i-1))*Math.random();
+//let a=TP/24+TP*23/24*(1-Math.pow(ad,curve.ca[i-1].ci+i-1))*Math.random();
+let a=TP/24+TP*20/24*(1-Math.pow(ad,curve.ca[i-1].ci+i-1))*Math.random();
+    //let a=((i+1)%4==0)?curve.ca[i-1].a2:TP/24+23*TP/(48-24*Math.pow(ad,curve.ca[i-1].ci+i+1))*Math.random();
+    //let a=((i+1)%4==0)?curve.ca[i-1].a2:TP/24+TP/(2+6/Math.pow(ad,1/(circle.ca[i-1].ci+1+i)))*Math.random();
+let oc=false;
+//if (curve.ca[i-1].a2>Math.PI) debugger; //console.log("a2 "+curve.ca[i-1].a2);
 //if (i==2 || i==6) {
+/*
+let azt=a-curve.ca[i-1].a2;
+//let azt=d==1?a-curve.ca[i-1].a2:curve.ca[i-1].a2-a;
+if (azt<-Math.PI) debugger;
+if (azt>TP) {
+  console.log(i+" oc TP positive azt "+azt.toFixed(2)+" a2 "+curve.ca[i-1].a2.toFixed(2)+" a "+a.toFixed(2));
+a/=4;
+} else if (azt>Math.PI) {
+  console.log(i+" oc positive azt "+azt.toFixed(2)+" a2 "+curve.ca[i-1].a2.toFixed(2)+" a "+a.toFixed(2));
+a/=2;
+//  console.log(i+" oc new a "+a.toFixed(2));
+}
+*/
+/*
 if (2*curve.ca[i-1].a2<-a)  {
   //debugger;
-  a-=2*curve.ca[i-1].a2;
+//console.log("azt "+azt.toFixed(2));
+console.log(i+" overcircle "+a.toFixed(2)+" "+curve.ca[i-1].a2.toFixed(2)+" "+cua.length+" "+i);
+  //a-=2*curve.ca[i-1].a2;
+a-=(2*curve.ca[i-1].a2)%TP;
+  oc=true;
 }
+*/
 //}
     let az=a-curve.ca[i-1].a2;
+if (Math.abs(az)>TP) az/=4;
+else if (Math.abs(az)>Math.PI) az/=2;
+// if (az+a2>Math.PI)
     let xp=x-d*r*Math.cos(az);
     let yp=y-r*Math.sin(az);
-    let yd=yp+CSIZE;
-    if (Math.pow(xp*xp+yd*yd,0.5)>CSIZE) {
+//    let yd=yp+CSIZE;
+    //if (Math.pow(xp*xp+yd*yd,0.5)>CSIZE) {
 //console.log(Math.pow(xp*xp+yd*yd,0.5).toFixed(0));
 //debugger;
-      break;
+    if (checkPoint(xp,yp+CSIZE)) {
+      break; // don't break, increase a, decrease r
     }
+//drawPoint(xp,yp);
 //drawPoint(xp,yp,"yellow");
-    curve.ca.push(new Circle(x,y,r,curve.ca[i-1].a2,az,d,i));
+    let c=new Circle(x,y,r,curve.ca[i-1].a2,az,d,i);
+    c.oc=oc;
+    curve.ca.push(c);
+    //curve.ca.push(new Circle(x,y,r,curve.ca[i-1].a2,az,d,i));
   }
   curve.setPath();
   return curve;
@@ -455,12 +570,6 @@ ctx.arc(x7,y7,r7,TP/2-az6,TP/2+az7);
 ctx.arc(x8,y8,r8,az7,-az8,true);
 ctx.stroke();
 
-ctx.lineWidth=0.4;
-ctx.strokeStyle="silver";
-for (let i=0; i<ca.length; i++) {
-  ctx.stroke(ca[i].getCirclePath());
-}
-
 ctx.fillStyle="red";
 for (let i=0; i<ca.length; i++) {
   ctx.beginPath();
@@ -469,16 +578,6 @@ for (let i=0; i<ca.length; i++) {
   if (i==ca.length-1) ctx.fillStyle="green";
   ctx.fill();
 }
-
-drawPoint(0,0,"cyan");
-drawPoint(xp1,yp1,"cyan");
-drawPoint(xp2,yp2,"cyan");
-drawPoint(xp3,yp3,"cyan");
-drawPoint(xp4,yp4,"cyan");
-drawPoint(xp5,yp5,"cyan");
-drawPoint(xp6,yp6,"cyan");
-drawPoint(xp7,yp7,"cyan");
-drawPoint(xp8,yp8,"cyan");
 *************/
 
 /*
@@ -489,13 +588,98 @@ for (let i=0; i<4; i++) {
 }
 */
 
-var cua=[];
-for (let i=0; i<4; i++) {
-  cua.push(createCurve(Math.pow(-1,i)));
+var cua=[];	// curve array
+let i=0;
+while (i<1) {
+//for (let i=0; i<8; i++) {
+  let cur=createCurveN(Math.pow(-1,i));
+  if (cur instanceof Curve) {
+    cua.push(cur);
+    i++;
+  }
+//  cua.push(createCurveN(Math.pow(-1,i)));
 }
-console.log(cua[0].ca.length);
 
+var drawNodes=()=>{
+  for (let i=0; i<cua.length; i++) {
+    for (let j=0; j<cua[i].ca.length; j++) {
+      let pt=cua[i].ca[j].getNodePoint();
+      drawPoint(pt.x,pt.y);
+    }
+  }
+}
+
+/*
+let c=cua[0].ca;
+for (let i=0; i<c.length; i++) {
+  console.log(i,c[i].dir,c[i].a1.toFixed(2),c[i].a2.toFixed(2),c[i].dist.toFixed(0));
+}
+*/
+
+
+/*
+var dist=0;
+let dq=getRandomInt(0,cua[0].ca.length);
+//console.log("dq "+dq);
+for (let i=0; i<dq; i++) {
+  dist+=cua[0].ca[i].dist;
+}
+console.log("dist "+dist.toFixed(0));
+cua[0].dist=dist;
+*/
+
+for (let i=0; i<4; i++) {
+  let sc=getRandomInt(0,cua.length);
+  let cb=createBranchN(cua[sc]);
+  if (cb instanceof Curve) {
+    cua.unshift(cb);
+  }
+}
+
+/*
+let cb=createBranch(cua[0]);
+if (cb instanceof Curve) {
+  cua.push(cb);
+//  ctx.stroke(cua[1].path);
+}
+let sc=getRandomInt(0,cua.length);
+let cb2=createBranch(cua[sc]);
+if (cb2 instanceof Curve) {
+  cua.push(cb2);
+//  ctx.stroke(cua[1].path);
+}
+*/
+console.log("curve count "+cua.length);
+for (let i=0; i<cua.length; i++) {
+  console.log(i+" "+cua[i].ca.length+" "+cua[i].branch_start);
+}
+
+drawNodes();
 draw();
+
+var report=()=>{
+  for (let i=0; i<cua.length; i++) {
+    console.log(i);
+    for (let j=0; j<cua[i].ca.length; j++) {
+      console.log(j+" "+cua[i].ca[j].a1.toFixed(2)+" "+cua[i].ca[j].a2.toFixed(2)+
+                " azt "+(cua[i].ca[j].a2-cua[i].ca[j].a1).toFixed(2));
+//drawPoint(cua[i].ca[j].x,cua[i].ca[j].y);
+    }
+  }
+}
+//report();
+
+/*
+ctx.strokeStyle="red";
+ctx.lineWidth=1;
+if (cua[1]) {
+ctx.stroke(cua[1].ca[0].getCirclePath());
+ctx.strokeStyle="white";
+if (cua[1].ca[1]) ctx.stroke(cua[1].ca[1].getCirclePath());
+}
+ctx.strokeStyle="yellow";
+ctx.stroke(cua[0].ca[branch_start].getCirclePath());
+*/
 
 /*
 ctx.lineWidth=4;
