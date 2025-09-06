@@ -30,26 +30,39 @@ const getRandomInt=(min,max,low)=>{
 }
 
 function Color() {
-  const CBASE=154;
+  const CBASE=164;
   const CT=255-CBASE;
   this.getRGB=(o)=>{
-    let red=Math.round(CBASE+CT*Math.cos(o+this.RK2+t/this.RK1));
-    let grn=Math.round(CBASE+CT*Math.cos(o+this.GK2+t/this.GK1));
-    let blu=Math.round(CBASE+CT*Math.cos(o+this.BK2+t/this.BK1));
+    //let red=Math.round(CBASE+CT*Math.cos(o+this.RK2+t/this.RK1));
+    //let grn=Math.round(CBASE+CT*Math.cos(o+this.GK2+t/this.GK1));
+    //let blu=Math.round(CBASE+CT*Math.cos(o+this.BK2+t/this.BK1));
+    let red=Math.round(CBASE+CT*(this.fr*Math.cos(o+this.RK2+t/this.RK1)+(1-this.fr)*Math.cos(t/this.RK3)));
+    let grn=Math.round(CBASE+CT*(this.fg*Math.cos(o+this.GK2+t/this.GK1)+(1-this.fg)*Math.cos(t/this.GK3)));
+    let blu=Math.round(CBASE+CT*(this.fb*Math.cos(o+this.BK2+t/this.BK1)+(1-this.fb)*Math.cos(t/this.BK3)));
     return "rgb("+red+","+grn+","+blu+")";
   }
+  this.randomizeF=()=>{
+    this.RK3=1+2*Math.random();
+    this.GK3=1+2*Math.random();
+    this.BK3=1+2*Math.random();
+    this.fr=1-Math.pow(Math.random(),3);
+    this.fg=1-Math.pow(Math.random(),3);
+    this.fb=1-Math.pow(Math.random(),3);
+  }
   this.randomize=()=>{
-    this.RK1=400+400*Math.random();
-    this.GK1=400+400*Math.random();
-    this.BK1=400+400*Math.random();
+    this.RK1=200+400*Math.random();
+    this.GK1=200+400*Math.random();
+    this.BK1=200+400*Math.random();
     this.RK2=TP*Math.random();
     this.GK2=TP*Math.random();
     this.BK2=TP*Math.random();
+    this.randomizeF();
   }
   this.randomize();
 }
 
 var color=new Color();
+var color2=new Color();
 
 function Circle(x,y,r,a1,a2,d,ci) {
   this.x=x;
@@ -98,43 +111,88 @@ this.dist=this.r*(this.a1+this.a2);
 function Curve() {
   this.ca=[];
   this.path=new Path2D();
+  this.dist=0;
   this.setPath=()=>{
     for (let i=0; i<this.ca.length; i++) {
       //this.path.addPath(this.ca[i].getPath());
       this.ca[i].setPath(this.path);
+//      this.dist+=this.ca[i].dist;
     }
+  }
+  this.getDistance=(tidx)=>{
+    let dist=0;
+    for (let i=0; i<this.ca.length; i++) {
+      dist+=this.ca[i].dist;
+      if (i==tidx) break;
+    }
+    return dist;
   }
 }
 
 var f=1;
-//ctx.setLineDash([1,1000]);
+ctx.setLineDash([1,2000]);
 var draw=()=>{	// ? states: moving, growing, shrinking
   //ctx.clearRect(0,0,2*CSIZE,2*CSIZE);
   //f=1-t/800;
 
-ctx.lineWidth=8;
-  
   ctx.strokeStyle=color.getRGB(0);
+
   for (let i=0; i<cua.length; i++) {
-//ctx.lineDashOffset=-dist-t;	// dist for each curve
+    if (cua[i].dist>t) continue;
+    let lw=40-40*Math.pow(t/1000,0.7);
+    ctx.lineWidth=1.6*lw;
+    ctx.lineDashOffset=cua[i].dist-t+ctx.lineWidth/5;
+    ctx.strokeStyle="#0000000C";
+    ctx.stroke(cua[i].path);
+  }
+
+  for (let i=0; i<cua.length; i++) {
+    if (cua[i].dist>t) continue;
+  ctx.strokeStyle=color.getRGB(i/10);
+    ctx.lineDashOffset=cua[i].dist-t;	// dist for each curve
+    let lw=40-40*Math.pow(t/1000,0.7);
+    ctx.lineWidth=lw;
+    ctx.stroke(cua[i].path);
+  }
+
 //    if (cua[i].oc) ctx.strokeStyle="white";
 //    else ctx.strokeStyle=color.getRGB(0);
+/*
 ctx.lineDashOffset=-t+2;
-
 ctx.strokeStyle="#FFFFFF33";
 ctx.lineWidth=2;
 ctx.stroke(cua[i].path);
+*/
 
     //ctx.strokeStyle="#0000003C";
-    ctx.strokeStyle="#0000008C";
-    ctx.lineWidth=12;
-    ctx.stroke(cua[i].path);
 
-//ctx.lineDashOffset=-t;
-    ctx.strokeStyle=color.getRGB(i);
-    ctx.lineWidth=8;
+//ctx.lineWidth=lw;
+//ctx.strokeStyle=color.getRGB(0);
+//ctx.stroke(cua[i].path);
+
+/*
+    ctx.lineWidth*=1.3;
+    ctx.lineDashOffset+=ctx.lineWidth/8;
+    ctx.strokeStyle="#00000014";
     ctx.stroke(cua[i].path);
-  }
+*/
+}
+
+var getMotionPath=()=>{
+  f=t/DUR;
+  let path=new Path2D();
+    for (let i=0; i<NCOUNT; i++) {
+      //this.path.addPath(this.ca[i].getPath());
+      this.ca[i].setPath(this.path);
+    }
+  return path;
+}
+
+var drawX=()=>{	// fractional transition not currently workable
+  ctx.clearRect(-CSIZE,0,CSIZE,2*CSIZE);
+  ctx.lineWidth=8;
+  ctx.strokeStyle=color.getRGB(0);
+  ctx.stroke(cua[0].path);
 }
 
 var stopped=true;
@@ -187,7 +245,7 @@ return true;
 
 var drawPoint=(x,y,col)=>{	// diag
   ctx.beginPath();
-  ctx.arc(x,y,3,0,TP);
+  ctx.arc(x,y,6,0,TP);
   ctx.closePath();
   if (col) ctx.fillStyle=col;
   else ctx.fillStyle="red";
@@ -226,6 +284,7 @@ var getAngle=(a1,at,n)=>{
   //
 }
 
+const NCOUNT=8;
 //let rd=1.8;	// ? curve specific, varying about some value, larger rd, shorter r
 let rd=1.3;	// diag, MAXR=CSIZE/2
 //let ad=0.8;
@@ -233,26 +292,31 @@ let ad=0.92;
 var branch_start=0;
 
 var createBranchN=(cu)=>{
-  let start=getRandomInt(0,cu.ca.length);	// also need distance
+  let start=getRandomInt(0,cu.ca.length-1,true);	// also need distance
   let curve=new Curve();
-  for (let i=0; i<8-start; i++) {
-  let circle=(i==0)?cu.ca[start]:curve.ca[i-1];
+  for (let i=0; i<NCOUNT-start; i++) {
+    let circle=(i==0)?cu.ca[start]:curve.ca[i-1];
     let c=getCircle(circle);
     if (c instanceof Circle) curve.ca.push(c);
     else {
-console.log("failed curve");
-      return false;
+      if (c instanceof Circle) curve.ca.push(c);
+      else {
+//console.log("failed curve");
+//        return false;
+break;
+      }
     }
   }
   curve.setPath();
+  curve.dist=cu.getDistance(start)+cu.dist;
 curve.branch_start=start;
   return curve;
 }
 
+/*
 var createBranch=(cu)=>{
 branch_start=start;
-
-for (let i=0; i<8-start; i++) {
+for (let i=0; i<NCOUNT-start; i++) {
   let circle=(i==0)?cu.ca[start]:curve.ca[i-1];
   //let d=d*=-1;	// random?
   let d=-circle.dir;
@@ -272,31 +336,31 @@ console.log("branch overcircle idx "+i);
   a-=2*circle.a2;
 curve.oc=true;
 }
-
   let az=a-circle.a2;
   let xp=x-d*r*Math.cos(az);
   let yd=y-r*Math.sin(az)+CSIZE;
   //if (checkPoint(xp,yd)) return undefined;
   if (checkPoint(xp,yd)) break;	
   else curve.ca.push(new Circle(x,y,r,circle.a2,az,d,0));
-
-//console.log(x,y);
-//drawPoint(x,y);
 }
   if (curve.ca.length==0) return undefined;
   curve.setPath();
 console.log("branch start idx "+start);
   return curve;
 }
+*/
 
 var getCircle=(pc)=>{
-  for (let m=0; m<4; m++) {
+//  for (let m=1; m<5; m++) {
     let d=-1*pc.dir;
-    let r=(MAXR+MAXR*Math.random())/Math.pow(rd,pc.ci+1)/m;
+    //let r=(MAXR+MAXR*Math.random())/Math.pow(rd,pc.ci+1)/m;
+    let r=(MAXR+MAXR*Math.random())/Math.pow(rd,1.5*pc.ci+1);
     let x=pc.x+d*(pc.r+r)*Math.cos(pc.a2);
     let y=pc.y  -(pc.r+r)*Math.sin(pc.a2);
-    let a=TP/24+TP*20/24*(1-Math.pow(ad,pc.ci+1))*Math.random();
-    let az=(a-pc.a2)/m;
+    //let a=TP/24+TP*20/24*(1-Math.pow(ad,pc.ci+1))*Math.random();
+let a=TP/24+TP*22/24*(1-Math.pow(ad,1.5*pc.ci+1))*Math.random();
+    //let az=(a-pc.a2)/m;
+    let az=(a-pc.a2);
     if (Math.abs(az)>TP) az/=4;
     else if (Math.abs(az)>Math.PI) az/=2;
     let c=new Circle(x,y,r,pc.a2,az,d,pc.ci+1);
@@ -304,11 +368,11 @@ var getCircle=(pc)=>{
 //console.log("m "+m);
       return c;
     }
-  }
+//  }
   return false;
 }
 
-var createCurveN=(d)=>{	// left or right, non-0 start
+var createCurve=(d)=>{	// left or right, non-0 start
   let curve=new Curve();
   let r=MAXR+MAXR*Math.random();
   let x=d*r;
@@ -316,7 +380,7 @@ var createCurveN=(d)=>{	// left or right, non-0 start
   let a=TP/48+TP/16*Math.random();	// need minimum angle, TP/24?
   let c=new Circle(x,y,r,0,a,d,0);
   curve.ca.push(new Circle(x,y,r,0,a,d,0));
-  for (let i=1; i<8; i++) {
+  for (let i=1; i<NCOUNT; i++) {
     let c=getCircle(curve.ca[i-1]);
     if (c instanceof Circle) curve.ca.push(c);
     else {
@@ -328,17 +392,16 @@ console.log("failed curve");
   return curve;
 }
 
-var createCurve=(d)=>{	// left or right, non-0 start
+var createCurveO=(d)=>{	// left or right, non-0 start
   let curve=new Curve();
   let r=MAXR+MAXR*Math.random();
   let x=d*r;
   let y=0;
   let a=TP/48+TP/16*Math.random();	// need minimum angle, TP/24?
-
 //  let az=a;
   //let xp=x-d*r*Math.cos(a);
   curve.ca.push(new Circle(x,y,r,0,a,d,0));
-  for (let i=1; i<8; i++) {
+  for (let i=1; i<NCOUNT; i++) {
 //    d*=-1;
     d=curve.ca[i-1].dir*-1;
     r=(MAXR+MAXR*Math.random())/Math.pow(rd,i);
@@ -569,42 +632,31 @@ ctx.arc(x6,y6,r6,az5,-az6,true);
 ctx.arc(x7,y7,r7,TP/2-az6,TP/2+az7);
 ctx.arc(x8,y8,r8,az7,-az8,true);
 ctx.stroke();
-
-ctx.fillStyle="red";
-for (let i=0; i<ca.length; i++) {
-  ctx.beginPath();
-  ctx.arc(ca[i].x,ca[i].y,3,0,TP);
-  ctx.closePath();
-  if (i==ca.length-1) ctx.fillStyle="green";
-  ctx.fill();
-}
 *************/
 
-/*
-ctx.strokeStyle="white";
-ctx.lineWidth=1;
-for (let i=0; i<4; i++) {
-  ctx.stroke(ca[i].getPath());
-}
-*/
-
-var cua=[];	// curve array
-let i=0;
-while (i<1) {
-//for (let i=0; i<8; i++) {
-  let cur=createCurveN(Math.pow(-1,i));
-  if (cur instanceof Curve) {
-    cua.push(cur);
-    i++;
+var getCurveArray=()=>{
+  let arr=[];
+  let i=0;
+  while (i<2) {
+  //for (let i=0; i<8; i++) {
+    let cur=createCurve(Math.pow(-1,i));	// need to assure cur.ca.length==NCOUNT
+    if (cur instanceof Curve) {
+      arr.push(cur);
+      if (i%2==0) cur.col=color;
+      else cur.col=color2;
+      i++;
+    }
   }
-//  cua.push(createCurveN(Math.pow(-1,i)));
+  return arr;
 }
+var cua=getCurveArray();
+
 
 var drawNodes=()=>{
   for (let i=0; i<cua.length; i++) {
     for (let j=0; j<cua[i].ca.length; j++) {
       let pt=cua[i].ca[j].getNodePoint();
-      drawPoint(pt.x,pt.y);
+      drawPoint(pt.x,pt.y,"#FF000060");
     }
   }
 }
@@ -617,7 +669,6 @@ for (let i=0; i<c.length; i++) {
 */
 
 
-/*
 var dist=0;
 let dq=getRandomInt(0,cua[0].ca.length);
 //console.log("dq "+dq);
@@ -625,14 +676,25 @@ for (let i=0; i<dq; i++) {
   dist+=cua[0].ca[i].dist;
 }
 console.log("dist "+dist.toFixed(0));
-cua[0].dist=dist;
-*/
+//cua[0].dist=dist;
 
-for (let i=0; i<4; i++) {
+for (let i=0; i<88; i++) {
   let sc=getRandomInt(0,cua.length);
   let cb=createBranchN(cua[sc]);
-  if (cb instanceof Curve) {
-    cua.unshift(cb);
+  //if (cb instanceof Curve) {
+  if (cb.ca.length>0) {
+    //cua.push(cb);
+cua.splice(sc+1,0,cb);
+cb.col=cua[sc].col;
+  } else {
+    let sc=getRandomInt(0,cua.length);
+    let cb=createBranchN(cua[sc]);
+//    if (cb instanceof Curve) {
+    if (cb.ca.length>0) {
+//      cua.push(cb);
+cua.splice(sc+1,0,cb);
+cb.col=cua[sc].col;
+    } 
   }
 }
 
@@ -651,11 +713,13 @@ if (cb2 instanceof Curve) {
 */
 console.log("curve count "+cua.length);
 for (let i=0; i<cua.length; i++) {
-  console.log(i+" "+cua[i].ca.length+" "+cua[i].branch_start);
+  //console.log(i+" "+cua[i].ca.length+" "+cua[i].branch_start);
+  //console.log(i+" "+cua[i].ca.length+" "+cua[i].dist.toFixed(0));
+  //console.table(cua[i].ca.length,cua[i].dist.toFixed(0));
 }
 
-drawNodes();
-draw();
+//drawNodes();
+start();
 
 var report=()=>{
   for (let i=0; i<cua.length; i++) {
@@ -682,15 +746,6 @@ ctx.stroke(cua[0].ca[branch_start].getCirclePath());
 */
 
 /*
-ctx.lineWidth=4;
-for (let i=0; i<cua.length; i++) {
-  ctx.strokeStyle=color.getRGB(i+1);
-  ctx.stroke(cua[i].path);
-}
-*/
-
-
-/*
 ctx.strokeStyle=color.getRGB(1);
 var c=createCurve(-1);
 ctx.stroke(c.getPath());
@@ -702,9 +757,6 @@ ctx.strokeStyle=color.getRGB(3);
 ctx.stroke(c.getPath());
 */
 
-// is a4 over-circ?, larger a promote overcirc?
-// dir
-// activate createCurve, curve.draw
 // getAngle
 
 // +/- dir init
