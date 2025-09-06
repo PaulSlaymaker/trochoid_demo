@@ -62,13 +62,11 @@ var color=new Color();
 
 var DT=120;
 //var DT=40;
-//const RANGEMK=200;
-//const RANGEMK=100;
-//const MINMK=60;
 
 // r=320
 const RANGEMK=200;
-const MINMK=100;
+//const MINMK=100;
+const MINMK=200;
 
 
 function Line() {
@@ -80,26 +78,20 @@ this.RK=0;
   this.randomize=()=>{
     //this.MK1=((Math.random()<0.5)?1:-1)*(MINMK+RANGEMK*Math.random());	// remove +/-, then put dir in path	// remove +/-, then put dir in path
     this.MK1=this.diry*(MINMK+RANGEMK*Math.random());
+this.MK3=(MINMK+RANGEMK*Math.random());
     //this.MK2=-400; //this.dirx*(MINMK+RANGEMK*Math.random());
     this.MK2=this.dirx*(MINMK+RANGEMK*Math.random());
+this.MK4=(MINMK+RANGEMK*Math.random());
     this.NK1=0; //TP*Math.random();
     this.NK2=0; //TP*Math.random();
+
+    this.SK1=100+100*Math.random();
+    this.SK2=100+100*Math.random();
+    this.TK1=200+200*Math.random();
+    this.TK2=200+200*Math.random();
   }
 //  this.randomize();	// only initial, not subsequent new Line
-/*
-  this.locate=()=>{
-    let f1=Math.cos(t/this.MK1);
-    let f2=Math.sin(t/this.MK2);
-//if (Math.abs(f1)<0.001) console.log("f1 "+t);
-//if (Math.abs(f2)<0.001) console.log("f2 "+t);
-    this.dm.a=s*f1;
-    this.dm.b=s*Math.sin(t/this.MK2);
-    this.dm.c=s*Math.sin(t/this.MK3);
-    this.dm.d=s*Math.cos(t/this.MK4);
-    this.dm.e=320*Math.sin(t/400);	// can be CSIZE w/point end?
-    this.dm.f=0; //320*Math.sin(t/400);
-  }
-*/
+
   this.getParameterArray2=()=>{
     let MKx=this.dirx*(MINMK+RANGEMK*Math.random());
     let NKx=this.NK2+t/this.MK2-t/MKx;
@@ -135,13 +127,10 @@ this.RK=0;
   }
   this.changePathO=()=>{
 this.td+=DT;
-
 //let ys0=this.NK1+t/this.MK1;
 //let xs0=this.NK2+t/this.MK2;
     let ksl=-(Math.cos(this.NK1+t/this.MK1)/this.MK1)
             /(Math.sin(this.NK2+t/this.MK2)/this.MK2);
-
-
 // if abs ksl>1000 dirx change +-, abs<0.001 diry change +-
 //console.log("slope "+ksl);
 //console.log(this.MK1/this.MK2);
@@ -151,14 +140,11 @@ this.td+=DT;
     let NKx=this.NK2+t/this.MK2-t/MKx;
     //let K2=1/MKx*(Math.sin(NKx+t/MKx));
     let K2=Math.sin(NKx+t/MKx)/MKx;
-
 let Ksy=Math.cos(this.NK1+t/this.MK1);
-
 //[ksl,MKx,NKx,K2,Ksy]=this.gp();
 let MKy=-Ksy/(ksl*K2);
 //let MKy=Ksy/(ksl*K2);
 //if (MKy<MINMK) debugger;
-
 //MKy=MKx*this.MK1/this.MK2;
 let NKy=this.NK1+t/this.MK1-t/MKy;
 //console.log("x: "+
@@ -169,14 +155,6 @@ let NKy=this.NK1+t/this.MK1-t/MKy;
     this.MK1=MKy;
     this.NK2=NKx;
     this.MK2=MKx;
-/*
-let ys1=this.NK1+t/this.MK1;
-let xs1=this.NK2+t/this.MK2;
-console.log(ys0+" "+ys1);
-console.log(xs0+" "+xs1);
-let ksl2=-(Math.cos(this.NK1+t/this.MK1)/this.MK1)/(Math.sin(this.NK2+t/this.MK2)/this.MK2);
-console.log("slopes "+ksl+" "+ksl2);
-*/
   }
   this.getPath=()=>{
     //let f1=80*Math.cos(t/this.MK1);
@@ -199,12 +177,23 @@ let y=r+80*Math.sin(this.NK1+this.diry*t/this.MK1);
 */
 
 //let x=-140+140*Math.cos(this.NK2+t/this.MK2);
-let x=120+120*Math.cos(this.NK2+t/this.MK2);
-let y=240*Math.sin(this.NK1+t/this.MK1);
+//let x=120+120*Math.cos(this.NK2+t/this.MK2);
+
+let sk1=this.NK1+TP/4*Math.sin(t/this.SK1);
+let sk2=this.NK2+TP*Math.sin(t/this.SK2);
+let tk1=this.MK1+20*Math.sin(t/this.TK1);
+let tk2=this.MK2+20*Math.sin(t/this.TK2);
+
+//let x=120+60*(Math.cos(this.NK2+t/this.MK2)+Math.pow(Math.cos(TP/2+t/this.MK4),3));
+//let y=   120*(Math.sin(this.NK1+t/this.MK1)+Math.pow(Math.sin(t/this.MK3),3));
+let x=120+60*(Math.cos(sk2+t/tk2)+Math.pow(Math.cos(TP/2+t/this.MK4),3));
+let y=   120*(Math.sin(sk1+t/tk1)+Math.pow(Math.sin(t/this.MK3),3));
 
     //p.ellipse(x,y,s*10,s*80,0,-TP/4,TP/4);
-    //p.ellipse(x,y,s*1,s*8,0,-TP/4,TP/4);
+    //p.ellipse(x,y,s*1,s*12,0,-TP/4,TP/4);
+
     p.ellipse(x,y,1,1,0,0,TP);
+
     //p.ellipse(320*Math.sin(t/400),f2,s*2,s*12,0,-TP/4,TP/4);
     //p.ellipse(320*Math.sin(t/400),s*f2,s*20,s*60,0,TP/4,3*TP/4);
     //p.ellipse(320*Math.sin(t/400)+s*f1,s*f2,s*r1,s*(60-r1),r2,0,TP);
@@ -317,14 +306,12 @@ s=Math.abs(Math.sin(t/K));
 //  container.firstChild.style.opacity=1-c/DUR;
   //if (t%DUR==0) {
 //if (t%(DUR/2)<1) stopped=true;
-/*
   if (t>DUR) {	// cycle on x or y >320?
 //    t=0;
 //    cycle();
 //if (EM) stopped=true
     stopped=true	// pause
   }
-*/
   draw();
   requestAnimationFrame(animate);
 }
@@ -339,18 +326,19 @@ var draw=()=>{
   const dmr=new DOMMatrix([-0.5,S6,S6,0.5,0,0]);	// 1st rotation
   const dmr2=new DOMMatrix([S8,S8,-S8,S8,0,0]);	// 1st rotation
   let ctx=container.lastChild.ctx;
-/*
-let TC=1+0.5*Math.cos(t/300);
-let TS=-0.5*Math.sin(t/200);
-ctx.setTransform(TC,TS,-TS,TC,CSIZE,CSIZE);
-*/
+
+
 let pf=new Path2D();
   for (let i=0; i<la.length; i++) {
+    if (t>10) {
+      let woby=Math.pow(Math.sin(t/la[i].SK1),2);
+      if (woby<0.01) console.log(woby,t);
+    }
 //ctx.setLineDash([s*3,s*6]);
 //ctx.setLineDash([s*dash1,s*dash2]);
   //la[i].locate();
 
-    if (la[i].td==t) la[i].divide3();
+    //if (la[i].td==t) la[i].divide3();
     //if (la[i].td==t) la[i].changePath();
 
 /*
@@ -388,10 +376,15 @@ line.NK1=0;
 //line.NK2=TP/4;	// start at 0,0
 line.NK2=TP/2;
 //line.NK2=0;
-var line2=new Line();	// create only in cycle fct
+
+/*
+var line2=new Line();
 line2.randomize();
 //line2.NK2=0; //TP/4;	// start at 0,0
 line2.NK2=TP/2; //TP/4;	// start at 0,0
 var la=[line,line2];
+*/
+
+var la=[line];
 
 start();
