@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=360;
 
@@ -137,7 +137,7 @@ var animate=(ts)=>{
   if (t>DUR) {
     t=0;
     cycle();
-//if (EM) stopped=true
+    if (EM) stopped=true
   }
   requestAnimationFrame(animate);
 }
