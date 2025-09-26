@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(Math.PI/3);
 const CSIZE=400;
@@ -12,7 +12,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-//c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -47,7 +46,6 @@ var s=1;
 const K=24;
 
 function Circle(curve,f) {
-  // r as random fct of distance from 0,0
   if (curve.ca.length==0) {
     this.r=8+MAXR*Math.random();
     this.dir=Math.random()<0.5?1:-1;
@@ -148,7 +146,12 @@ function Curve() {
 	    this.ca.shift();
 	    this.ca[0].time=this.t;
 	  } else {
-            this.state="R";
+	    let cir3=new Circle(this,10);
+	    if (cir3.checkBounds()) {
+	      this.ca.push(cir3);
+	      this.ca.shift();
+	      this.ca[0].time=this.t;
+	    } else this.state="R";
           }
 	}
       }
@@ -166,19 +169,6 @@ function Curve() {
     else break;
   }
 }
-
-/*
-var drawPoint=(x,y,col,r)=>{	// diag
-  ctx.beginPath();
-  let rad=3;
-  if (r) rad=r;
-  ctx.arc(x,y,rad,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
-}
-*/
 
 var stopped=true;
 var start=()=>{
@@ -202,13 +192,13 @@ var animate=(ts)=>{
     if (c.state=="R") c.reverse();
   });
   draw();
+if (EM && t%100==0) stopped=true;
   requestAnimationFrame(animate);
 }
 
 let ccont=new Path2D();
 ccont.arc(0,0,CSIZE,0,TP);
 
-ctx.lineWidth=6;
 var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   for (let i=0; i<cua.length; i++) {
@@ -240,7 +230,7 @@ for (let i=0; i<200; i++) {
     cua.push(cur);
   }
 }
-console.log(cua.length);
+//console.log(cua.length);
 var col1=new Array(cua.length);
 var col2=new Array(cua.length);
 for (let i=0; i<cua.length; i++) {
@@ -251,6 +241,7 @@ for (let i=0; i<cua.length; i++) {
 onresize();
 start();
 
+/*
 ctx.font="bold 11px sans-serif";
 ctx.textAlign="center";
 var report=()=>{
@@ -283,4 +274,5 @@ ctx.fillText(cua[i].dist.toFixed(),cua[i].ca[0].xp2+5,cua[i].ca[0].yp2+2);
 console.log(i,cua[i].ca.length,cua[i].dist.toFixed(),(cua[i].dist/8).toFixed(1));
   }
 }
+*/
 
