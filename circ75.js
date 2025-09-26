@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(Math.PI/3);
 const CSIZE=400;
@@ -296,7 +296,6 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
-var DUR2=400;
 var pt=0;
 var t=0;
 var animate=(ts)=>{
@@ -304,42 +303,10 @@ var animate=(ts)=>{
   t++;
   pt=-10+160*(1+Math.sin(t/400));
   //pt=-10+cua[0].ca[NCOUNT].dist/3*(1+Math.sin(t/200));
-/*
-  if (t>=DUR) {
-    stopped=true
-return;	// test
-    t=0;
-  }
-*/
+  if (EM && t%200==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
-
-/*
-var checkCircle=(x,y,r)=>{	// ? remove corners, spacer+lineWidth
-return true;
-  let dc=Math.pow((x-CSIZE)*(x-CSIZE)+(y-CSIZE)*(y-CSIZE),0.5);
-  if (dc+r>CSIZE) return false;
-  for (let i=0; i<ca.length-1; i++) {
-    let d=-12+Math.pow((ca[i].x-x)*(ca[i].x-x)+(ca[i].y-y)*(ca[i].y-y),0.5);
-    if (d<r+ca[i].r) return false;
-  }
-  return true;
-}
-*/
-
-/*
-var drawPoint=(x,y,col,r)=>{	// diag
-  ctx.beginPath();
-  let rad=6;
-  if (r) rad=r;
-  ctx.arc(x,y,rad,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
-}
-*/
 
 onresize();
 
