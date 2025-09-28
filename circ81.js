@@ -4,6 +4,8 @@ body.style.background="#000";
 //const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
+const S6=Math.sin(TP/6);
+const SA2=Math.sin(5*TP/24);
 
 const ctx=(()=>{
   let d=document.createElement("div");
@@ -18,7 +20,7 @@ const ctx=(()=>{
 ctx.translate(CSIZE,CSIZE);
 
 ctx.lineWidth=6;
-//ctx.lineCap="round";
+ctx.lineCap="round";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -34,15 +36,9 @@ function Color() {
   const CBASE=160;
   const CT=255-CBASE;
   this.getRGB=(o)=>{
-    //let red=Math.round(CBASE+CT*Math.random());
-    //let grn=Math.round(CBASE+CT*Math.random());
-    //let blu=Math.round(CBASE+CT*Math.random());
     let red=Math.round(CBASE+CT*Math.cos(this.RK2+o/this.RK1));
     let grn=Math.round(CBASE+CT*Math.cos(this.GK2+o/this.GK1));
     let blu=Math.round(CBASE+CT*Math.cos(this.BK2+o/this.BK1));
-    //let red=Math.round(CBASE+CT*Math.cos(o*this.RK2));
-    //let grn=Math.round(CBASE+CT*Math.cos(o*this.GK2));
-    //let blu=Math.round(CBASE+CT*Math.cos(o*this.BK2));
     return "rgb("+red+","+grn+","+blu+")";
   }
   this.randomize=()=>{
@@ -53,7 +49,6 @@ function Color() {
     this.GK2=TP*Math.random();
     this.BK2=TP*Math.random();
   }
-//  this.randomize();
 }
 
 var color=new Color();
@@ -85,7 +80,6 @@ function Curve(init) {
       let pey=(point.y+point2.y)/2;
       //p.bezierCurveTo(point.x,point.y,point.x,point.y,pex,pey);
       p.quadraticCurveTo(point.x,point.y,pex,pey);
-// if (i==this.inda.length-1 && terminal) p.arc,  don't branch from terminal
     }
     return p;
   }
@@ -94,13 +88,11 @@ function Curve(init) {
     if (index==this.inda.length-2) {
       let point=pa[this.inda[index][0]][this.inda[index][1]];
       let point2=pa[this.inda[index+1][0]][this.inda[index+1][1]];
-//      let point3=pa[this.inda[index+2][0]][this.inda[index+2][1]];
       p.moveTo((point.x+point2.x)/2,(point.y+point2.y)/2);
       p.lineTo(point2.x,point2.y);
-      p.arc(point2.x,point2.y,del/8,0,TP);
+      if ((xrf+yrf)<0.6) p.arc(point2.x,point2.y,del/8,0,TP);
       return {"path":p,"lvl":point.l};
     }
-    if (index>this.inda.length-3) debugger; //return false; // temp
     let point=pa[this.inda[index][0]][this.inda[index][1]];
     let point2=pa[this.inda[index+1][0]][this.inda[index+1][1]];
     if (point.x==0 && point.y==0) {
@@ -115,19 +107,6 @@ function Curve(init) {
     p.quadraticCurveTo(point2.x,point2.y,pex,pey);
     return {"path":p,"lvl":point.l};
   }
-/*
-  this.getPathS=()=>{
-    let p=new Path2D(); 
-    let point=pa[this.inda[0][0]][this.inda[0][1]];
-    p.moveTo(point.x,point.y);
-    for (let i=1; i<this.inda.length; i++) {
-      let point=pa[this.inda[i][0]][this.inda[i][1]];
-      //p.lineTo(pa[this.inda[i][0]][this.inda[i][1]].x,pa[this.inda[i][0]][this.inda[i][1]].y);
-      p.lineTo(point.x,point.y);
-    }
-    return p;
-  }
-*/
   this.grow=()=>{
     for (let i=0; i<MC; i++) {
       let eix=this.inda[this.inda.length-1][0];
@@ -170,12 +149,6 @@ var state=1;
 var animate=(ts)=>{
   if (stopped) return;
   t++;
-/*
-  if (t%100==0) {
-    if (state==-1) time=path.length-Math.floor(t/100);
-    else time=Math.floor(t/100);
-  }
-*/
   if (state==-1) time=path.length-t;
   else time=t;
   if (time>path.length || time<0) {
@@ -197,8 +170,6 @@ var animate=(ts)=>{
   requestAnimationFrame(animate);
 }
 
-//start();
-
 /*
 var drawPoint=(x,y,col)=>{	// diag
   ctx.beginPath();
@@ -210,15 +181,30 @@ var drawPoint=(x,y,col)=>{	// diag
 }
 */
 
+const DUAL=0,QUAD=1,HEX=2;
+var sym=DUAL;
+
 const dm1=new DOMMatrix([-1,0,0,1,0,0]);
 const dm2=new DOMMatrix([1,0,0,-1,0,0]);
+const dm3=new DOMMatrix([0,1,1,0,0,0]);
+const dm4=new DOMMatrix([0.5,S6,-S6,0.5,0,0])
+const dm5=new DOMMatrix([-0.5,S6,-S6,-0.5,0,0])
 
 var draw=()=>{
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   for (let i=0; i<time; i++) {
+  //for (let i=0; i<path.length; i++) {
     let pth=new Path2D(path[i]);
     pth.addPath(pth,dm1);
     pth.addPath(pth,dm2);
+    if (sym==QUAD) {
+      pth.addPath(pth,dm3);
+    } else if (sym==HEX) {
+      let pathHex=new Path2D();
+      pathHex.addPath(pth,dm4);
+      pathHex.addPath(pth,dm5);
+      pth.addPath(pathHex);
+    }
     ctx.strokeStyle=color.getRGB(i);
     ctx.stroke(pth);
   }
@@ -227,33 +213,40 @@ var draw=()=>{
 var pa=[];
 var MC=24;
 
-var deltas=[12,14,18,24,26,28,30,32,34,38,42,46];
-/*
-  { "del":44,"branchAttempts":20},
-  { "del":42,"branchAttempts":20},
-  { "del":38,"branchAttempts":20},
-//  { "del":36,"branchAttempts":24},
-  { "del":34,"branchAttempts":26},
-  { "del":32,"branchAttempts":28},
-  { "del":30,"branchAttempts":28},
-  { "del":28,"branchAttempts":30},
-  { "del":26,"branchAttempts":36},
-  { "del":24,"branchAttempts":38},
-//  { "del":22,"branchAttempts":38},	// terminals over bounds
-  { "del":18,"branchAttempts":62},
-];
-*/
+//var deltas=[12,14,18,24,26,28,30,32,34,38,42,46];
+//var deltas=[12,14,18,22,24,26,28,30,32,34,38,42,46];
+var deltas=[24,22,26,18,28,14,30,12,32,34,38,42,46];
 
 var del=18;
+var osk=0;
+var yf=1;
+var xrf=0;	// random factor
+var yrf=0;	// random factor
 
 const generatePoints=()=>{
+  const T45=Math.atan2(1,1);
+  const T30=Math.atan2(0.5,S6);
   pa=[];
-  for (let i=0; i<=CSIZE/del; i++) {
+  for (let i=0; i<=(CSIZE-osk)/del; i++) {
     pa[i]=[];
     for (let j=0; j<=CSIZE/del; j++) {
-      pa[i][j]=new Point(i*del,j*del);
+      let os=(j%2)?osk:0;
+      let x=os+i*del;
+      let y=j*del*yf;
+      if (xrf>0) x+=del*xrf*(0.3-0.6*Math.random());
+      if (yrf>0) y+=del*yrf*(0.3-0.6*Math.random());
+      pa[i][j]=new Point(Math.round(x),Math.round(y));
+      if (sym==QUAD) {
+        if (Math.atan2(pa[i][j].y,pa[i][j].x)>T45) pa[i][j].o=true;
+      } else if (sym==HEX) {
+        if (Math.atan2(pa[i][j].y,pa[i][j].x)>T30) pa[i][j].o=true;
+//        if (i>Math.floor((CSIZE-osk)/del)-2) pa[i][j].o=true;
+        if (pa[i][j].x>S6*(CSIZE-osk)) pa[i][j].o=true;
+      }
     }
   }
+  pa[0][0].x=0;
+  pa[0][0].y=0;
   pa[0][0].o=true;
 }
 
@@ -336,7 +329,15 @@ var setPath=()=>{
 }
 
 const reset=()=>{
+  sym=getRandomInt(0,3);
+  xrf=(Math.random()<0.2)?Math.random():0;
+  yrf=(Math.random()<0.2)?Math.random():0;
   del=deltas[getRandomInt(0,deltas.length,true)];
+  if (del<20) ctx.lineWidth=5;
+  else ctx.lineWidth=6;
+  let skewIdx=getRandomInt(0,3,true); 
+  osk=[0,del/4,del/2][skewIdx];
+  yf=[1,SA2,S6][skewIdx];
   branchAttempts=getRandomInt(20,120,true);
   generatePoints();
   MC=Math.floor(getRandomInt(1,7)/2*(pa.length+1));
@@ -350,6 +351,7 @@ reset();
 onresize();
 start();
 
+/*
 var showO=()=>{
   for (let i=0; i<pa.length; i++) {
     for (let j=0; j<pa[i].length; j++) {
@@ -358,12 +360,14 @@ var showO=()=>{
   } 
 }
 
-/*
 for (let i=0; i<pa.length; i++) {
   for (let j=0; j<pa[i].length; j++) {
     drawPoint(pa[i][j].x,pa[i][j].y)
   }
 }
+*/
+//drawPoint(0,0,"blue");
+/*
 showO();
 */
 
