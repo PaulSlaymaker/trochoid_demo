@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 const S6=Math.sin(TP/6);
@@ -123,7 +123,7 @@ function Curve(init) {
 
 var pauseTS=1000;
 var pause=(ts)=>{
-  //if (EM) stopped=true;
+  if (EM) stopped=true;
   if (stopped) return;
   if (ts<pauseTS) {
     requestAnimationFrame(pause);
@@ -333,7 +333,7 @@ const reset=()=>{
   xrf=(Math.random()<0.2)?Math.random():0;
   yrf=(Math.random()<0.2)?Math.random():0;
   del=deltas[getRandomInt(0,deltas.length,true)];
-  if (del<20) ctx.lineWidth=5;
+  if (del<22) ctx.lineWidth=5;
   else ctx.lineWidth=6;
   let skewIdx=getRandomInt(0,3,true); 
   osk=[0,del/4,del/2][skewIdx];
