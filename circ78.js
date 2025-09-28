@@ -116,7 +116,7 @@ function Circle(curve,f) {
 }
 
 function Curve() {
-  this.count=[5,7,3,9,11][getRandomInt(0,6,true)];
+  this.count=[5,7,3,9,11][getRandomInt(0,5,true)];
   //this.dist=8+40*Math.random();
   this.dist=8+20*Math.random();
   this.t=0;
@@ -230,7 +230,6 @@ for (let i=0; i<200; i++) {
     cua.push(cur);
   }
 }
-//console.log(cua.length);
 var col1=new Array(cua.length);
 var col2=new Array(cua.length);
 for (let i=0; i<cua.length; i++) {
@@ -240,39 +239,3 @@ for (let i=0; i<cua.length; i++) {
 
 onresize();
 start();
-
-/*
-ctx.font="bold 11px sans-serif";
-ctx.textAlign="center";
-var report=()=>{
-  ctx.lineWidth=1;
-//  ctx.strokeStyle="yellow";
-//  ctx.stroke(ca[0].getCirclePath());
-  ctx.strokeStyle="silver";
-  ctx.fillStyle="white";
-let curve=cua[0];
-  for (let i=0; i<curve.ca.length; i++) {
-    let c=curve.ca[i];
-    ctx.stroke(c.getCirclePath());
-    //let rep=i+" "+ca[i].a.toFixed(1);
-    ctx.fillText(i,c.x,c.y-7);
-    let xp1=c.x+c.r*Math.cos(c.a1);
-    let yp1=c.y+c.r*Math.sin(c.a1);
-    drawPoint(xp1,yp1,"red");
-    let xp2=c.x+c.r*Math.cos(c.a2);
-    let yp2=c.y+c.r*Math.sin(c.a2);
-    drawPoint(xp2,yp2,"yellow",4);
-  }
-}
-var report2=()=>{
-  for (let i=0; i<cua.length; i++) {
-//    ctx.fillStyle="#88880088";
-//    ctx.fill(cua[i].path);
-    ctx.fillStyle="white";
-ctx.fillText(i,cua[i].ca[0].xp2+5,cua[i].ca[0].yp2-5);
-ctx.fillText(cua[i].dist.toFixed(),cua[i].ca[0].xp2+5,cua[i].ca[0].yp2+2);
-console.log(i,cua[i].ca.length,cua[i].dist.toFixed(),(cua[i].dist/8).toFixed(1));
-  }
-}
-*/
-
