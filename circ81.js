@@ -63,6 +63,7 @@ function Point(x,y) {
 function Curve(init) {
   if (init==0) this.inda=[[0,0]];
   else this.inda=[];
+/*
   this.getPath=()=>{
     let p=new Path2D(); 
     let point=pa[this.inda[0][0]][this.inda[0][1]];
@@ -83,6 +84,7 @@ function Curve(init) {
     }
     return p;
   }
+*/
   this.getSegment=(index)=>{
     let p=new Path2D(); 
     if (index==this.inda.length-2) {
