@@ -18,7 +18,6 @@ const ctx=(()=>{
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,CSIZE);
-//ctx.globalCompositeOperation="destination-over";
 ctx.lineCap="round";
 
 onresize=()=>{ 
@@ -56,7 +55,6 @@ function Point(x,y) {
   this.x=x;
   this.y=y;
   this.o=false;
-  this.l=0;
 }
 
 function Curve(init) {
@@ -72,24 +70,43 @@ function Curve(init) {
       p.lineTo(point2.x/2,point2.y/2);
       this.distStart=0;
       this.dist=del/2;
-point.d=del/2;
+      point.d=del/2;
     } else {
-      p.moveTo((point.x+point2.x)/2,(point.y+point2.y)/2);  // not needed
+      p.moveTo((point.x+point2.x)/2,(point.y+point2.y)/2);
     }
     for (let i=1; i<this.inda.length-1; i++) {
       let point=pa[this.inda[i][0]][this.inda[i][1]];
       let point2=pa[this.inda[i+1][0]][this.inda[i+1][1]];
       let pex=(point.x+point2.x)/2;
       let pey=(point.y+point2.y)/2;
-
-      if (this.inda[i-1][0]==this.inda[i+1][0] || this.inda[i-1][1]==this.inda[i+1][1]) {
-	this.dist+=del;
-      point.d=this.dist;
-	 p.lineTo(pex,pey);
+      if (osk) {
+	let point0=pa[this.inda[i-1][0]][this.inda[i-1][1]];
+	let dx=point0.x-point2.x;
+	let dy=point0.y-point2.y;
+	let d=Math.pow(dx*dx+dy*dy,0.5);
+	if (Math.abs(del-d)<1) { // 60 degree
+	  this.dist+=KO2*del;
+	  point.d=this.dist;
+	  p.quadraticCurveTo(point.x,point.y,pex,pey);
+	} else if (Math.abs(2*del-d)<1) { // lineTo
+	  this.dist+=del;
+	  point.d=this.dist;
+	  p.lineTo(pex,pey);
+	} else { 	// 30 degree
+	  this.dist+=KO*del;
+	  point.d=this.dist;
+	  p.quadraticCurveTo(point.x,point.y,pex,pey);
+	}
       } else {
-	this.dist+=K*del;
-	    p.quadraticCurveTo(point.x,point.y,pex,pey);
-      point.d=this.dist;
+	if (this.inda[i-1][0]==this.inda[i+1][0] || this.inda[i-1][1]==this.inda[i+1][1]) {
+	  this.dist+=del;
+	  point.d=this.dist;
+	  p.lineTo(pex,pey);
+	} else {
+	  this.dist+=K*del;
+	  p.quadraticCurveTo(point.x,point.y,pex,pey);
+	  point.d=this.dist;
+	}
       }
     }
     let pointe=pa[this.inda[this.inda.length-1][0]][this.inda[this.inda.length-1][1]];
@@ -98,7 +115,7 @@ point.d=del/2;
     return p;
   }
   this.grow=()=>{
-    for (let i=0; i<MC; i++) {
+    for (let i=0; i<maxSegments; i++) {
       let eix=this.inda[this.inda.length-1][0];
       let eiy=this.inda[this.inda.length-1][1];
       let ma=getMoveArray(eix,eiy);
@@ -106,9 +123,8 @@ point.d=del/2;
       let move=ma[getRandomInt(0,ma.length)];
       this.inda.push(move);
       pa[move[0]][move[1]].o=true;
-//      pa[move[0]][move[1]].l=pa[eix][eiy].l+1;
-// add to this.path here?
     }
+    this.path=this.setPath();
   }
 }
 
@@ -147,7 +163,6 @@ var animate=(ts)=>{
     time=0;
     t=-1;
     if (state==-1) {
-      //time=path.length;
       time=maxDistance;
       ctx.lineWidth=20;
       TF=9; // more?
@@ -155,7 +170,7 @@ var animate=(ts)=>{
       requestAnimationFrame(pause);
       return;
     } else {
-ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+      ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
       time=0
       reset();
       TF=4;
@@ -164,17 +179,6 @@ ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
     draw();
   }
   requestAnimationFrame(animate);
-}
-
-var drawPoint=(x,y,col,r)=>{	// diag
-  ctx.beginPath();
-  let rad=3;
-  if (r) rad=r;
-  ctx.arc(x,y,rad,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
 }
 
 const DUAL=0,QUAD=1,HEX=2;
@@ -194,7 +198,7 @@ var draw=()=>{
   if (state==-1) ctx.strokeStyle="black";
   else ctx.strokeStyle=color.getRGB();
   for (let i=0; i<ca.length; i++) {
-    ctx.lineDashOffset=-time+ca[i].distStart;	// 3 factor with lw==6
+    ctx.lineDashOffset=-time+ca[i].distStart;
       let pth=new Path2D(ca[i].path);
       pth.addPath(pth,dm1);
       pth.addPath(pth,dm2);
@@ -206,39 +210,12 @@ var draw=()=>{
 	pathHex.addPath(pth,dm5);
 	pth.addPath(pathHex);
       }
-  /*
-  ctx.lineWidth=del;
-    ctx.strokeStyle=color.getRGB(0);
-    ctx.stroke(pth);
-  ctx.lineWidth=del+8;
-    ctx.strokeStyle="#00000010";
-  */
     ctx.stroke(pth);
   }
-
-//if (t>maxDistance/TF) stopped=true;
-/*
-  for (let i=0; i<time; i++) {
-  //for (let i=0; i<path.length; i++) {
-    let pth=new Path2D(path[i]);
-    pth.addPath(pth,dm1);
-    pth.addPath(pth,dm2);
-    if (sym==QUAD) {
-      pth.addPath(pth,dm3);
-    } else if (sym==HEX) {
-      let pathHex=new Path2D();
-      pathHex.addPath(pth,dm4);
-      pathHex.addPath(pth,dm5);
-      pth.addPath(pathHex);
-    }
-    ctx.strokeStyle=color.getRGB(i);
-    ctx.stroke(path[i]);
-  }
-*/
 }
 
 var pa=[];
-var MC=24;
+var maxSegments=24;
 
 var deltas=[24,22,26,18,28,14,30,12,32,34,38,42,46];
 
@@ -252,12 +229,11 @@ const generatePoints=()=>{
   pa=[];
   for (let i=0; i<=(CSIZE-osk)/del; i++) {
     pa[i]=[];
-    for (let j=0; j<=CSIZE/del; j++) {
+    for (let j=0; j<=CSIZE/(yf*del); j++) {
       let os=(j%2)?osk:0;
       let x=os+i*del;
       let y=j*del*yf;
       pa[i][j]=new Point(Math.round(x),Math.round(y));
-//pa[i][j]=new Point(x,y);
       if (sym==QUAD) {
         if (Math.atan2(pa[i][j].y,pa[i][j].x)>T45) pa[i][j].o=true;
       } else if (sym==HEX) {
@@ -273,15 +249,18 @@ const generatePoints=()=>{
 }
 
 const mot2=[[0,1],[0,-1],[1,0],[-1,0]];
+const mote=[[0,1],[0,-1],[1,0],[-1,0],[-1,-1],[-1,1]];
+const moto=[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1]];
 const getMoveArray=(xd,yd)=>{
   let ma=[];
-  for (let i=0; i<mot2.length; i++) {
-    let tx=xd+mot2[i][0];
+  let mot=osk?(yd%2)?moto:mote:mot2;
+  for (let i=0; i<mot.length; i++) {
+    let tx=xd+mot[i][0];
     if (tx<0) continue;
     if (tx>pa.length-1) continue;
-    let ty=yd+mot2[i][1];
+    let ty=yd+mot[i][1];
     if (ty<0) continue;
-    if (ty>pa.length-1) continue;
+    if (ty>pa[0].length-1) continue;
     if (pa[tx][ty].o) continue;
     ma.push([tx,ty]);
   }
@@ -317,8 +296,6 @@ const getRandomBranchPath=()=>{
     curve.inda.push(mp.xy);
     let bp=pa[curve.inda[curve.inda.length-1][0]][curve.inda[curve.inda.length-1][1]];
     bp.o=true;
-//    let bp2=pa[curve.inda[curve.inda.length-2][0]][curve.inda[curve.inda.length-2][1]];
-//    bp.l=bp2.l+1;
     return curve;
   }
   return false;
@@ -329,17 +306,16 @@ var ca=[];
 var generateCurveArray=()=>{
   var curve1=new Curve(0);
   curve1.grow();
-curve1.path=curve1.setPath();
   ca=[curve1];
   for (let i=0; i<branchAttempts; i++) {
     let c=getRandomBranchPath();
     if (!c) break;
     c.grow();
-c.path=c.setPath();
     ca.push(c);
   }
 }
 
+/*
 var drawPoints=()=>{
   ctx.globalCompositeOperation="source-over";
   for (let i=0; i<pa.length; i++) {
@@ -354,6 +330,7 @@ ctx.setLineDash([]);
     ctx.stroke(ca[i].path);
   }
 }
+*/
 
 var maxDistance=0;
 const reset=()=>{
@@ -362,41 +339,48 @@ const reset=()=>{
   //del=16*getRandomInt(1,5);
   if (del<22) ctx.lineWidth=7;
   else ctx.lineWidth=8;
-  let skewIdx=0; //getRandomInt(0,3,true); 
-  osk=[0,del/4,del/2][skewIdx];
-  yf=[1,SA2,S6][skewIdx];
+  let skewIdx=getRandomInt(0,2,true); 
+  osk=[0,del/2][skewIdx];
+  yf=[1,S6][skewIdx];
   branchAttempts=getRandomInt(20,120,true);
   generatePoints();
-  MC=Math.floor(getRandomInt(1,7)/2*(pa.length+1));
-//console.log("MC",MC);
+  maxSegments=Math.floor(getRandomInt(1,7)/2*(pa.length+1));
+//console.log("maxSegments",maxSegments);
   generateCurveArray();
   color.randomize();
-//console.log("del "+del,"ba "+branchAttempts,"MC "+MC,"ca "+ca.length);
+//console.log("del "+del,"ba "+branchAttempts,"maxSegments "+maxSegments,"ca "+ca.length);
   maxDistance=0;
   ca.forEach((cu)=>{ maxDistance=Math.max(maxDistance,cu.dist); })
 }
 
 var K=0.81;
+var KO=0.91;	// 30 degree
+var KO2=0.687;	// 60 degree
+
 reset();
 onresize();
+
 /*
+ctx.lineWidth=1;
 ctx.strokeStyle="white";
+time=del/2+K*del;
+ctx.setLineDash([]);
 draw();
 drawPoints();
 //for (let i=0; i<4; i++) {
-drawPoint(del/2,del,"white",8);
-drawPoint(del/2,3*del/2,"white",8);
-drawPoint(del,del/2,"white",8);
+//drawPoint(del/2,del,"white",8);
+//drawPoint(del/2,3*del/2,"white",8);
+drawPoint(del/4,S6*del/2,"white",8);
+drawPoint(del,S6*del,"white",8);
 drawPoint(del,3*del/2,"white",8);
+drawPoint(5*del/4,S6*del/2,"white",8);
 drawPoint(3*del/2,0,"white",8);
 drawPoint(3*del/2,del/2,"white",8);
+drawPoint(2*del,S6*del,"white",8);
 ctx.setLineDash([1,10000]);
 ctx.lineWidth=12;
-ctx.strokeStyle="red";
-ctx.lineDashOffset=-del/2-K*del;
-draw();
-ctx.lineDashOffset=-del/2-2*K*del;
 */
+
 draw();
 start();
 
