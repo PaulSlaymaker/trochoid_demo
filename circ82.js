@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=400;
 const S6=Math.sin(TP/6);
@@ -130,7 +130,7 @@ function Curve(init) {
 
 var pauseTS=1000;
 var pause=(ts)=>{
-  //if (EM) stopped=true;
+  if (EM) stopped=true;
   if (stopped) return;
   if (ts<pauseTS) {
     requestAnimationFrame(pause);
