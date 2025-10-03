@@ -120,9 +120,12 @@ function Curve(init) {
       let eiy=this.inda[this.inda.length-1][1];
       let ma=getMoveArray(eix,eiy);
       if (ma.length==0) break;
-      let move=ma[getRandomInt(0,ma.length)];
-      this.inda.push(move);
-      pa[move[0]][move[1]].o=true;
+      if (trend) sortMotionArray(ma);
+      let move=ma[getRandomInt(0,ma.length,trend)];
+      //this.inda.push(move);
+      //pa[move[0]][move[1]].o=true;
+      this.inda.push(move.xy);
+      pa[move.xy[0]][move.xy[1]].o=true;
     }
     this.path=this.setPath();
   }
@@ -190,7 +193,7 @@ const dm3=new DOMMatrix([0,1,1,0,0,0]);
 const dm4=new DOMMatrix([0.5,S6,-S6,0.5,0,0])
 const dm5=new DOMMatrix([-0.5,S6,-S6,-0.5,0,0])
 
-var TF=4;
+var TF=4;	// time factor
 
 ctx.setLineDash([1,10000]);
 ctx.lineWidth=6;
@@ -238,7 +241,6 @@ const generatePoints=()=>{
         if (Math.atan2(pa[i][j].y,pa[i][j].x)>T45) pa[i][j].o=true;
       } else if (sym==HEX) {
         if (Math.atan2(pa[i][j].y,pa[i][j].x)>T30) pa[i][j].o=true;
-//        if (i>Math.floor((CSIZE-osk)/del)-2) pa[i][j].o=true;
         if (pa[i][j].x>S6*(CSIZE-osk)) pa[i][j].o=true;
       }
     }
@@ -251,7 +253,7 @@ const generatePoints=()=>{
 const mot2=[[0,1],[0,-1],[1,0],[-1,0]];
 const mote=[[0,1],[0,-1],[1,0],[-1,0],[-1,-1],[-1,1]];
 const moto=[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1]];
-const getMoveArray=(xd,yd)=>{
+const getMoveArray=(xd,yd,curveIndex)=>{
   let ma=[];
   let mot=osk?(yd%2)?moto:mote:mot2;
   for (let i=0; i<mot.length; i++) {
@@ -262,9 +264,19 @@ const getMoveArray=(xd,yd)=>{
     if (ty<0) continue;
     if (ty>pa[0].length-1) continue;
     if (pa[tx][ty].o) continue;
-    ma.push([tx,ty]);
+    ma.push({"xy":[tx,ty],"cidx":curveIndex});
+    //ma.push([tx,ty]);
   }
   return ma;
+}
+
+const sortMotionArray=(ma)=>{
+  if (trend==TRENDYS) ma.sort((a,b)=>{ return a.xy[1]-b.xy[1]; });
+  else if (trend==TRENDYA) ma.sort((a,b)=>{ return b.xy[1]-a.xy[1]; });
+  else if (trend==TRENDXS) ma.sort((a,b)=>{ return a.xy[0]-b.xy[0]; });
+  else if (trend==TRENDXA) ma.sort((a,b)=>{ return b.xy[0]-a.xy[0]; });
+  else if (trend==TRENDXYS) ma.sort((a,b)=>{ return a.xy[0]+a.xy[1]-b.xy[0]-b.xy[1]; });
+  else if (trend==TRENDXYA) ma.sort((a,b)=>{ return b.xy[0]+b.xy[1]-a.xy[0]-a.xy[1]; });
 }
 
 const getRandomBranchPath=()=>{
@@ -274,20 +286,28 @@ const getRandomBranchPath=()=>{
     let ma=[];
     for (let i=1; i<ca[idx].inda.length; i++) {
       if (i==ca[idx].inda.length-1) continue;
-      for (let j=0; j<mot2.length; j++) {
-	let tx=ca[idx].inda[i][0]+mot2[j][0];
+      let xd=ca[idx].inda[i][0];
+      let yd=ca[idx].inda[i][1];
+
+/*
+      let mot=osk?(yd%2)?moto:mote:mot2;
+      for (let j=0; j<mot.length; j++) {
+	let tx=xd+mot[j][0];
 	if (tx<0) continue;
 	if (tx>pa.length-1) continue;
-	let ty=ca[idx].inda[i][1]+mot2[j][1];
+	let ty=yd+mot[j][1];
 	if (ty<0) continue;
 	if (ty>pa.length-1) continue;
 	if (pa[tx][ty].o) continue;
-	ma.push({"xy":[tx,ty],"cidx":i});
+        let maObj={"xy":[tx,ty],"cidx":i};
+	ma.push(maObj);
       }
+*/
+      ma=ma.concat(getMoveArray(xd,yd,i));
     }
     if (ma.length==0) continue;
-    let mp=ma[getRandomInt(0,ma.length)];
-    let point=pa[mp.xy[0]][mp.xy[1]];
+    if (trend) sortMotionArray(ma);
+    let mp=ma[getRandomInt(0,ma.length,trend)];
     let curve=new Curve();
     curve.distStart=pa[ca[idx].inda[mp.cidx-1][0]][ca[idx].inda[mp.cidx-1][1]].d;
     curve.dist=curve.distStart;
@@ -333,8 +353,10 @@ ctx.setLineDash([]);
 */
 
 var maxDistance=0;
+const NONE=0,TRENDXS=1,TRENDYS=2,TRENDXA=3,TRENDYA=4, TRENDXYS=5, TRENDXYA=6;
+var trend=0;
 const reset=()=>{
-  sym=getRandomInt(0,3);
+  sym=getRandomInt(0,3,true);
   del=deltas[getRandomInt(0,deltas.length,true)];
   //del=16*getRandomInt(1,5);
   if (del<22) ctx.lineWidth=7;
@@ -344,8 +366,9 @@ const reset=()=>{
   yf=[1,S6][skewIdx];
   branchAttempts=getRandomInt(20,120,true);
   generatePoints();
-  maxSegments=Math.floor(getRandomInt(1,7)/2*(pa.length+1));
+  maxSegments=Math.floor(getRandomInt(1,8)/2*(pa.length+1));
 //console.log("maxSegments",maxSegments);
+  trend=getRandomInt(0,7);
   generateCurveArray();
   color.randomize();
 //console.log("del "+del,"ba "+branchAttempts,"maxSegments "+maxSegments,"ca "+ca.length);
@@ -393,7 +416,3 @@ var showO=()=>{
   } 
 }
 */
-
-//showO();
-
-// internalize ca
