@@ -1,8 +1,10 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-const EM=location.href.endsWith("em");
+//const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
+const S6=Math.sin(TP/6);
+const S8=Math.sin(TP/8);
 const CSIZE=360;
 
 const ctx=(()=>{
@@ -11,7 +13,7 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
+//c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -48,9 +50,12 @@ function Color() {
   this.randomize();
 }
 
+const QUAD=4,HEX=6;
+var SYM=[QUAD,HEX][getRandomInt(0,2)];
 var COUNT=2*getRandomInt(3,8)+1;	// always odd
-var R=(CSIZE-16)/(COUNT-1);	// 3
+//var R=(CSIZE-16)/(COUNT-1);	// 3
 //var R=(CSIZE-24)/(COUNT-1);	// 4
+var R=(CSIZE-((SYM==HEX)?132:16))/(COUNT-1);
 
 function Node(i,j,x,y) {
   this.i=i;
@@ -73,7 +78,6 @@ function DPath() {
   this.pa=[];
   this.state=[-1,0,1][getRandomInt(0,3)];
   this.setStart=()=>{
-    // create usable na array
     let rx=getRandomInt(0,COUNT), ry=getRandomInt(0,COUNT);
     let sp=na[rx][ry];
     while (!sp.d) {
@@ -109,7 +113,6 @@ function DPath() {
         return true;
       }
     }
-debugger;
     return false;
   }
   this.getPath=(start,end)=>{
@@ -131,7 +134,8 @@ debugger;
           if (this.pa[i].dir==1) p.arc(cnode.x,cnode.y,R,TP/4,0,true);
           else p.arc(cnode.x,cnode.y,R,TP/4,TP/2);
           p.dist+=R*Math.PI/2;
-        } else debugger;
+        } 
+//else debugger;
       } else {	// vertical
         if (this.pa[i].node.i==this.pa[i+1].node.i) {
           p.lineTo(this.pa[i+1].node.x,this.pa[i+1].node.y);
@@ -146,7 +150,8 @@ debugger;
           if (this.pa[i].dir==1) p.arc(cnode.x,cnode.y,R,0,TP/4);
           else p.arc(cnode.x,cnode.y,R,0,3*TP/4,true);
           p.dist+=R*Math.PI/2;
-        } //else debugger;
+        } 
+//else debugger;
       } 
     }
     return p;
@@ -160,7 +165,7 @@ debugger;
 	p.dist=R;
       } else if (this.pa[1].node.j-this.pa[0].node.j==1) {
 	let cnode=na[this.pa[0].node.i][this.pa[0].node.j+1];
-	if (this.pa[0].dir==1) p.arc(cnode.x,cnode.y,R,0,3*TP/4,true); // move to outside?
+	if (this.pa[0].dir==1) p.arc(cnode.x,cnode.y,R,0,3*TP/4,true);
 	else p.arc(cnode.x,cnode.y,R,TP/2,3*TP/4);
 	p.dist=R*Math.PI/2;
       } else if (this.pa[1].node.j-this.pa[0].node.j==-1) {
@@ -168,7 +173,8 @@ debugger;
 	if (this.pa[0].dir==1) p.arc(cnode.x,cnode.y,R,0,TP/4);
 	else p.arc(cnode.x,cnode.y,R,TP/2,TP/4,true);
 	p.dist=R*Math.PI/2;
-      } //else debugger;
+      } 
+//else debugger;
     } else {	// vertical
       if (this.pa[0].node.i==this.pa[1].node.i) {
 	p.lineTo(this.pa[0].node.x,this.pa[0].node.y);
@@ -183,11 +189,29 @@ debugger;
 	if (this.pa[0].dir==1) p.arc(cnode.x,cnode.y,R,TP/4,0,true);	// v,left,down
 	else p.arc(cnode.x,cnode.y,R,3*TP/4,0);
 	p.dist=R*Math.PI/2;
-      } //else debugger;
+      } 
+//else debugger;
     } 
     return p;
   }
-  this.sym=(pth)=>{
+
+  this.symh=(pth)=>{
+    const dmx=new DOMMatrix([-1,0,0,1,0,0]);
+    const dmr=new DOMMatrix([S8,-S8,S8,S8,0,0]);
+    //const dm1=new DOMMatrix([S8,-S8,S8,S8,0,0]).skewXSelf(15).skewYSelf(15);
+    const dm1=dmr.multiply(new DOMMatrix([1,Math.tan(TP/24),Math.tan(TP/24),1,0,0]));
+    const dm2=new DOMMatrix([0.5,S6,S6,-0.5,0,0]);
+    const dm3=new DOMMatrix([-0.5,S6,-S6,-0.5,0,0]);
+    let p=new Path2D();
+    p.addPath(pth,dm1);
+    p.addPath(p,dmx);
+    let p2=new Path2D(p);
+    p2.addPath(p,dm2);
+    p2.addPath(p,dm3);
+    p2.dist=pth.dist;
+    return p2;
+  }
+  this.symq=(pth)=>{
     const dmx=new DOMMatrix([-1,0,0,1,0,0]);
     const dmy=new DOMMatrix([1,0,0,-1,0,0]);
     let p=new Path2D(pth);
@@ -196,19 +220,15 @@ debugger;
     p.dist=pth.dist;
     return p;
   }
+  this.sym=((SYM==HEX)?this.symh:this.symq);
   this.setPaths=()=>{
     //this.path=this.getPath(0,this.pa.length-1);
     this.head=this.getPath(this.pa.length-2,this.pa.length-1);
     this.body=this.getPath(1,this.pa.length-2);
-    //this.tail=this.getPath(0,1);
     this.tail=this.getTail();
-//if (isNaN(this.tail.dist)) debugger;
     this.head=this.sym(this.head);
     this.body=this.sym(this.body);
     this.tail=this.sym(this.tail);
-    this.fpath=new Path2D(this.tail);
-    this.fpath.addPath(this.body);
-    this.fpath.addPath(this.head);
   }
   this.setStart();
   for (let i=0; i<getRandomInt(MINLENGTH,MAXLENGTH); i++) { if (!this.generate()) break; }
@@ -229,11 +249,8 @@ var generateNodes=()=>{
           arr[i][j].d="h";
         } else {
           if (i!=0 && i!=COUNT-1) {
-            if (j!=0 && j!=COUNT-1) {
-              arr[i][j].d=Math.random()<0.5?"v":"h";
-            } else {
-              arr[i][j].d="h";
-            }
+            if (j!=0 && j!=COUNT-1) arr[i][j].d=Math.random()<0.5?"v":"h";
+            else arr[i][j].d="h";
           } else {
             if (j!=0 && j!=COUNT-1) {
               arr[i][j].d="v";
@@ -261,9 +278,7 @@ var start=()=>{
 }
 body.addEventListener("click", start, false);
 
-//const states=[[0,1],[-1,1],[0,-1]];
-//const states=[[-1,-1],[-1,-1],[1,1]];
-var DUR=R/3;
+var DUR=R/((SYM==HEX)?2:3);
 //var DUR=R;
 var t=0;
 var c=0;
@@ -314,15 +329,11 @@ var animate=(ts)=>{
 }
 
 var draw=()=>{
+  const lw=[32,18,4];
   let f=t/DUR;
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE)
-  //let lw=[34,20,6];
-  let lw=[32,18,4];
-  //let lw=[46,32,18,4];
   for (let i=0; i<pArray.length; i++) {
     for (let j=i?0:1; j<3; j++) {
-      //ctx.strokeStyle=["#000000C0",pArray[i].col.getRGB()][j];
-      //ctx.strokeStyle=[pArray[i].col.getRGB(),"#000000C0"][j];
       ctx.strokeStyle=["#000000",pArray[i].col.getRGB(),"#000000"][j];
       let lineWidth=[lw[i]+7,lw[i],lw[i]-10][j];
       if (lineWidth<1) break;
@@ -374,7 +385,6 @@ for (let i=0; i<path1.pa.length; i++) {
 //  drawPoint(path1.pa[0].node.x,path1.pa[0].node.y,"blue",2);
 }
 */
-
   for (let i=0; i<pArray.length; i++) {
     //let path=pArray[i].getPath(0,pArray[i].pa.length-1);
     ctx.lineWidth=3;
