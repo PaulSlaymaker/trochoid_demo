@@ -11,12 +11,10 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
 ctx.translate(CSIZE,CSIZE);
-//ctx.lineCap="round";
 
 onresize=()=>{ 
   let D=Math.min(window.innerWidth,window.innerHeight)-40; 
@@ -298,19 +296,6 @@ const fill=()=>{
 reset();
 onresize();
 
-/*
-if (fixSingletons()) {
-  console.log("sing1")
-  if (fixSingletons()) {
-    console.log("sing2");
-    console.log("sing3",fixSingletons());
-  }
-} else {
-  console.log("nosing");
-}
-fill();
-*/
-
 var drawLines=()=>{
   ctx.lineWidth=1;
   ctx.beginPath();
@@ -333,15 +318,3 @@ var drawPoints=()=>{
 }
 
 start();
-//draw();
-//drawLines();
-//drawPoints();
-
-// cl code
-// path sets
-// finish pm
-// fix singleton
-// triangles, hexes, mixed
-// dual lines
-// offset lines, (connections), shift to points
-// unequal squares, (half/whole for ex., and random, (half min?))
