@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(TP/6);
 const S8=Math.sin(TP/8);
@@ -13,7 +13,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-//c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -69,9 +68,7 @@ const getRandomDirArray=()=>{
   return [[-1,0,1],[-1,1,0],[0,-1,1],[0,1,-1],[-1,0,1],[-1,1,0]][getRandomInt(0,6)];
 }
 
-//const MAXLENGTH=30;	// fct of COUNT?
 const MAXLENGTH=Math.round(2.5*COUNT);
-console.log("maxlength",MAXLENGTH);
 const MINLENGTH=3;
 function DPath() {
   this.col=new Color();
@@ -91,8 +88,6 @@ function DPath() {
     let gn=this.pa[this.pa.length-1];
     let da=getRandomDirArray();
     if (gn.node.d=="h") {
-      //let ix=gn.node.i+gn.dir;
-//if (ix<0 || ix+1>COUNT) debugger;
       for (let k=0; k<3; k++) {
 	if (gn.node.j+da[k]<0 || gn.node.j+da[k]+1>COUNT) continue;
         let gn2=na[gn.node.i+gn.dir][gn.node.j+da[k]];
@@ -102,8 +97,6 @@ function DPath() {
         return true;
       }
     } else {
-      //let iy=gn.node.j+gn.dir;
-//if (iy<0 || iy+1>COUNT) debugger;
       for (let k=0; k<3; k++) {
 	if (gn.node.i+da[k]<0 || gn.node.i+da[k]+1>COUNT) continue;
         let gn2=na[gn.node.i+da[k]][gn.node.j+gn.dir];
@@ -135,7 +128,6 @@ function DPath() {
           else p.arc(cnode.x,cnode.y,R,TP/4,TP/2);
           p.dist+=R*Math.PI/2;
         } 
-//else debugger;
       } else {	// vertical
         if (this.pa[i].node.i==this.pa[i+1].node.i) {
           p.lineTo(this.pa[i+1].node.x,this.pa[i+1].node.y);
@@ -151,7 +143,6 @@ function DPath() {
           else p.arc(cnode.x,cnode.y,R,0,3*TP/4,true);
           p.dist+=R*Math.PI/2;
         } 
-//else debugger;
       } 
     }
     return p;
@@ -174,7 +165,6 @@ function DPath() {
 	else p.arc(cnode.x,cnode.y,R,TP/2,TP/4,true);
 	p.dist=R*Math.PI/2;
       } 
-//else debugger;
     } else {	// vertical
       if (this.pa[0].node.i==this.pa[1].node.i) {
 	p.lineTo(this.pa[0].node.x,this.pa[0].node.y);
@@ -190,7 +180,6 @@ function DPath() {
 	else p.arc(cnode.x,cnode.y,R,3*TP/4,0);
 	p.dist=R*Math.PI/2;
       } 
-//else debugger;
     } 
     return p;
   }
@@ -198,7 +187,6 @@ function DPath() {
   this.symh=(pth)=>{
     const dmx=new DOMMatrix([-1,0,0,1,0,0]);
     const dmr=new DOMMatrix([S8,-S8,S8,S8,0,0]);
-    //const dm1=new DOMMatrix([S8,-S8,S8,S8,0,0]).skewXSelf(15).skewYSelf(15);
     const dm1=dmr.multiply(new DOMMatrix([1,Math.tan(TP/24),Math.tan(TP/24),1,0,0]));
     const dm2=new DOMMatrix([0.5,S6,S6,-0.5,0,0]);
     const dm3=new DOMMatrix([-0.5,S6,-S6,-0.5,0,0]);
@@ -222,7 +210,6 @@ function DPath() {
   }
   this.sym=((SYM==HEX)?this.symh:this.symq);
   this.setPaths=()=>{
-    //this.path=this.getPath(0,this.pa.length-1);
     this.head=this.getPath(this.pa.length-2,this.pa.length-1);
     this.body=this.getPath(1,this.pa.length-2);
     this.tail=this.getTail();
@@ -303,7 +290,6 @@ var animate=(ts)=>{
         dpath.generate();
       } else {
 	if (Math.random()<[0.05,0.01,0.05][dpath.state+1]) {
-//console.log("midshift",i,"state",dpath.state);
 	  if (dpath.state==-1) {
 	    dpath.state=[0,1][getRandomInt(0,2)];
 	    dpath.pa.shift();
@@ -323,6 +309,7 @@ var animate=(ts)=>{
       }
       dpath.setPaths();
     }
+if (EM) stopped=true;
   }
   draw();
   requestAnimationFrame(animate);
@@ -348,62 +335,8 @@ var draw=()=>{
   }
 }
 
-var drawPoint=(x,y,col,r)=>{	// diag
-  ctx.beginPath();
-  let rad=r?r:3;
-  ctx.arc(x,y,rad,0,TP);
-  ctx.closePath();
-  if (col) ctx.fillStyle=col;
-  else ctx.fillStyle="red";
-  ctx.fill();
-}
-
 onresize();
-
-var drawNodes=()=>{	// diag
-  for (let i=0; i<COUNT; i++) {
-    for (let j=0; j<COUNT; j++) {
-      let col="";
-      if (na[i][j].d=="h") col="green";
-      else if (na[i][j].d=="v") col="yellow";
-//else if (na[i][j].d=="q") col="blue";
-//else if (na[i][j].d=="p") col="cyan";
-//else if (na[i][j].d=="p2") col="magenta";
-      drawPoint(na[i][j].x,na[i][j].y,col,4);
-    }
-  }
-}
 
 var pArray=[new DPath(),new DPath(),new DPath()];
 
-var showPoints=()=>{	// diag
-  drawNodes();
-/*
-for (let i=0; i<path1.pa.length; i++) {
-  let col=(i==0)?"blue":"magenta";
-  drawPoint(path1.pa[i].node.x,path1.pa[i].node.y,col,2);
-//  drawPoint(path1.pa[0].node.x,path1.pa[0].node.y,"blue",2);
-}
-*/
-  for (let i=0; i<pArray.length; i++) {
-    //let path=pArray[i].getPath(0,pArray[i].pa.length-1);
-    ctx.lineWidth=3;
-    ctx.strokeStyle="#FFFFFF80";
-    ctx.stroke(pArray[i].head);
-    ctx.stroke(pArray[i].body);
-    ctx.stroke(pArray[i].tail);
-//let col=(i==0)?"blue":"magenta";
-//drawPoint(path1.pa[i].node.x,path1.pa[i].node.y,col,2);
-drawPoint(pArray[i].pa[0].node.x,pArray[i].pa[0].node.y,"blue",2);
-console.log("pcount",pArray[i].pa.length);
-  }
-}
-
-//showPoints();
 start();
-
-// cl code
-// triangles, hexes, mixed
-// offset lines, (connections), shift to points
-// unequal squares, (half/whole for ex., and random, (half min?))
-// in/out trend (not for continuous generation)
