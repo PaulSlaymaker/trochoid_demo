@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(TP/6);
 const TC=2*S6/3;
@@ -518,6 +518,7 @@ generatePathTables();
 var pauseTS=1000;
 var pauseCount=0;
 var pause=(ts)=>{
+  if (EM) stopped=true;
   if (stopped) return;
   if (ts<pauseTS) {
     requestAnimationFrame(pause);
