@@ -4,6 +4,7 @@ body.style.background="#000";
 //const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(TP/6);
+const S8=Math.sin(TP/8);
 const CSIZE=360;
 
 const ctx=(()=>{
@@ -33,24 +34,25 @@ function Color() {
   const CBASE=176;
   const CT=256-CBASE;
   this.getRGB=()=>{
-    let red=Math.round(CBASE+CT*Math.cos(this.RK2+c/this.RK1));
-    let grn=Math.round(CBASE+CT*Math.cos(this.GK2+c/this.GK1));
-    let blu=Math.round(CBASE+CT*Math.cos(this.BK2+c/this.BK1));
+    let red=Math.round(CBASE+CT*Math.cos(this.RK2+c/this.RK1+c/this.RK3));
+    let grn=Math.round(CBASE+CT*Math.cos(this.GK2+c/this.GK1+c/this.GK3));
+    let blu=Math.round(CBASE+CT*Math.cos(this.BK2+c/this.BK1+c/this.BK3));
     return "rgb("+red+","+grn+","+blu+")";
   }
   this.randomize=()=>{
-    this.RK1=100+400*Math.random();
-    this.GK1=100+400*Math.random();
-    this.BK1=100+400*Math.random();
+    this.RK1=20+80*Math.random();
+    this.GK1=20+80*Math.random();
+    this.BK1=20+80*Math.random();
     this.RK2=TP*Math.random();
     this.GK2=TP*Math.random();
     this.BK2=TP*Math.random();
+    this.RK3=Math.random()<0.2?0.1+0.4*Math.random():200;
+    this.GK3=Math.random()<0.2?0.1+0.4*Math.random():200;
+    this.BK3=Math.random()<0.2?0.1+0.4*Math.random():200;
   }
   this.randomize();
 }
-//const color=new Color();
-const cola=[new Color(),new Color(),new Color()];
-
+const color=new Color();
 
 const roulette=(n)=>{	// roulette function
   let mult=2*n+1;
@@ -59,11 +61,11 @@ const roulette=(n)=>{	// roulette function
 // 5-24, 7-48, 9-80, 11-120, 13-168, 15-224, 17-288	A-B
 }
 
-var roul=10;
+var roul=12;
 var {mult,res}=roulette(roul);
-
 //var res=80;
 //var mult=9;
+
 const getRadiusArray=()=>{
   let a=new Array();
   for (let i=0; i<roul+2; i++) {
@@ -75,25 +77,6 @@ const getRadiusArray=()=>{
   return a;
 }
 var ra=getRadiusArray();
-/*
-var ra=new Array();	// ?  6=(A+1)/2+1, or n+2
-for (let i=0; i<roul+2; i++) {
-  let z=i*TP/res;
-  let x=CSIZE/2*(Math.cos(z)-Math.cos(mult*z));
-  let y=CSIZE/2*(Math.sin(z)-Math.sin(mult*z));
-  let r=Math.pow(x*x+y*y,0.5);
-  ra[i]=r;
-}
-*/
-var RES2=120;
-var ra2=new Array(7);
-for (let i=0; i<7; i++) {
-  let z=i*TP/RES2;
-  let x=CSIZE/2*(Math.cos(z)-Math.cos(11*z));
-  let y=CSIZE/2*(Math.sin(z)-Math.sin(11*z));
-  let r=Math.pow(x*x+y*y,0.5);
-  ra2[i]=r;
-}
 
 function Point(i,j) {
   this.l=i+1;
@@ -105,168 +88,125 @@ function Point(i,j) {
   this.y=ra[i+1]*Math.sin(this.a);
 }
 
-function Point2(i,j) {
-  this.l=i+1;
-  this.j=j;
-  this.a=j*TP/10+((i%2)?0:TP/20);	// 10=A-1
-  this.x=ra2[i+1]*Math.cos(this.a);
-  this.y=ra2[i+1]*Math.sin(this.a);
-}
+var MINLEN=3; //4;	// >4 unstable
+var MAXLEN=20;
+var SYM=4;
 
-function DPath() {
-//  this.color=new Color();
+function DPath(st) {
   this.pa=[];
-  this.ss=true; //Math.random()<0.5; //getRandomInt(0,4);	// move after sfa
   this.lw=2+6*getRandomInt(0,2,true);
-  this.setStart=()=>{
-    let idl=7; //getRandomInt(0,na.length); 
-    let ida=getRandomInt(0,na[idl].length); 
-    let dir=1; //[-1,1][getRandomInt(0,2)];
-    this.pa.push({"node":na[idl][ida],"dir":dir});
-    let npa=na[idl][ida].getNextPathArray(dir);
-    this.pa.push(npa[getRandomInt(0,npa.length)]);
+  this.startDist=0;
+
+/*
+  this.setStartN=()=>{
+    let idl=getRandomInt(0,na.length);
+    for (let i=0; i<na.length; i++) {
+      let idxl=(idl+i)%na.length;
+      let ida=getRandomInt(0,na[idxl].length);
+      let idxa=(ida+j)%na[idxl].length;
+      for (let j=0; j<na[idxl].length; j++) {
+      }
+    }
+    return false;
   }
-  this.generate=()=>{
+*/
+
+  this.setStart=()=>{
+    let idl=0; //getRandomInt(0,na.length); // cycle through na
+    let ida=getRandomInt(0,24/SYM);
+    //let ida=getRandomInt(0,na[idl].length); 
+    let dir=[-1,1][getRandomInt(0,2)];
+    //let dsi=(dir==-1)?0:1;
+    let dist=(dir==-1)?da[0]:da[1];
+    this.pa.push({"node":na[idl][ida],"dir":dir,"dist":dist});
+    na[idl][ida].o=1;
+  }
+  this.draw=()=>{	// diag
+    ctx.strokeStyle="red";
+    ctx.stroke(this.getPath(0,this.pa.length));
+  }
+  this.generate=()=>{		// pass gn?
     let gn=this.pa[this.pa.length-1];
+//if (isNaN(gn.dist)) debugger;
     let npa=gn.node.getNextPathArray(gn.dir);
-    let nextPath=npa[getRandomInt(0,npa.length,Math.random()<0.3)];
-    //this.pa.push(npa[getRandomInt(0,npa.length)]);
+    if (npa.length==0) return false;
+    //let nextPath=npa[getRandomInt(0,npa.length,Math.random()<0.3)];
+    let nextPath=npa[getRandomInt(0,npa.length)];
+    //let nextPath=npa[npa.length-1-getRandomInt(0,npa.length,true)];
+if (nextPath==undefined) debugger;
     this.pa.push(nextPath);
     nextPath.node.o++;
+//    nextPath.dist=da[nextPath.dsi]+gn.dist;
+nextPath.dist=nextPath.dist+gn.dist;
+    return true;
   }
+/*
+  this.getDistance=(i1,i2)=>{
+    let dist=0;
+    for (let i=i1; i<i2; i++) {
+      dist+=da[this.pa[i].dsi];
+    }
+    return dist;
+  }
+*/
   this.getPath=(i1,i2)=>{
     let p=new Path2D();
-    p.dist=0;
     let node=this.pa[i1].node;
-    let x=(node.p1.x+node.p2.x)/2;
-    let y=(node.p1.y+node.p2.y)/2;
-drawPoint(x,y);
-    p.moveTo(x,y);
+//    if (node.p1==point0) { }  //special case
+    //let x=(node.p1.x+node.p2.x)/2; let y=(node.p1.y+node.p2.y)/2;
+//drawPoint(node.x,node.y,"yellow",4);
+    p.moveTo(node.x,node.y);
     for (let i=i1+1; i<i2; i++) {
 //if (this.pa[i]==undefined) debugger;
       node=this.pa[i].node;
-      x=(node.p1.x+node.p2.x)/2;
-      y=(node.p1.y+node.p2.y)/2;
-      node=this.pa[i-1].node;
+      let nodeb=this.pa[i-1].node;
       if (this.pa[i-1].dir==-1) {
-	p.quadraticCurveTo(node.p1.x,node.p1.y,x,y);
+	p.quadraticCurveTo(nodeb.p1.x,nodeb.p1.y,node.x,node.y);
       } else {
-	p.quadraticCurveTo(node.p2.x,node.p2.y,x,y);
+	p.quadraticCurveTo(nodeb.p2.x,nodeb.p2.y,node.x,node.y);
       }
-let dist=da[this.pa[i].dsi];
-if (dist==undefined) dist=50;
-p.dist+=dist;
     }
     return p;
-  }
-/*
-  this.getHead=()=>{
-    let p=new Path2D();
-    let dist=da[this.pa[this.pa.length-1].dsi];
-    if (dist==undefined) dist=70;
-    p.dist=dist;
-    let node1=this.pa[this.pa.length-2].node;
-    let node2=this.pa[this.pa.length-1].node;
-    let x=(node1.p1.x+node1.p2.x)/2;
-    let y=(node1.p1.y+node1.p2.y)/2;
-    p.moveTo(x,y);
-    x=(node2.p1.x+node2.p2.x)/2;
-    y=(node2.p1.y+node2.p2.y)/2;
-    if (this.pa[this.pa.length-2].dir==-1) {
-      p.quadraticCurveTo(node1.p1.x,node1.p1.y,x,y);
-    } else {
-      //p.quadraticCurveTo(node2.p2.x,node2.p2.y,x,y);
-p.quadraticCurveTo(node1.p2.x,node1.p2.y,x,y);
-    }
-    return p;
-  }
-*/
-  this.getTail=()=>{
-    let p=new Path2D();
-    let dist=da[this.pa[1].dsi];
-    if (dist==undefined) dist=50;
-    p.dist=dist;
-    let node1=this.pa[1].node;
-    let node2=this.pa[0].node;
-    let x=(node1.p1.x+node1.p2.x)/2;
-    let y=(node1.p1.y+node1.p2.y)/2;
-    p.moveTo(x,y);
-    x=(node2.p1.x+node2.p2.x)/2;
-    y=(node2.p1.y+node2.p2.y)/2;
-//console.log(this.pa[0].dir);
-    //if (node1.l==node2.l) {
-    if (this.pa[0].dir==-1) {
-drawPoint(node2.p1.x,node2.p1.y,"blue");
-      p.quadraticCurveTo(node2.p1.x,node2.p1.y,x,y);
-    } else {
-drawPoint(node2.p2.x,node2.p2.y,"blue");
-      p.quadraticCurveTo(node2.p2.x,node2.p2.y,x,y);
-    }
-    return p;
-  }
-  this.setCompact=()=>{
-    if (this.pa[0].node.o>1 && this.pa[this.pa.length-1].node.o>1) {
-      if (this.pa[0].node!=this.pa[this.pa.length-1].node) this.compact=true;
-      return true;
-    }
-    this.compact=false;
-    return false;
-  }
-  this.sym=(pth)=>{
-    const dmr1=new DOMMatrix([0.5,S6,-S6,0.5,0,0]);
-    const dmr2=new DOMMatrix([-0.5,S6,-S6,-0.5,0,0]);
-    const dmr3=new DOMMatrix([-1,0,0,-1,0,0]);
-    const dmr4=new DOMMatrix([-1,0,0,1,0,0]);
-    //const dmr1=new DOMMatrix([S6,0.5,-0.5,S6,0,0]);
-    let p=new Path2D(pth);
-    p.addPath(pth,dmr1);
-    p.addPath(pth,dmr2);
-    p.addPath(p,dmr3);
-    p.addPath(p,dmr4);
-    p.dist=pth.dist;
-    return p;
-  }
-  this.symO=(pth)=>{
-    const dmx=new DOMMatrix([-1,0,0,1,0,0]);
-    const dmy=new DOMMatrix([1,0,0,-1,0,0]);
-//    const dmr2=new DOMMatrix([-0.5,S6,-S6,-0.5,0,0]);
-//    const dmr3=new DOMMatrix([-0.5,-S6,S6,-0.5,0,0]);
-    let p=new Path2D(pth);
-    p.addPath(p,dmx);
-    p.addPath(p,dmy);
-p.dist=pth.dist;
-return p;
-//let p=new Path2D(pth);
-//p.addPath(p,dmy);
-/*
-    let p2=new Path2D(p);
-    p2.addPath(p,dmr2);
-    p2.addPath(p,dmr3);
-    p2.dist=pth.dist;
-    return p2;
-*/
   }
   this.setPaths=()=>{
-    this.tail=this.getTail();
-    //this.head=this.getHead(); //this.getPath(this.pa.length-2,this.pa.length-1);
-    this.head=this.getPath(this.pa.length-2,this.pa.length);
-    this.body=this.getPath(1,this.pa.length-1);
-//if (this.ss) {
-    this.tail=this.symO(this.tail);
-    this.head=this.symO(this.head);
-    this.body=this.symO(this.body);
-/*
-} else {
-    this.tail=this.sym(this.tail);
-    this.head=this.sym(this.head);
-    this.body=this.sym(this.body);
-}
-*/
+    const dmx=new DOMMatrix([-1,0,0,1,0,0]);
+    const dmy=new DOMMatrix([1,0,0,-1,0,0]);
+    const dmr3=new DOMMatrix([-0.5,S6,-S6,-0.5,0,0]);
+    const dmr4=new DOMMatrix([0,1,-1,0,0,0]);
+    this.tpath=this.getPath(0,this.pa.length);
+    if (SYM==1) {
+       this.path=new Path2D(this.tpath);
+    } else if (SYM==4) {
+      this.path=new Path2D(this.tpath);
+      this.path.addPath(this.path,dmx);
+      this.path.addPath(this.path,dmy);
+    } else if (SYM==6) {
+      let p=new Path2D();
+      p.addPath(this.tpath,new DOMMatrix([S6,0.5,-0.5,S6,0,0]));
+      p.addPath(p,dmx);
+      this.path=new Path2D(p);
+      this.path.addPath(p,dmr3);
+      this.path.addPath(p,new DOMMatrix([-0.5,-S6,S6,-0.5,0,0]));
+    } else if (SYM==8) {
+      this.path=new Path2D(this.tpath);
+      this.path.addPath(this.path,dmx);
+      this.path.addPath(this.path,dmy);
+      this.path.addPath(this.path,dmr4);
+    } else {
+      this.path=new Path2D(this.tpath);
+      this.path.addPath(this.tpath,new DOMMatrix([0.5,S6,-S6,0.5,0,0]));
+      this.path.addPath(this.tpath,dmr3);
+      this.path.addPath(this.path,dmx);
+      this.path.addPath(this.path,dmy);
+    }
   }
-  this.setStart();
-  for (let i=0; i<7; i++) this.generate();
-//this.path=this.getPath(0,this.pa.length);
-  this.setPaths();
+  if (st) {
+    this.setStart();
+    for (let i=0; i<MAXLEN; i++) {
+      if (!this.generate()) break;
+    }
+    this.setPaths();
+  }
 }
 
 var drawPoint=(x,y,col,r)=>{	// diag
@@ -279,24 +219,10 @@ var drawPoint=(x,y,col,r)=>{	// diag
   ctx.fill();
 }
 
-var pauseTS=1000;
-var pauseCount=0;
-var pause=(ts)=>{
-  if (stopped) return;
-  if (ts<pauseTS) {
-    requestAnimationFrame(pause);
-  } else {
-    requestAnimationFrame(animate);
-  }
-}
-
 var stopped=true;
 var start=()=>{
   if (stopped) { 
     stopped=false;
-//ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-//ctx.setLineDash([1,2000]);
-ctx.lineWidth=3;
     requestAnimationFrame(animate);
   } else {
     stopped=true;
@@ -304,62 +230,75 @@ ctx.lineWidth=3;
 }
 body.addEventListener("click", start, false);
 
-var DUR=20;
+var DUR=4000;
 var t=0;
 var c=0;
-var frac=1;
-var frac2=1;
+var mode=0;
 
 var animate=(ts)=>{
   if (stopped) return;
-  t++,c++;
-  if (t>=DUR) {
+  t+=3,c++;
+//  if (t>=maxDist) {
+  let dur=mode?111:maxDist+600;
+  if (t>=dur) {
     t=0;
-    for (let i=0; i<dpa.length; i++) {
-      dpa[i].pa[0].node.o--;
-      dpa[i].pa.shift();
- //     dpa[i].setCompact();
+    mode=++mode%2;
+    if (mode) {
+      ctx.globalCompositeOperation="source-over";
+      ctx.setLineDash([6,111]);
+      maxDist=111;
     }
-    for (let i=0; i<dpa.length; i++) { dpa[i].generate(); dpa[i].setPaths(); }
+    if (mode==0) reset();
   }
-  draw();
-/*
-  if (dpa[0].compact && dpa[1].compact && dpa[2].compact) {
-console.log("paused");
-    pauseCount++;
-    //dpa.forEach((dp)=>{ dp.compact=false; pa.circPath=(pauseCount%8<2); });
-    dpa.forEach((dp)=>{ dp.compact=false; });
-    pauseTS=performance.now()+2000;
-    requestAnimationFrame(pause);
-    return;
-  }
-*/
+  if (mode) erase();
+  else draw();
   requestAnimationFrame(animate);
 }
 
-var draw=()=>{
-  let f=t/DUR;
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE)
+var erase=()=>{
+  ctx.lineWidth=LW+2;
+  ctx.strokeStyle="#00000060";
   for (let i=0; i<dpa.length; i++) {
-//ctx.lineWidth=2+i/2;
-//if (dpa[i].lw==2) {
-ctx.lineWidth=dpa[i].lw+4;
-ctx.strokeStyle="black";
-    ctx.setLineDash([dpa[i].head.dist*f,1000]);
-    ctx.stroke(dpa[i].head);
-    ctx.setLineDash([dpa[i].tail.dist*(1-f),1000]);
-    ctx.stroke(dpa[i].tail);
-    ctx.setLineDash([]);
-    ctx.stroke(dpa[i].body);
-//}
-ctx.lineWidth=dpa[i].lw;
-    ctx.strokeStyle=cola[i%3].getRGB();
-    ctx.setLineDash([dpa[i].head.dist*f,1000]);
-    ctx.stroke(dpa[i].head);
-    ctx.setLineDash([dpa[i].tail.dist*(1-f),1000]);
-    ctx.stroke(dpa[i].tail);
-    ctx.setLineDash([]);
-    ctx.stroke(dpa[i].body);
+    //ctx.lineDashOffset=-t;
+    ctx.lineDashOffset=-t+dpa[i].startDist;
+    ctx.stroke(dpa[i].path);
+  }
+}
+
+var LW=24;
+var draw=()=>{
+  if (t>maxDist) return;
+//  let f=t/DUR;
+//  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE)
+//ctx.lineWidth=10;
+  for (let i=0; i<dpa.length; i++) {
+    //ctx.lineDashOffset=-t;
+    ctx.lineDashOffset=-t+dpa[i].startDist;
+
+/*
+    ctx.strokeStyle="#FFFFFF";
+    ctx.lineWidth=12;
+    ctx.stroke(dpa[i].path);
+*/
+
+//let lw=24;//t<200
+let lwf=Math.sin(Math.PI*t/maxDist);
+//let lwf=Math.pow(Math.sin(TP*t/maxDist),2);
+//let lf=Math.sin(Math.PI*(t-dpa[i].startDist)/(dpa[i].dist-dpa[i].startDist));
+/*
+let lf=(t-dpa[i].startDist)/(dpa[i].dist-dpa[i].startDist);
+let lvls=(1-lf)*dpa[i].startLevel+lf*dpa[i].endLevel;
+let lwf2=Math.sin(Math.PI*lvls/maxLevel);
+*/
+    ctx.strokeStyle=color.getRGB();
+ctx.lineWidth=LW*lwf+0.01;
+//if (t>dpa[i].dist-30) { ctx.lineWidth=0.1+(LW*lwf)*(dpa[i].dist-t)/30; }
+    ctx.stroke(dpa[i].path);
+
+    ctx.strokeStyle="#00000028";
+    ctx.lineWidth=1.4*LW*lwf;
+    ctx.stroke(dpa[i].path);
+
   }
 }
 
@@ -383,127 +322,80 @@ function Node(p1,p2) {
   this.p2=p2;
   this.l=p1.l;
   this.o=0;
+  this.x=(this.p1.x+this.p2.x)/2;
+  this.y=(this.p1.y+this.p2.y)/2;
+  this.stripOccupied=(arr)=>{
+    return arr.filter((a)=> a.node.o==0);
+  }
   this.getNextPathArray=(dir)=>{
     let l=p1.l;
     let ac=mult-1;
     let hac=2*ac;
+    let arr=[];
     if (dir==-1) {
       if (l==0) {
         let idx1=(ac-1+(this.ia))%ac;
         let idx2=(this.ia+1)%ac;
-        return [{"node":na[l][idx1],"dsi":0,"dir":1},{"node":na[l][idx2],"dsi":0,"dir":1}];
+        arr=[{"node":na[l][idx1],"dist":da[0],"dir":1},{"node":na[l][idx2],"dist":da[0],"dir":1}];
       } else if (l==1) {
         if (this.ia%2) {
-          return [
-            {"node":na[l-1][(this.ia-1)/2],"dsi":1,"dir":-1},{"node":na[l][this.ia-1],"dsi":3,"dir":1}];
+          arr=[{"node":na[l-1][(this.ia-1)/2],"dist":da[1],"dir":-1},
+               {"node":na[l][this.ia-1],"dist":da[3],"dir":1}];
         } else {
-          return [
-            {"node":na[l-1][(this.ia)/2],"dsi":1,"dir":-1},{"node":na[l][this.ia+1],"dsi":3,"dir":1}];
+          arr=[{"node":na[l-1][(this.ia)/2],"dist":da[1],"dir":-1},
+               {"node":na[l][this.ia+1],"dist":da[3],"dir":1}];
         }
       } else if (l==roul) {	// roul even
-        return [{"node":na[l-1][this.ia],"dsi":da.length-2,"dir":-1}];
-/*
-      } else if (l==2) {
-        if (this.ia%2) {
-          let idx=(this.ia+1)%hac;
-          return [{"node":na[l-1][this.ia],"dsi":4,"dir":-1},{"node":na[l][idx],"dsi":6,"dir":1}];
-        } else {
-          let idx=(hac-1+(this.ia))%hac;
-          return [{"node":na[l-1][this.ia],"dsi":4,"dir":-1},{"node":na[l][idx],"dsi":6,"dir":1}];
-        }
-      } else if (l==3) {
-        if (this.ia%2) {
-          return [{"node":na[l-1][this.ia],"dsi":7,"dir":-1},{"node":na[l][this.ia-1],"dsi":9,"dir":1}];
-        } else {
-          return [{"node":na[l-1][this.ia],"dsi":7,"dir":-1},{"node":na[l][this.ia+1],"dsi":9,"dir":1}];
-        }
-*/
-      //} else if (l==4) {
+        arr=[{"node":na[l-1][this.ia],"dist":da[da.length-2],"dir":-1}];
       } else if (l%2==0) {
         if (this.ia%2) {
           let idx=(this.ia+1)%hac;
-          return [{"node":na[l-1][this.ia],"dsi":3*l-2,"dir":-1},{"node":na[l][idx],"dsi":3*l,"dir":1}];
+          arr=[{"node":na[l-1][this.ia],"dist":da[3*l-2],"dir":-1},
+               {"node":na[l][idx],"dist":da[3*l],"dir":1}];
         } else {
           let idx=(hac-1+(this.ia))%hac;
-          return [{"node":na[l-1][this.ia],"dsi":3*l-2,"dir":-1},{"node":na[l][idx],"dsi":3*l,"dir":1}];
+          arr=[{"node":na[l-1][this.ia],"dist":da[3*l-2],"dir":-1},
+               {"node":na[l][idx],"dist":da[3*l],"dir":1}];
         }
-      //} else if (l==5) {
       } else if (l%2) {
         if (this.ia%2) {
-          return [
-            {"node":na[l-1][this.ia],"dsi":3*l-2,"dir":-1},{"node":na[l][this.ia-1],"dsi":3*l,"dir":1}];
+          arr=[{"node":na[l-1][this.ia],"dist":da[3*l-2],"dir":-1},
+               {"node":na[l][this.ia-1],"dist":da[3*l],"dir":1}];
         } else {
-          return [
-            {"node":na[l-1][this.ia],"dsi":3*l-2,"dir":-1},{"node":na[l][this.ia+1],"dsi":3*l,"dir":1}];
+          arr=[{"node":na[l-1][this.ia],"dist":da[3*l-2],"dir":-1},
+               {"node":na[l][this.ia+1],"dist":da[3*l],"dir":1}];
         }
-      } else debugger;
+      } 
     } else {
       if (l==0) {
-        return [{"node":na[l+1][2*this.ia],"dsi":1,"dir":1},{"node":na[l+1][2*this.ia+1],"dsi":1,"dir":1}];
+        arr=[{"node":na[l+1][2*this.ia],"dsi":1,"dist":da[1],"dir":1},
+             {"node":na[l+1][2*this.ia+1],"dsi":1,"dist":da[1],"dir":1}];
       } else if (l==roul) {	// max l=n, roul(n)
-        if (this.ia%2) return [{"node":na[l][this.ia-1],"dsi":da.length-1,"dir":-1}];
-        else return [{"node":na[l][this.ia+1],"dsi":da.length-1,"dir":-1}];
-/*
-      } else if (l==1) {	// l==1 and l==3 equivalent
-      //} else if (l==1 || l==3) {	// l==1 and l==3 equivalent
-      //} else if (l%2) {
-        if (this.ia%2) {
-          let idx=(this.ia+1)%hac;
-          return [{"node":na[l][idx],"dsi":2,"dir":-1},{"node":na[l+1][this.ia],"dsi":4,"dir":1}];
-        } else {
-          let idx=(hac-1+(this.ia))%hac;
-          return [{"node":na[l][idx],"dsi":2,"dir":-1},{"node":na[l+1][this.ia],"dsi":4,"dir":1}];
-        }
-      } else if (l==2) {
-        if (this.ia%2) {
-          return [{"node":na[l][this.ia-1],"dsi":5,"dir":-1},{"node":na[l+1][this.ia],"dsi":7,"dir":1}];
-        } else {
-          return [{"node":na[l][this.ia+1],"dsi":5,"dir":-1},{"node":na[l+1][this.ia],"dsi":7,"dir":1}];
-        }
-      } else if (l==3) {
-        if (this.ia%2) {
-          let idx=(this.ia+1)%hac;
-          return [{"node":na[l][idx],"dsi":8,"dir":-1},{"node":na[l+1][this.ia],"dsi":10,"dir":1}];
-        } else {
-          let idx=(hac-1+(this.ia))%hac;
-          return [{"node":na[l][idx],"dsi":8,"dir":-1},{"node":na[l+1][this.ia],"dsi":10,"dir":1}];
-        }
-      } else if (l==4) {
-        if (this.ia%2) {
-          return [
-            {"node":na[l][this.ia-1],"dsi":3*l-1,"dir":-1},{"node":na[l+1][this.ia],"dsi":3*l+1,"dir":1}];
-        } else {
-          return [
-            {"node":na[l][this.ia+1],"dsi":3*l-1,"dir":-1},{"node":na[l+1][this.ia],"dsi":3*l+1,"dir":1}];
-        }
-      } else if (l==5) {
-        if (this.ia%2) {
-          let idx=(this.ia+1)%hac;
-          return [{"node":na[l][idx],"dsi":3*l-1,"dir":-1},{"node":na[l+1][this.ia],"dsi":3*l+1,"dir":1}];
-        } else {
-          let idx=(hac-1+(this.ia))%hac;
-          return [{"node":na[l][idx],"dsi":3*l-1,"dir":-1},{"node":na[l+1][this.ia],"dsi":3*l+1,"dir":1}];
-        }
-*/
+        if (this.ia%2) arr=[{"node":na[l][this.ia-1],"dsi":da.length-1,"dist":da[da.length-1],"dir":-1}];
+        else arr=[{"node":na[l][this.ia+1],"dsi":da.length-1,"dist":da[da.length-1],"dir":-1}];
       } else if (l%2==0) {
         if (this.ia%2) {
-          return [
-            {"node":na[l][this.ia-1],"dsi":3*l-1,"dir":-1},{"node":na[l+1][this.ia],"dsi":3*l+1,"dir":1}];
+          arr=[
+            {"node":na[l][this.ia-1],"dsi":3*l-1,"dist":da[3*l-1],"dir":-1},
+            {"node":na[l+1][this.ia],"dsi":3*l+1,"dist":da[3*l+1],"dir":1}];
         } else {
-          return [
-            {"node":na[l][this.ia+1],"dsi":3*l-1,"dir":-1},{"node":na[l+1][this.ia],"dsi":3*l+1,"dir":1}];
+          arr=[
+            {"node":na[l][this.ia+1],"dsi":3*l-1,"dist":da[3*l-1],"dir":-1},
+            {"node":na[l+1][this.ia],"dsi":3*l+1,"dist":da[3*l+1],"dir":1}];
         }
       } else if (l%2) {
         if (this.ia%2) {
           let idx=(this.ia+1)%hac;
-          return [{"node":na[l][idx],"dsi":3*l-1,"dir":-1},{"node":na[l+1][this.ia],"dsi":3*l+1,"dir":1}];
+          arr=[{"node":na[l][idx],"dsi":3*l-1,"dist":da[3*l-1],"dir":-1},
+               {"node":na[l+1][this.ia],"dsi":3*l+1,"dist":da[3*l+1],"dir":1}];
         } else {
           let idx=(hac-1+(this.ia))%hac;
-          return [{"node":na[l][idx],"dsi":3*l-1,"dir":-1},{"node":na[l+1][this.ia],"dsi":3*l+1,"dir":1}];
+          arr=[{"node":na[l][idx],"dsi":3*l-1,"dist":da[3*l-1],"dir":-1},
+               {"node":na[l+1][this.ia],"dsi":3*l+1,"dist":da[3*l+1],"dir":1}];
         }
-      } else debugger;
-debugger;
+      } 
     }
+    return this.stripOccupied(arr);
   }
 }
 
@@ -531,29 +423,108 @@ for (let i=0; i<pta.length; i++) {
   }
   if (i>0 && i%2==0) na[i].push(na[i].shift());
 }
-for (let i=0; i<na.length; i++) for (let j=0; j<na[i].length; j++) na[i][j].ia=j;
+for (let i=0; i<na.length; i++) for (let j=0; j<na[i].length; j++) { na[i][j].ia=j; }
 
-ctx.font="14px sans-serif";
+//var maxLevel=roul-3;
+var maxLevel=roul-2;
+var setNodes=()=>{
+  for (let i=0; i<na.length; i++) for (let j=0; j<na[i].length; j++) {
+    if (i>maxLevel) { na[i][j].o=1; continue; }
+    if (SYM==1) {
+      na[i][j].o=0; 
+    } else if (SYM==4) {
+      if (i==0) { if (j>5) na[i][j].o=1; else na[i][j].o=0; } // quarter
+      else { if (j>11) na[i][j].o=1; else na[i][j].o=0; }
+    } else if (SYM==6) {
+      if (i==0) { if (j>3) na[i][j].o=1; else na[i][j].o=0; }  // 1/6
+      else { if (j>7) na[i][j].o=1; else na[i][j].o=0; }
+    } else if (SYM==12) {
+      if (i==0) { if (j>1) na[i][j].o=1; else na[i][j].o=0; }  // 1/12
+      else { if (j>3) na[i][j].o=1; else na[i][j].o=0; }
+    } else {
+      if (i==0) { if (j>2) na[i][j].o=1; else na[i][j].o=0; }  // 1/8
+      else { if (j>5) na[i][j].o=1; else na[i][j].o=0; }
+    }
+  }
+}
+setNodes();
+
+const setRandomBranchPath=()=>{
+  let ridx=getRandomInt(0,dpa.length);
+  for (let c=0; c<dpa.length; c++) {
+    let idx=(ridx+c)%dpa.length;
+    let npa=[];
+    let p0;
+    let pidx=getRandomInt(0,dpa[idx].pa.length);
+    for (let i=1; i<dpa[idx].pa.length; i++) {
+      if (i==dpa[idx].pa.length-1) continue;
+      let idx2=(pidx+i)%dpa[idx].pa.length;
+      p0=dpa[idx].pa[idx2];
+      npa=dpa[idx].pa[idx2].node.getNextPathArray(dpa[idx].pa[idx2].dir);
+      if (npa.length>0) {
+
+    let np=npa[getRandomInt(0,npa.length)];
+    let dpath=new DPath();
+    dpath.pa.push(p0);
+    dpath.pa.push(np);
+//console.log(np.dist);
+//console.log(p0.dist,dpath.getDistance(0,2));
+//if (isNaN(p0.dist)) debugger;
+    dpath.startDist=p0.dist-20;
+//np.dist=p0.dist+dpath.getDistance(0,2);		// pre-existing?
+np.dist+=p0.dist;
+    for (let i=0; i<MAXLEN; i++) { 
+      if (!dpath.generate()) {
+	dpath.pa.pop();
+	break; 
+      }
+    }
+    if (dpath.pa.length<MINLEN) {
+//console.log(dpath.pa.length,"dropping generated nodes");
+      continue;
+    }
+/*
+for (let q=0; q<dpath.pa.length; q++) {
+  console.log(q,dpath.pa[q].node.o);
+}
+debugger;
+*/
+    dpath.pa[1].node.o=1;	// non-generated path element
+    dpath.setPaths();
+    dpa.push(dpath);
+    return true;
+//        break;
+      }
+    }
+  }
+  return false;
+}
+
+ctx.font="10px sans-serif";
 ctx.textAlign="center";
 ctx.fillStyle="white";
-var drawNodes=()=>{ 
+var drawNodes=(occ)=>{ 	// diag
+  ctx.save();
   let p=new Path2D();
   for (let i=0; i<na.length; i++) {
     for (let j=0; j<na[i].length; j++) {
-//if (na[i][j].p2==undefined) continue;
+if (occ && na[i][j].o==0) continue;
       p.moveTo(na[i][j].p1.x,na[i][j].p1.y);
       p.lineTo(na[i][j].p2.x,na[i][j].p2.y);
-  let x=(na[i][j].p1.x+na[i][j].p2.x)/2;
-  let y=(na[i][j].p1.y+na[i][j].p2.y)/2;
-  ctx.fillText(j,x,y);
-  //ctx.fillText(na[i][j].p2.j,x,y+10);
+      if (i==roul) {
+      //let x=(na[i][j].p1.x+na[i][j].p2.x)/2; let y=(na[i][j].p1.y+na[i][j].p2.y)/2;
+        ctx.fillText(j,na[i][j].x,na[i][j].y);
+      //ctx.fillText(na[i][j].p2.j,x,y+10);
+      }
     }
   }
-  ctx.strokeStyle="yellow";
+  ctx.strokeStyle="silver";
+  if (occ) ctx.strokeStyle="red";
   ctx.lineWidth=1;
+  ctx.setLineDash([]);
   ctx.stroke(p);
+  ctx.restore();
 }
-drawNodes();
 
 var drawT=(n)=>{
   let {mult,res}=roulette(n);
@@ -579,14 +550,6 @@ var drawT=(n)=>{
   ctx.stroke(p);
 }
 
-/*
-for (let i=0; i<pta.length; i++) {
-  for (let j=0; j<pta[i].length; j++) {
-    drawPoint(pta[i][j].x,pta[i][j].y);
-  }
-}
-*/
-
 var drawNode=(l,i)=>{	// diag
   let p=new Path2D();
   p.moveTo(na[l][i].p1.x,na[l][i].p1.y);
@@ -600,33 +563,45 @@ var drawNode=(l,i)=>{	// diag
 //const da=[46.5,79.0,46.2,56.0,75.8,57.0,67.3,70.7,68.4,77.7,64.1,78.7,85.9,56.9,86.7,91.3,50.2,91.6];
 const da=[34.0,62.0,34.2,39.4,60.3,39.8,45.8,57.7,46.3,52.3,54.2,52.8,58.0,	// roul==8
           54.2,58.5,63.1,45.5,63.5,67.0,41.0,67.3,69.4,37.1,69.6];
-*/
-const da=[27.2,50.9,27.3,30.4,50.0,30.6,34.4,48.4,34.6,38.5,46.3,38.3,47.7,43.9,42.9,46.3,
-//	    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15 
+const da=[27.2,50.9,27.3,30.4,50.0,30.6,34.4,48.4,34.6,38.5,46.3,38.3,47.7,43.9,42.9,46.3,  // roul==10
           42.9,46.6,49.7,38.0,50.0,52.5,34.8,52.7,54.6,31.8,54.7,55.9,29.3,55.8];
-//	   16   17   18   19   20   21   22   23   24   25   26   27   28   29
-const dpa=[new DPath()];
-//const dpa=[new DPath(),new DPath(),new DPath()];
-for (let i=0; i<7; i++) dpa.push(new DPath());
-dpa.sort((a,b)=>{ return b.lw-a.lw; });
-
-let dp=dpa[0];
-//let dp2=new DPath();
-ctx.strokeStyle="red";
-ctx.lineWidth=2;
-ctx.stroke(dp.getPath(0,dp.pa.length));
-
-/*
-ctx.strokeStyle="green";
-ctx.setLineDash([60,10000]);
-ctx.stroke(dp.getTail());
 */
+const da=[22.5,43.2,22.7,24.7,42.6,22.7,27.4,41.7,27.5,30.2,40.3,30.1,33.0,38.7,33.3,35.8,36.8,36.0,
+//	    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17
+          38.6,34.8,38.7,41.0,32.6,41.1,43.1,30.0,43.2,44.8,28.0,44.9,46.0,25.9,46.0,46.8,24.3,46.8];
+//	   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32   33   34
+//28.0,46.0,25.9,46.1,46.8,24.3];
 
-//var test=(n1,n2,d)=>{
+var dpa;
+var maxDist=0;
+const setPathArray=()=>{
+  dpa=[new DPath(true)];
+  let rnd=getRandomInt(6,40);
+  for (let i=0; i<rnd; i++) { if (!setRandomBranchPath()) break; }
+console.log("rnd",rnd,"dpa",dpa.length);
+  for (let i=0; i<dpa.length; i++) {
+    dpa[i].dist=dpa[i].pa[dpa[i].pa.length-1].dist;
+    maxDist=Math.max(maxDist,dpa[i].dist);
+  }
+}
+
+var reset=()=>{
+  //MAXLEN=getRandomInt(6,100,true);
+  SYM=[8,4,12,6,1][getRandomInt(0,5,true)];
+  MAXLEN=[6,100][getRandomInt(0,2)];
+  color.randomize();
+  setNodes();
+  setPathArray();
+  ctx.globalCompositeOperation="destination-over";
+  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
+  ctx.setLineDash([1,10000]);
+  LW=[18,20,16,22,14,24,12,26,8,32][getRandomInt(0,10,true)];
+}
+reset();
+
 var test=(d)=>{
   ctx.lineWidth=12;
   ctx.setLineDash([1,1000]);
-  //let p=dp.getPath(n1,n2);
   ctx.strokeStyle="#FFFFFFAA";	
   ctx.lineDashOffset=-d;
   ctx.stroke(dp.tail);
@@ -636,9 +611,12 @@ var test=(d)=>{
   ctx.stroke(dp.tail);
 }
 
-// rnd sym, pa length
-// end connect test
-// rationalize next
-// multi-sym
-// 1-dash stroke
+//drawNodes(true);
+start();
+
+// cl code
+// dists, dsi out
+// level array
+// maxlength
 // git
+// half-segment terminal
