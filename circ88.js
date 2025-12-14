@@ -54,7 +54,7 @@ function Color() {
 }
 const color=new Color();
 
-const roulette=(n)=>{	// roulette function
+const roulette=(n)=>{
   let mult=2*n+1;
   let res=4*n*(n+1);
   return {"mult":mult,"res":res};
@@ -88,7 +88,7 @@ function Point(i,j) {
   this.y=ra[i+1]*Math.sin(this.a);
 }
 
-var MINLEN=3; //4;	// >4 unstable
+var MINLEN=3;
 var MAXLEN=20;
 var SYM=4;
 
@@ -96,27 +96,11 @@ function DPath(st) {
   this.pa=[];
   this.lw=2+6*getRandomInt(0,2,true);
   this.startDist=0;
-
-/*
-  this.setStartN=()=>{
-    let idl=getRandomInt(0,na.length);
-    for (let i=0; i<na.length; i++) {
-      let idxl=(idl+i)%na.length;
-      let ida=getRandomInt(0,na[idxl].length);
-      let idxa=(ida+j)%na[idxl].length;
-      for (let j=0; j<na[idxl].length; j++) {
-      }
-    }
-    return false;
-  }
-*/
-
   this.setStart=()=>{
     let idl=0; //getRandomInt(0,na.length); // cycle through na
     let ida=getRandomInt(0,24/SYM);
     //let ida=getRandomInt(0,na[idl].length); 
     let dir=[-1,1][getRandomInt(0,2)];
-    //let dsi=(dir==-1)?0:1;
     let dist=(dir==-1)?da[0]:da[1];
     this.pa.push({"node":na[idl][ida],"dir":dir,"dist":dist});
     na[idl][ida].o=1;
@@ -136,28 +120,14 @@ function DPath(st) {
 if (nextPath==undefined) debugger;
     this.pa.push(nextPath);
     nextPath.node.o++;
-//    nextPath.dist=da[nextPath.dsi]+gn.dist;
 nextPath.dist=nextPath.dist+gn.dist;
     return true;
   }
-/*
-  this.getDistance=(i1,i2)=>{
-    let dist=0;
-    for (let i=i1; i<i2; i++) {
-      dist+=da[this.pa[i].dsi];
-    }
-    return dist;
-  }
-*/
   this.getPath=(i1,i2)=>{
     let p=new Path2D();
     let node=this.pa[i1].node;
-//    if (node.p1==point0) { }  //special case
-    //let x=(node.p1.x+node.p2.x)/2; let y=(node.p1.y+node.p2.y)/2;
-//drawPoint(node.x,node.y,"yellow",4);
     p.moveTo(node.x,node.y);
     for (let i=i1+1; i<i2; i++) {
-//if (this.pa[i]==undefined) debugger;
       node=this.pa[i].node;
       let nodeb=this.pa[i-1].node;
       if (this.pa[i-1].dir==-1) {
@@ -175,14 +145,15 @@ nextPath.dist=nextPath.dist+gn.dist;
     const dmr4=new DOMMatrix([0,1,-1,0,0,0]);
     this.tpath=this.getPath(0,this.pa.length);
     if (SYM==1) {
-       this.path=new Path2D(this.tpath);
+      this.path=new Path2D(this.tpath);
     } else if (SYM==4) {
       this.path=new Path2D(this.tpath);
       this.path.addPath(this.path,dmx);
       this.path.addPath(this.path,dmy);
     } else if (SYM==6) {
       let p=new Path2D();
-      p.addPath(this.tpath,new DOMMatrix([S6,0.5,-0.5,S6,0,0]));
+      const dmr=new DOMMatrix([S6,0.5,-0.5,S6,0,0]);
+      p.addPath(this.tpath,dmr);
       p.addPath(p,dmx);
       this.path=new Path2D(p);
       this.path.addPath(p,dmr3);
@@ -291,14 +262,13 @@ let lvls=(1-lf)*dpa[i].startLevel+lf*dpa[i].endLevel;
 let lwf2=Math.sin(Math.PI*lvls/maxLevel);
 */
     ctx.strokeStyle=color.getRGB();
-ctx.lineWidth=LW*lwf+0.01;
+    ctx.lineWidth=LW*lwf+0.01;
 //if (t>dpa[i].dist-30) { ctx.lineWidth=0.1+(LW*lwf)*(dpa[i].dist-t)/30; }
     ctx.stroke(dpa[i].path);
 
     ctx.strokeStyle="#00000028";
     ctx.lineWidth=1.4*LW*lwf;
     ctx.stroke(dpa[i].path);
-
   }
 }
 
@@ -307,7 +277,7 @@ onresize();
 var pta=[];
 for (let i=0; i<ra.length-1; i++) {	// 5=ra.length-1 (<ra since point0 excluded)
   pta[i]=[];
-  for (let j=0; j<mult-1; j++) {	// 8=A-1
+  for (let j=0; j<mult-1; j++) {
     pta[i].push(new Point(i,j));
   }
 }
@@ -368,30 +338,30 @@ function Node(p1,p2) {
       } 
     } else {
       if (l==0) {
-        arr=[{"node":na[l+1][2*this.ia],"dsi":1,"dist":da[1],"dir":1},
-             {"node":na[l+1][2*this.ia+1],"dsi":1,"dist":da[1],"dir":1}];
+        arr=[{"node":na[l+1][2*this.ia],"dist":da[1],"dir":1},
+             {"node":na[l+1][2*this.ia+1],"dist":da[1],"dir":1}];
       } else if (l==roul) {	// max l=n, roul(n)
-        if (this.ia%2) arr=[{"node":na[l][this.ia-1],"dsi":da.length-1,"dist":da[da.length-1],"dir":-1}];
-        else arr=[{"node":na[l][this.ia+1],"dsi":da.length-1,"dist":da[da.length-1],"dir":-1}];
+        if (this.ia%2) arr=[{"node":na[l][this.ia-1],"dist":da[da.length-1],"dir":-1}];
+        else arr=[{"node":na[l][this.ia+1],"dist":da[da.length-1],"dir":-1}];
       } else if (l%2==0) {
         if (this.ia%2) {
           arr=[
-            {"node":na[l][this.ia-1],"dsi":3*l-1,"dist":da[3*l-1],"dir":-1},
-            {"node":na[l+1][this.ia],"dsi":3*l+1,"dist":da[3*l+1],"dir":1}];
+            {"node":na[l][this.ia-1],"dist":da[3*l-1],"dir":-1},
+            {"node":na[l+1][this.ia],"dist":da[3*l+1],"dir":1}];
         } else {
           arr=[
-            {"node":na[l][this.ia+1],"dsi":3*l-1,"dist":da[3*l-1],"dir":-1},
-            {"node":na[l+1][this.ia],"dsi":3*l+1,"dist":da[3*l+1],"dir":1}];
+            {"node":na[l][this.ia+1],"dist":da[3*l-1],"dir":-1},
+            {"node":na[l+1][this.ia],"dist":da[3*l+1],"dir":1}];
         }
       } else if (l%2) {
         if (this.ia%2) {
           let idx=(this.ia+1)%hac;
-          arr=[{"node":na[l][idx],"dsi":3*l-1,"dist":da[3*l-1],"dir":-1},
-               {"node":na[l+1][this.ia],"dsi":3*l+1,"dist":da[3*l+1],"dir":1}];
+          arr=[{"node":na[l][idx],"dist":da[3*l-1],"dir":-1},
+               {"node":na[l+1][this.ia],"dist":da[3*l+1],"dir":1}];
         } else {
           let idx=(hac-1+(this.ia))%hac;
-          arr=[{"node":na[l][idx],"dsi":3*l-1,"dist":da[3*l-1],"dir":-1},
-               {"node":na[l+1][this.ia],"dsi":3*l+1,"dist":da[3*l+1],"dir":1}];
+          arr=[{"node":na[l][idx],"dist":da[3*l-1],"dir":-1},
+               {"node":na[l+1][this.ia],"dist":da[3*l+1],"dir":1}];
         }
       } 
     }
@@ -425,7 +395,6 @@ for (let i=0; i<pta.length; i++) {
 }
 for (let i=0; i<na.length; i++) for (let j=0; j<na[i].length; j++) { na[i][j].ia=j; }
 
-//var maxLevel=roul-3;
 var maxLevel=roul-2;
 var setNodes=()=>{
   for (let i=0; i<na.length; i++) for (let j=0; j<na[i].length; j++) {
@@ -447,7 +416,7 @@ var setNodes=()=>{
     }
   }
 }
-setNodes();
+//setNodes();
 
 const setRandomBranchPath=()=>{
   let ridx=getRandomInt(0,dpa.length);
@@ -462,37 +431,28 @@ const setRandomBranchPath=()=>{
       p0=dpa[idx].pa[idx2];
       npa=dpa[idx].pa[idx2].node.getNextPathArray(dpa[idx].pa[idx2].dir);
       if (npa.length>0) {
+	let np=npa[getRandomInt(0,npa.length)];
+	let dpath=new DPath();
+	dpath.pa.push(p0);
+	dpath.pa.push(np);
+        dpath.startDist=p0.dist-20;
+        np.dist+=p0.dist;
+	for (let i=0; i<MAXLEN; i++) { 
+	  if (!dpath.generate()) {
+	    dpath.pa.pop();
+	    break; 
+	  }
+	}
 
-    let np=npa[getRandomInt(0,npa.length)];
-    let dpath=new DPath();
-    dpath.pa.push(p0);
-    dpath.pa.push(np);
-//console.log(np.dist);
-//console.log(p0.dist,dpath.getDistance(0,2));
-//if (isNaN(p0.dist)) debugger;
-    dpath.startDist=p0.dist-20;
-//np.dist=p0.dist+dpath.getDistance(0,2);		// pre-existing?
-np.dist+=p0.dist;
-    for (let i=0; i<MAXLEN; i++) { 
-      if (!dpath.generate()) {
-	dpath.pa.pop();
-	break; 
-      }
-    }
     if (dpath.pa.length<MINLEN) {
 //console.log(dpath.pa.length,"dropping generated nodes");
       continue;
     }
-/*
-for (let q=0; q<dpath.pa.length; q++) {
-  console.log(q,dpath.pa[q].node.o);
-}
-debugger;
-*/
-    dpath.pa[1].node.o=1;	// non-generated path element
-    dpath.setPaths();
-    dpa.push(dpath);
-    return true;
+//for (let q=0; q<dpath.pa.length; q++) { console.log(q,dpath.pa[q].node.o); }
+	dpath.pa[1].node.o=1;	// non-generated path element
+	dpath.setPaths();
+	dpa.push(dpath);
+	return true;
 //        break;
       }
     }
@@ -526,30 +486,6 @@ if (occ && na[i][j].o==0) continue;
   ctx.restore();
 }
 
-var drawT=(n)=>{
-  let {mult,res}=roulette(n);
-  ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
-//  ctx.font="18px sans-serif";
-//  ctx.textAlign="center";
-  ctx.strokeStyle="yellow";
-  ctx.fillStyle="white";
-  let p=new Path2D();
-  let x=CSIZE/2*(Math.cos(0)-Math.cos(0));
-  let y=CSIZE/2*(Math.sin(0)-Math.sin(0));
-  p.moveTo(x,y);
-  for (let i=1; i<res; i++) {
-    let z=i*TP/res;
-    x=CSIZE/2*(Math.cos(z)-Math.cos(mult*z));
-    y=CSIZE/2*(Math.sin(z)-Math.sin(mult*z));
-    p.lineTo(x,y);
-//    ctx.fillText(i,x,y+16-i);
-    if (i<mult) ctx.fillText(i,x,y-6);
-  //  if (i>72) ctx.fillText(i,x,y-6);
-  }
-  p.closePath();
-  ctx.stroke(p);
-}
-
 var drawNode=(l,i)=>{	// diag
   let p=new Path2D();
   p.moveTo(na[l][i].p1.x,na[l][i].p1.y);
@@ -570,7 +506,6 @@ const da=[22.5,43.2,22.7,24.7,42.6,22.7,27.4,41.7,27.5,30.2,40.3,30.1,33.0,38.7,
 //	    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17
           38.6,34.8,38.7,41.0,32.6,41.1,43.1,30.0,43.2,44.8,28.0,44.9,46.0,25.9,46.0,46.8,24.3,46.8];
 //	   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32   33   34
-//28.0,46.0,25.9,46.1,46.8,24.3];
 
 var dpa;
 var maxDist=0;
@@ -595,7 +530,7 @@ var reset=()=>{
   ctx.globalCompositeOperation="destination-over";
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   ctx.setLineDash([1,10000]);
-  LW=[18,20,16,22,14,24,12,26,8,32][getRandomInt(0,10,true)];
+  LW=[16,18,14,20,12,22,10,24,8,32][getRandomInt(0,10,true)];
 }
 reset();
 
@@ -615,8 +550,6 @@ var test=(d)=>{
 start();
 
 // cl code
-// dists, dsi out
 // level array
-// maxlength
 // git
 // half-segment terminal
