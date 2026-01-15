@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(TP/6);
 const S8=Math.sin(TP/8);
@@ -13,7 +13,6 @@ const ctx=(()=>{
   body.append(d);
   let c=document.createElement("canvas");
   c.width=c.height=2*CSIZE;
-c.style.outline="1px dotted gray";
   d.append(c);
   return c.getContext("2d");
 })();
@@ -220,6 +219,7 @@ var animate=(ts)=>{
       maxDist=111;
     }
     if (mode==0) reset();
+if (EM && mode) { stopped=true; return; }
   }
   if (mode) erase();
   else draw();
@@ -295,7 +295,7 @@ function Node(p1,p2) {
   this.x=(this.p1.x+this.p2.x)/2;
   this.y=(this.p1.y+this.p2.y)/2;
   this.stripOccupied=(arr)=>{
-    return arr.filter((a)=> a.node.o==0);
+    return arr.filter((a)=>{ return a.node.o==0; });
   }
   this.getNextPathArray=(dir)=>{
     let l=p1.l;
@@ -513,7 +513,7 @@ const setPathArray=()=>{
   dpa=[new DPath(true)];
   let rnd=getRandomInt(6,40);
   for (let i=0; i<rnd; i++) { if (!setRandomBranchPath()) break; }
-console.log("rnd",rnd,"dpa",dpa.length);
+//console.log("rnd",rnd,"dpa",dpa.length);
   for (let i=0; i<dpa.length; i++) {
     dpa[i].dist=dpa[i].pa[dpa[i].pa.length-1].dist;
     maxDist=Math.max(maxDist,dpa[i].dist);
