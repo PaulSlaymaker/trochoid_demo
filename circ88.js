@@ -549,7 +549,5 @@ var test=(d)=>{
 //drawNodes(true);
 start();
 
-// cl code
 // level array
-// git
 // half-segment terminal
