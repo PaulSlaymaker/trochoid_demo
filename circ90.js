@@ -297,7 +297,7 @@ var df4=(tp,ks)=>{
     let jd=tp.j-cr;
     if (jd<0) return pta;
     let tp2=ks.pa[id][jd];
-    if (tp2.b) return tpa;
+    if (tp2.b) return pta;
     pta.push(tp2);
   }
   return pta;
@@ -381,7 +381,8 @@ var TRICOUNT=38;
 var getRandomTriangleArray=()=>{
   let ks=kseta[[1,1,0,2][getRandomInt(0,4,true)]];
   var tri0=new Triangle(ks.pa[0][0],ks.pa[0][0],ks.pa[0][0],"t");
-let cc=[0,0,10,20,30][getRandomInt(0,5,true)];
+//let cc=[0,0,0,10,20,30][getRandomInt(0,6,true)];
+  let cc=Math.round(20*Math.pow(Math.random(),5));
 //console.log(cc);
   let tar=[];
   for (let i=0; i<TRICOUNT; i++) {
