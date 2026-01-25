@@ -154,7 +154,7 @@ var drawPoint=(x,y,col)=>{	// diag
 
 var generateLines=()=>{		// could be points, lines for easier visualization
   let K=[0.6,0.5,0.7,0.4,0.8,0.3][getRandomInt(0,6,true)];
-console.log("K",K);
+//console.log("K",K);
   let la=[];
   for (let i=0; i<SCOUNT+1; i++) { 
     la.push([]);
@@ -170,20 +170,18 @@ var SCOUNT;		// square dimension
 var hla,vla;
 
 var reset=()=>{
-  console.clear();
+//  console.clear();
   ctx.clearRect(-CSIZE,-CSIZE,2*CSIZE,2*CSIZE);
   SCOUNT=[4,5,6,7,8,9,10][getRandomInt(0,7,true)];
-console.log("SCOUNT",SCOUNT);
+//console.log("SCOUNT",SCOUNT);
   hla=generateLines();
   vla=generateLines();
   if (fixSingletons()) {
-    console.log("sing1")
     if (fixSingletons()) {
-      console.log("sing2");
-      console.log("sing3",fixSingletons());
+//      console.log("sing3",fixSingletons());
     }
   } else {
-    console.log("nosing");
+//    console.log("nosing");
   }
   fill();
   DUR=CSIZE/SCOUNT;
@@ -285,8 +283,7 @@ const fill=()=>{
             path.addPath(pa[tsa[k]],dm);
           }
         }
-      } else console.log("blank");
-//console.log(i,j,key);
+      } 
     }
   }
   path.addPath(path,dmx);
