@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S8=Math.sin(TP/8);
 const C8=Math.cos(TP/8);
@@ -70,6 +70,7 @@ const dmy=new DOMMatrix([1,0,0,-1,0,0]);
 function Radius(idx) {
   //this.K=20+8*idx;
   this.K=20+idx/4; //+20*Math.random();
+  //this.K=20+idx/20;
   //this.K2=Math.PI+2*idx; //TP*Math.random();
   this.K2=0; //TP*Math.random();
   this.getFraction=()=>{
@@ -96,7 +97,6 @@ var pause=(ts)=>{
   }
 }
 
-var DUR=200;
 var t=300;
 var c=0;
 
@@ -107,6 +107,7 @@ var animate=(ts)=>{
   setPaths();
   cf=10-8*Math.pow(Math.sin(TP*t/24000),2);
 //  if (t>DUR) { //    t=0; stopped=true; }
+if (EM && t%100==0) stopped=true;
   draw();
   requestAnimationFrame(animate);
 }
