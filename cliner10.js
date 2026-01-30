@@ -102,7 +102,10 @@ body.addEventListener("click", start, false);
 var pauseTS=1000;
 var pause=(ts)=>{
   if (stopped) return;
-if (EM) stopped=true;
+  if (EM) {
+    stopped=true;
+    parent.postMessage("lf");
+  }
   if (ts<pauseTS) requestAnimationFrame(pause);
   else requestAnimationFrame(animate);
 }
@@ -124,7 +127,10 @@ if (t>2700) {
     pauseTS=performance.now()+2000;
     requestAnimationFrame(pause);
 } else
-if (EM && t%200==0) stopped=true
+  if (EM && t%200==0) {
+    stopped=true
+    parent.postMessage("lf");
+  }
   requestAnimationFrame(animate);
 }
 

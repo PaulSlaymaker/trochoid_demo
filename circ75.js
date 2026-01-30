@@ -303,7 +303,10 @@ var animate=(ts)=>{
   t++;
   pt=-10+160*(1+Math.sin(t/400));
   //pt=-10+cua[0].ca[NCOUNT].dist/3*(1+Math.sin(t/200));
-  if (EM && t%200==0) stopped=true;
+  if (EM && t%200==0) {
+    stopped=true;
+    parent.postMessage("lf");
+  }
   draw();
   requestAnimationFrame(animate);
 }

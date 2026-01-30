@@ -164,7 +164,10 @@ var animate=(ts)=>{
   if (stopped) return;
   t++;
   draw();
-  if (EM && t%200==0) stopped=true
+  if (EM && t%200==0) {
+    stopped=true
+    parent.postMessage("lf");
+  } 
   container.firstChild.style.opacity=Math.pow(1-t/DUR,3);
   if (t>DUR) {
     t=0;

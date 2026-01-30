@@ -192,7 +192,10 @@ var animate=(ts)=>{
     if (c.state=="R") c.reverse();
   });
   draw();
-if (EM && t%100==0) stopped=true;
+  if (EM && t%100==0) {
+    parent.postMessage("lf");
+    stopped=true;
+  }
   requestAnimationFrame(animate);
 }
 

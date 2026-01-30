@@ -86,7 +86,10 @@ var animate=(ts)=>{
     cycle();
     KD=2+100*Math.random();
     ncount=getRandomInt(0,11,true);
-if (EM) stopped=true
+    if (EM) {
+      stopped=true
+      parent.postMessage("lf");
+    }
   }
   requestAnimationFrame(animate);
 }

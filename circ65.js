@@ -82,7 +82,10 @@ var animate=(ts)=>{
   draw();
   container.firstChild.style.opacity=1-c/DUR;
   if (c%DUR==0) {
-if (EM) stopped=true;
+    if (EM) {
+      stopped=true;
+      parent.postMessage("lf");
+    }
     c=0;
     cycle();
   }

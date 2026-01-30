@@ -129,7 +129,10 @@ var animate=(ts)=>{
     c=0;
     cycle();
   }
-if (EM && t%400==0) stopped=true
+  if (EM && t%400==0) {
+    stopped=true
+    parent.postMessage("lf");
+  }
   requestAnimationFrame(animate);
 }
 

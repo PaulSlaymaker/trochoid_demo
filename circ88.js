@@ -219,7 +219,11 @@ var animate=(ts)=>{
       maxDist=111;
     }
     if (mode==0) reset();
-if (EM && mode) { stopped=true; return; }
+    if (EM && mode) { 
+      stopped=true; 
+      parent.postMessage("lf");
+      return; 
+    }
   }
   if (mode) erase();
   else draw();

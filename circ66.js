@@ -64,7 +64,10 @@ var animate=(ts)=>{
   if (stopped) return;
   t++;
   draw();
-if (EM && t%100==0) stopped=true
+  if (EM && t%100==0) {
+    stopped=true
+    parent.postMessage("lf");
+  }
   requestAnimationFrame(animate);
 }
 

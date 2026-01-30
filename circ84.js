@@ -70,7 +70,7 @@ function Node(i,j,x,y) {
 
 //const MAXLENGTH=COUNT; //Math.round(1.5*COUNT);
 const MAXLENGTH=Math.round(1.1*COUNT);
-console.log("maxlength",MAXLENGTH);
+//console.log("maxlength",MAXLENGTH);
 
 function DPath() {
   this.col=new Color();
@@ -518,7 +518,10 @@ generatePathTables();
 var pauseTS=1000;
 var pauseCount=0;
 var pause=(ts)=>{
-  if (EM) stopped=true;
+  if (EM) {
+    stopped=true;
+    parent.postMessage("lf");
+  }
   if (stopped) return;
   if (ts<pauseTS) {
     requestAnimationFrame(pause);

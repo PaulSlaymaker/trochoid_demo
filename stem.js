@@ -117,7 +117,10 @@ body.addEventListener("click", start, false);
 
 var pauseTS=1000;
 var pause=(ts)=>{
-  if (EM) return;
+  if (EM) {
+    parent.postMessage("lf");
+    return;
+  }
   if (stopped) return;
   if (ts<pauseTS) requestAnimationFrame(pause);
   else requestAnimationFrame(animate);

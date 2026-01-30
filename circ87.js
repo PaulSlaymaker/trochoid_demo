@@ -181,7 +181,10 @@ var animate=(ts)=>{
     else ctx.setLineDash([]);
     pauseTS=performance.now()+2000;
     requestAnimationFrame(pause);
-if (EM) stopped=true;
+    if (EM) {
+      stopped=true;
+      parent.postMessage("lf");
+    }
     return;
   } else if (t==DUR/2) {	
     t2=0;

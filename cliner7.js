@@ -97,7 +97,10 @@ var animate=(ts)=>{
   t++;
 //  c++;
   draw();
-if (EM && t%200==0) stopped=true
+  if (EM && t%200==0) {
+    stopped=true
+    parent.postMessage("lf");
+  }
 //  container.firstChild.style.opacity=1-c/DUR;
 /*
   if (t%DUR==0) {

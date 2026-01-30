@@ -105,9 +105,12 @@ var animate=(ts)=>{
   t++,c++;
   setRadiusArray();
   setPaths();
-  cf=10-8*Math.pow(Math.sin(TP*t/24000),2);
+  cf=14-10*Math.pow(Math.sin(TP*t/24000),2);
 //  if (t>DUR) { //    t=0; stopped=true; }
-if (EM && t%100==0) stopped=true;
+  if (EM && t%100==0) {
+    stopped=true;
+    parent.postMessage("lf"); 
+  }
   draw();
   requestAnimationFrame(animate);
 }

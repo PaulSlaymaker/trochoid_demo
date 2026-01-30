@@ -136,7 +136,10 @@ var animate=(ts)=>{
     c=0;
     cycle();
     pauseTS=performance.now()+2000;
-    if (EM) stopped=true;
+    if (EM) {
+      stopped=true;
+      parent.postMessage("lf");
+    }
     requestAnimationFrame(pause);
   } else
   requestAnimationFrame(animate);

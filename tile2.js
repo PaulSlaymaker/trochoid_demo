@@ -28,7 +28,7 @@ const getRandomInt=(min,max,low)=>{
 }
 
 function Color() {
-  const CBASE=160;
+  const CBASE=144;
   const CT=256-CBASE;
   this.getRGB=()=>{
     let red=Math.round(CBASE+CT*Math.cos(this.RK2+c/this.RK1));
@@ -132,7 +132,7 @@ body.addEventListener("click", start, false);
 
 var pauseTS=1000;
 var pause=(ts)=>{
-  if (EM) return;
+  if (EM) { parent.postMessage("lf"); return; }
   if (stopped) return;
   if (ts<pauseTS) {
     requestAnimationFrame(pause);

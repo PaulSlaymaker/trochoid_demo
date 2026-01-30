@@ -309,7 +309,10 @@ var animate=(ts)=>{
       }
       dpath.setPaths();
     }
-if (EM) stopped=true;
+    if (EM) {
+      stopped=true;
+      parent.postMessage("lf");
+   }
   }
   draw();
   requestAnimationFrame(animate);

@@ -133,7 +133,10 @@ function Curve(init) {
 
 var pauseTS=1000;
 var pause=(ts)=>{
-  if (EM) stopped=true;
+  if (EM) {
+    stopped=true;
+    parent.postMessage("lf");
+  }
   if (stopped) return;
   if (ts<pauseTS) {
     requestAnimationFrame(pause);
