@@ -15,7 +15,6 @@
 </head>
 <body>
 <div id="cont" style="display:grid; grid-template-columns:auto auto auto auto auto auto;"/>
-
 <script type="text/javascript">
   var container=document.getElementById('cont');
   var add=(n)=>{
@@ -23,10 +22,8 @@
     ifr.src=n+'.html?em';
     let hl=document.createElement('a');
     hl.href=n+'.html';
-//    hl.class='dlink';
     hl.setAttribute('class','dlink');
     let d=document.createElement('div');
-//    d.class='content';
     d.setAttribute('class','content');
     d.setAttribute('onmouseover','this.firstElementChild.contentWindow.start()');
     d.append(ifr,hl);
@@ -35,8 +32,8 @@
   const s=[
     'circ91','tile2','tile1','circ90','circ88','circ87','circ84','lines9','lines8','circ82','circ78',
     'circ76','circ75','lines4','cliner11','cliner10','cliner9','stem','cliner7','cliner4','cline2',
-    'cliner3','cliner2','clineh','cline','circ67','circ66','circ65',
-'circ64','quad14','circ59','hex10',
+    'cliner3','cliner2','clineh','cline','circ67','circ66','circ65','circ64','quad14',
+'circ59','hex10',
     'scale6','circ57','circ55','circ54','circ53','circ52','circ51','circ50','circ48','circ47','hex7',
     'circ46','quad12','quad11','circ41','circ40','hex6','tkites8','circ39','rect8','lines3','trav2',
     'frac6','hex5','hex4','rect7','frac5','rect6','troch10','frac2','frac','troch9','circ37','circ34',
@@ -46,16 +43,13 @@
     'gridm','circ6','scale','circa10','radbez16','quad6','radbez13','pip6','pip5','symgrad5','vanes',
     'mech2','radbez9','pip3','symgrad4','radbez8','dash','radbez5','emgrad','radbez3','radbez2','symgrad',
     'bezc3','orbet2','pix2','circa8','circa6','circa2','btroch3','lissline','quad9','quad7','btroch2',
-    'fconn','cconn2','rflip2','drawc','scirc','gear2','pcirc'
+    'fconn','cconn2','rflip2','drawc','scirc','gear2','pcirc','mtrack','ecirc','orbettes','circles2',
+    'trhex','lissa','rkites','orbs','tiles480','rcirc','curves','circles','tsquare','ribbons','lines'
   ];
   addEventListener('message',(evt)=>{
-    // add s array
-    // add postMessage
-    //if (event.origin !== "http://example.com") return;
     if (container.childElementCount<s.length) {
       add(s[container.childElementCount-1]);
-//console.log(event.origin);
-console.log(container.childElementCount);
+//console.log(container.childElementCount);
     }
   });
   for (let i=0; i<6; i++) { add(s[i]); };
