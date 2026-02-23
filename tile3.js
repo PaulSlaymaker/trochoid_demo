@@ -111,15 +111,15 @@ if (!km) debugger;
   this.grow=()=>{
     let pa=[];
     let z1=Math.atan2(this.s2.y-this.s1.y,this.s2.x-this.s1.x);
-    let x1=this.pt.x+KM.R*Math.cos(z1);
-    let y1=this.pt.y+KM.R*Math.sin(z1);
-    let p1=KM.pm.get(Math.round(x1)+","+Math.round(y1));
+    let x1=this.pt.x+this.km.R*Math.cos(z1);
+    let y1=this.pt.y+this.km.R*Math.sin(z1);
+    let p1=this.km.pm.get(Math.round(x1)+","+Math.round(y1));
     if (p1 && !p1.b) pa[0]=p1;
     else pa[0]=false;
     let z2=z1+Math.PI;
-    let x2=this.pt.x+KM.R*Math.cos(z2);
-    let y2=this.pt.y+KM.R*Math.sin(z2);
-    let p2=KM.pm.get(Math.round(x2)+","+Math.round(y2));
+    let x2=this.pt.x+this.km.R*Math.cos(z2);
+    let y2=this.pt.y+this.km.R*Math.sin(z2);
+    let p2=this.km.pm.get(Math.round(x2)+","+Math.round(y2));
     if (p2 && !p2.b) pa[1]=p2;
     else pa[1]=false;
     if (!pa[0] && !pa[1]) return false;
@@ -221,7 +221,7 @@ var animate=(ts)=>{
       if (!gpa[i]) gpa[i]=generateGrowthPoint();
        gpa[i].type=Math.round(Math.random());
     }
-    if (Math.random()<0.2) {
+    if (Math.random()<0.1) {
       KM=ksetm[1]; DUR=60;	//90
     } else {
       KM=ksetm[0]; DUR=120;	//180
