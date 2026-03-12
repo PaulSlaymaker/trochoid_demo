@@ -202,6 +202,72 @@ temp=true;
 console.log("fixme1e"); 
       }
     } else if (this.spt1.l==2) {
+      if (this.spt1.l==this.dpt2.l) {	// ax
+	if (this.spt2.l>this.dpt1.l) {
+	  if (this.spt1.i==this.spt2.i) {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+	    this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l-1));
+            this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
+console.log("fix2a",0,this.ch);
+          } else {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+            this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l-1));
+	    this.dpt2=pm.get(((7+this.spt2.i)%8)+","+(this.spt2.l-1));
+console.log("fix2b",1,this.ch);
+          }
+temp=true;
+        } else {
+	  if (this.spt1.i==this.spt2.i) {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+	    this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l+1));
+            this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
+console.log("fix2c",this.ch);
+          } else {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+            this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
+	    this.dpt2=pm.get(((7+this.spt2.i)%8)+","+(this.spt2.l+1));
+console.log("fix2d",0,this.ch);
+          }
+temp=true;
+        }
+      } else {
+	if (this.spt1.l>this.dpt2.l) {
+	  if (this.spt1.i==this.spt2.i) {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+            this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
+	    this.dpt2=pm.get(((6+this.spt2.i)%8)+","+(this.spt2.l+1));	// reflect
+console.log("fix2e",0,this.ch);
+          } else {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+	    this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l+1));
+	    this.dpt2=pm.get(((10+this.spt2.i)%8)+","+(this.spt2.l+1));	// reflect
+console.log("fix2f",1,this.ch);
+          }
+temp=true;
+        } else {
+	  if (this.dpt1.i==this.dpt2.i) {	// no spt1.i
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+	    this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l+1));
+            this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
+console.log("fix2g",0,this.ch);
+          } else {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+            this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
+	    this.dpt2=pm.get(((7+this.spt2.i)%8)+","+(this.spt2.l+1));
+console.log("fix2h",1,this.ch);
+          }
+temp=true;
+        }
+      }
+/*
       if (this.spt1.i==this.dpt2.i) {
         if (this.spt1.l>this.dpt2.l) {
           if (this.spt1.i==this.spt2.i) { // reflect
@@ -275,8 +341,8 @@ console.log("fixme2h",this.ch);
 temp=true;
         }
       }
+*/
     } else if (this.spt1.l==3) {	// diagonal tests
-
       if (this.spt1.l==this.dpt2.l) {	// ax
 	if (this.spt2.l>this.dpt1.l) {
 	  if (this.spt1.i==this.spt2.i) {
@@ -338,59 +404,6 @@ console.log("fix3h",0);
 	}
 */
       }
-
-/*
-      if (this.spt1.i==this.dpt2.i) {
-        if (this.spt1.l>this.dpt2.l) {
-          if (this.spt1.i==this.spt2.i) {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l-1));
-	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
-console.log("fixme3a",this.ch);
-          } else {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l-1));
-	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
-console.log("fixme3b",this.ch);
-          }
-temp=true;
-        } else { // off the map 
-          this.state=1;
-        }
-      } else {
-        if (this.spt2.l>this.dpt1.l) {
-          if (this.spt1.i==this.spt2.i) {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l-1));
-	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
-console.log("fixme3c",this.ch);
-          } else {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-            this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l-1));
-	    this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l-1));
-console.log("fixme3d",this.ch);
-          }
-temp=true;
-        } else {
-          if (this.spt1.i==this.spt2.i) {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l+1));
-	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
-          } else {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-            this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
-	    this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l+1));
-          }
-temp=true;
-        }
-      }
-*/
     } else if (this.spt1.l==4) {
       if (this.spt1.i==this.dpt2.i) {
         if (this.spt1.i==this.spt2.i) {
@@ -634,8 +647,8 @@ const ka=[
 
 var generateGrowthPoint2=(init)=>{
   //var point=init?pa[0]:pa[getRandomInt(0,pa.length)];
-  var point=Number.isInteger(init)?pm.get(getRandomInt(0,8)+","+init):pa[getRandomInt(0,pa.length)];
-//  var point=pm.get(getRandomInt(0,8)+",3");
+  //var point=Number.isInteger(init)?pm.get(getRandomInt(0,8)+","+init):pa[getRandomInt(0,pa.length)];
+  var point=pm.get(getRandomInt(0,8)+",3");
 //var point=pm.get("3,3");
   if (point.l==0) {
     let pt1=pm.get(getKey(point,[-1,1]));
@@ -691,8 +704,7 @@ var generateGrowthPoint2=(init)=>{
 //[0,-2],[-1,0],[0,2],[1,0]	// pt3,0
 //[0,-2],[1,0],[0,2],[-1,0]	// pt3,1
     let idx=getRandomInt(0,4);
-/*
-    if (idx==0) {
+    if (idx==0) {	// reverse
       let pt1=pm.get(getKey(point,[0,-1])); 
       let pt2=pm.get(getKey(point,[1,-1]));
       let pt3=pm.get(getKey(point,[0,-2]));
@@ -713,7 +725,7 @@ var generateGrowthPoint2=(init)=>{
       let pt3=pm.get(getKey(point,[-1,0]));
       return new GP2(point,pt1,pt2,pt3,1);
     }
-*/
+/*
     if (idx==0) {	// normal
       let pt1=pm.get(getKey(point,[1,-1]));
       let pt2=pm.get(getKey(point,[0,-1])); 
@@ -735,6 +747,7 @@ var generateGrowthPoint2=(init)=>{
       let pt3=pm.get(((9+point.i)%8)+","+point.l);
       return new GP2(point,pt1,pt2,pt3,0);
     }
+*/
   } else if (point.l==4) {
 //[0,-1],[-1,-1],[-1,1],[0,1] // 2 arrays of 3?
     let idx=getRandomInt(0,3);
