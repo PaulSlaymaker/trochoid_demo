@@ -153,53 +153,64 @@ function GP2(spt1,spt2,dpt1,dpt2,ch) {	// add dash, dash offset rate?
       }
 temp=true;
     } else if (this.spt1.l==1) {
-      if (this.spt2.l==0) {
-	if (this.spt1.i==this.dpt1.i) {
-          this.spt1=this.dpt1;
-          this.spt2=this.dpt2;
-          this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l+1));
-	  this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
-	} else {
-          this.spt1=this.dpt1;
-          this.spt2=this.dpt2;
-          this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
-	  this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l+1));
-	}
+      if (this.spt1.l==this.dpt2.l) {	// ax
+	if (this.spt2.l>this.dpt1.l) {
+	  if (this.spt1.i==this.spt2.i) {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+	    this.dpt1=pm.get(((7+this.spt2.i)%8)+","+this.spt2.l);	// special case
+	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
+console.log("fix1a",1,this.ch); 
+          } else {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+	    this.dpt1=pm.get(((9+this.spt2.i)%8)+","+this.spt2.l);	// special case
+	    this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l+1));
+console.log("fix1b",this.ch); 
+          }
 temp=true;
-      } else if (this.spt2.l==2) {
-	if (this.dpt1.l>this.spt1.l) {	// going out
-	  if (this.spt1.i==this.dpt1.i) {
+        } else {
+//console.log(this.spt1.i,this.dpt1.i,this.spt2.i,this.dpt2.i,this.ch);
+//console.log(this.spt1.l,this.dpt1.l,this.spt2.l,this.dpt2.l);
+	  //if (this.spt1.i==this.spt2.i) {
+	  if (this.spt1.i==this.dpt1.i) {	// spt2.l==0, don't use spt2.i
 	    this.spt1=this.dpt1;
 	    this.spt2=this.dpt2;
 	    this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l+1));
 	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
-console.log("fixme1c"); 
+console.log("fix1c",0,this.ch); 
+          } else {
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+	    this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));	// 1
+	    this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l+1));
+console.log("fix1d",1,this.ch); 
+          }
+temp=true;
+        }
+      } else {
+	if (this.spt1.l>this.dpt2.l) {
+	  if (this.spt1.i==this.spt2.i) {
+console.log("fix1e",this.ch); 
+          } else {
+console.log("fix1f",this.ch); 
+          }
+        } else {
+	  if (this.dpt1.i==this.dpt2.i) {	// no spt1.i
+	    this.spt1=this.dpt1;
+	    this.spt2=this.dpt2;
+	    this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l+1));
+	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
+console.log("fix1g",1,this.ch); 
           } else {
 	    this.spt1=this.dpt1;
 	    this.spt2=this.dpt2;
 	    this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
 	    this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l+1));
-console.log("fixme1a"); 	// worked
+console.log("fix1h",0,this.ch); 
           }
-	} else {	// going in
-	  if (this.spt2.i==this.dpt2.i) { 
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(((9+this.spt2.i)%8)+","+this.spt2.l);	// special case
-	    this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l+1));
-console.log("fixme1da");
-          } else { 
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(((7+this.spt2.i)%8)+","+this.spt2.l);	// special case
-	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
-// true,false,false with l3-reverse
-console.log("fixme1db"); // worked, but not with l3-reverse
-          }
-	}
 temp=true;
-      } else {
-console.log("fixme1e"); 
+        }
       }
     } else if (this.spt1.l==2) {
       if (this.spt1.l==this.dpt2.l) {	// ax
@@ -219,6 +230,8 @@ console.log("fix2b",1,this.ch);
           }
 temp=true;
         } else {
+//console.log(this.spt1.i,this.dpt1.i,this.spt2.i,this.dpt2.i,this.ch);
+//console.log(this.spt1.l,this.dpt1.l,this.spt2.l,this.dpt2.l);
 	  if (this.spt1.i==this.spt2.i) {
 	    this.spt1=this.dpt1;
 	    this.spt2=this.dpt2;
@@ -267,81 +280,6 @@ console.log("fix2h",1,this.ch);
 temp=true;
         }
       }
-/*
-      if (this.spt1.i==this.dpt2.i) {
-        if (this.spt1.l>this.dpt2.l) {
-          if (this.spt1.i==this.spt2.i) { // reflect
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-            this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
-	    this.dpt2=pm.get(((6+this.spt2.i)%8)+","+(this.spt2.l+1)); // ? [-2,1] for dpt2
-console.log("fixme2a",this.ch); 
-          } else { 
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l+1));
-	    this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l+1));
-console.log("fixme2b",this.ch); 
-          }
-temp=true;
-        } else { 	// ax??
-          if (this.spt1.i==this.spt2.i) {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-            this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
-	    this.dpt2=pm.get(((7+this.spt2.i)%8)+","+(this.spt2.l+1));
-console.log("fixme2c",this.ch); 
-          } else {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l+1));
-            this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
-console.log("fixme2d",this.ch); 
-          }
-temp=true;
-        }
-      } else {	// ax
-        if (this.spt2.l>this.dpt1.l) {
-          if (this.spt1.i==this.spt2.i) {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l-1));
-            this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
-console.log("fixme2e",this.ch);
-          } else {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-	    this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l-1));
-	    this.dpt2=pm.get(((7+this.spt2.i)%8)+","+(this.spt2.l-1));
-console.log("fixme2f",this.ch);
-          }
-temp=true;
-        } else {
-          if (this.dpt1.l>this.spt1.l) {
-            if (this.spt1.i==this.spt2.i) {	// not reached with l3-normal?
-	      this.spt1=this.dpt1;
-	      this.spt2=this.dpt2;
-	      this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l+1));
-	      this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
-console.log("fixme2gaa",this.ch);
-            } else {	// not reached with l3-reverse?
-	      this.spt1=this.dpt1;
-	      this.spt2=this.dpt2;
-	      this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
-	      this.dpt2=pm.get(((7+this.spt2.i)%8)+","+(this.spt2.l+1));
-console.log("fixme2gab",this.ch);
-            }
-          } else {
-	    this.spt1=this.dpt1;
-	    this.spt2=this.dpt2;
-            this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l+1));
-	    this.dpt2=pm.get(((9+this.spt1.i)%8)+","+this.spt1.l);	// special case
-console.log("fixme2h",this.ch);
-          }
-temp=true;
-        }
-      }
-*/
     } else if (this.spt1.l==3) {	// diagonal tests
       if (this.spt1.l==this.dpt2.l) {	// ax
 	if (this.spt2.l>this.dpt1.l) {
@@ -350,31 +288,26 @@ temp=true;
 	    this.spt2=this.dpt2;
 	    this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l-1));
 	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
-console.log("fix3a",1);
 	  } else {
 	    this.spt1=this.dpt1;
 	    this.spt2=this.dpt2;
 	    this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l-1));
 	    this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l-1));
-console.log("fix3b",0);
 	  }
-temp=true;
 	} else {
 	  if (this.spt1.i==this.spt2.i) {
 	    this.spt1=this.dpt1;
 	    this.spt2=this.dpt2;
 	    this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l+1));
 	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l+1));
-console.log("fix3c",0);
 	  } else {
 	    this.spt1=this.dpt1;
 	    this.spt2=this.dpt2;
 	    this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l+1));
 	    this.dpt2=pm.get(((9+this.spt2.i)%8)+","+(this.spt2.l+1));
-console.log("fix3d",1);	
 	  }
-temp=true;
 	}
+temp=true;
       } else {
 	if (this.spt1.l>this.dpt2.l) {
 	  if (this.spt1.i==this.spt2.i) {
@@ -382,60 +315,90 @@ temp=true;
 	    this.spt2=this.dpt2;
 	    this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l-1));
 	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
-console.log("fix3e",1);
 	  } else {
 	    this.spt1=this.dpt1;
 	    this.spt2=this.dpt2;
 	    this.dpt1=pm.get(((7+this.spt1.i)%8)+","+(this.spt1.l-1));
 	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
-console.log("fix3f",0);
 	  }
 temp=true;
 	} else {
           this.state=1;		// this.ch,  0 and 1
         }
-/*
-	  if (this.dpt1.i==this.dpt2.i) {	// no spt1.i
-console.log("fix3g");
-	  } else {
-            this.state=1;
-console.log("fix3h",0);
-	  }
-	}
-*/
       }
     } else if (this.spt1.l==4) {
-      if (this.spt1.i==this.dpt2.i) {
-        if (this.spt1.i==this.spt2.i) {
-	  this.spt1=this.dpt1;
-	  this.spt2=this.dpt2;
-	  this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l-1));
-	  this.dpt2=pm.get(((7+this.spt2.i)%8)+","+(this.spt2.l-1));
-        } else {
-	  this.spt1=this.dpt1;
-	  this.spt2=this.dpt2;
-	  this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l-1));
-	  this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
-        }
-temp=true;
-      } else {	// ax
-        if (this.spt2.l>this.dpt1.l) {
-          if (this.spt1.i==this.spt2.i) {
+      if (this.spt1.l==this.dpt2.l) {	// ax
+	if (this.spt2.l>this.dpt1.l) {
+	  if (this.spt1.i==this.spt2.i) {
 	    this.spt1=this.dpt1;
 	    this.spt2=this.dpt2;
 	    this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l-1));
 	    this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
 temp=true;
+console.log("fix4a",this.ch);
           } else {
-debugger;
-console.log("fixme4d");
+console.log("fix4b",this.ch);
           }
         } else {
-          this.state=1;
-console.log("state4");
+	  if (this.spt1.i==this.spt2.i) {
+            this.state=1;
+console.log("fix4c",this.ch);
+          } else {
+            this.state=1;
+console.log("fix4d",this.ch);
+          }
+        }
+      } else {
+	if (this.spt1.l>this.dpt2.l) {
+	  if (this.spt1.i==this.spt2.i) {
+	  this.spt1=this.dpt1;
+	  this.spt2=this.dpt2;
+	  this.dpt1=pm.get(this.spt1.i+","+(this.spt1.l-1));
+	  this.dpt2=pm.get(((7+this.spt2.i)%8)+","+(this.spt2.l-1));
+console.log("fix4e",this.ch);
+          } else {
+	  this.spt1=this.dpt1;
+	  this.spt2=this.dpt2;
+	  this.dpt1=pm.get(((9+this.spt1.i)%8)+","+(this.spt1.l-1));
+	  this.dpt2=pm.get(this.spt2.i+","+(this.spt2.l-1));
+console.log("fix4f",this.ch);
+          }
+temp=true;
+        } else {
+console.log("fix4g",this.ch);
         }
       }
     } else if (this.spt1.l==5) {	// 2 dir
+      if (this.spt1.l==this.dpt2.l) {	// ax
+	if (this.spt2.l>this.dpt1.l) {
+	  if (this.spt1.i==this.spt2.i) {
+console.log("fix5a",this.ch);
+          } else {
+console.log("fix5b",this.ch);
+          }
+        } else {
+	  if (this.spt1.i==this.spt2.i) {
+console.log("fix5a",this.ch);
+          } else {
+console.log("fix5c",this.ch);
+          }
+        }
+      } else {
+	if (this.spt1.l>this.dpt2.l) {
+	  if (this.spt1.i==this.spt2.i) {
+//here
+console.log("fix5d",this.ch);	// 1
+          } else {
+console.log("fix5e",this.ch);	// 0
+          }
+        } else {
+	  if (this.spt1.i==this.spt2.i) {
+console.log("fix5f",this.ch);
+          } else {
+console.log("fix5g",this.ch);
+          }
+        }
+      }
       if (this.spt1.i==this.spt2.i) {	// cw
 	this.spt1=this.dpt1;
 	this.spt2=this.dpt2;
@@ -646,9 +609,9 @@ const ka=[
 ];
 
 var generateGrowthPoint2=(init)=>{
-  //var point=init?pa[0]:pa[getRandomInt(0,pa.length)];
+  var point=init?pa[0]:pa[getRandomInt(0,pa.length)];
   //var point=Number.isInteger(init)?pm.get(getRandomInt(0,8)+","+init):pa[getRandomInt(0,pa.length)];
-  var point=pm.get(getRandomInt(0,8)+",3");
+  //var point=pm.get(getRandomInt(0,8)+",3");
 //var point=pm.get("3,3");
   if (point.l==0) {
     let pt1=pm.get(getKey(point,[-1,1]));
@@ -755,27 +718,25 @@ var generateGrowthPoint2=(init)=>{
       let pt1=pm.get(point.i+","+(point.l-1));
       let pt2=pm.get(((7+point.i)%8)+","+(point.l-1));
       let pt3=pm.get(point.i+","+(point.l-2));
-      return new GP2(point,pt1,pt2,pt3);
+      return new GP2(point,pt1,pt2,pt3,0);
     } else if (idx==1) {
       let pt1=pm.get(((7+point.i)%8)+","+(point.l-1));
       let pt2=pm.get(((7+point.i)%8)+","+(point.l+1));
       let pt3=pm.get(((7+point.i)%8)+","+point.l);
-      return new GP2(point,pt1,pt2,pt3);
+      return new GP2(point,pt1,pt2,pt3,0);
     } else if (idx==2) {
       let pt1=pm.get(point.i+","+(point.l+1));
       let pt2=pm.get(point.i+","+(point.l-1));
       let pt3=pm.get(((9+point.i)%8)+","+point.l);
-      return new GP2(point,pt1,pt2,pt3);
+      return new GP2(point,pt1,pt2,pt3,0);
     }
   } else if (point.l==5) {
     let pt1=pm.get(((9+point.i)%8)+","+(point.l-1));
     let pt2=pm.get(point.i+","+(point.l-1));
     let pt3=pm.get(point.i+","+(point.l-2));
-    if (Math.random()<0.5) return new GP2(point,pt2,pt1,pt3);
-    return new GP2(point,pt1,pt2,pt3);
-
-  } else debugger;
-debugger;
+    if (Math.random()<0.5) return new GP2(point,pt2,pt1,pt3,1);
+    return new GP2(point,pt1,pt2,pt3,0);
+  } 
   return false;
 }
 
