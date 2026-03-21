@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const CSIZE=360;
 
@@ -245,7 +245,7 @@ body.addEventListener("click", start, false);
 
 var pauseTS=1000;
 var pause=(ts)=>{
-  //if (EM) { parent.postMessage("lf"); return; }
+  if (EM) { parent.postMessage("lf"); return; }
   if (stopped) return;
   if (ts<pauseTS) {
     requestAnimationFrame(pause);
@@ -300,7 +300,7 @@ p.addPath(p,new DOMMatrix([0,1,-1,0,0,0]));
 }
 
 var cf=(1+2*Math.random())/2;
-console.log("cf",cf);
+//console.log("cf",cf);
 var draw=()=>{
   let p=transformPath(gpa[0].getPath());
   for (let i=1; i<gpa.length; i++) { p.addPath(transformPath(gpa[i].getPath())); }

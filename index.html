@@ -30,9 +30,9 @@
     container.append(d);
   }
   const s=[
-    'circ91','tile2','tile1','circ90','circ88','circ87','circ84','lines9','lines8','circ82','circ78',
-    'circ76','circ75','lines4','cliner11','cliner10','cliner9','stem','cliner7','cliner4','cline2',
-    'cliner3','cliner2','clineh','cline','circ67','circ66','circ65','circ64','quad14',
+    'tile4','circ91','tile2','tile1','circ90','circ88','circ87','circ84','lines9','lines8','circ82',
+    'circ78','circ76','circ75','lines4','cliner11','cliner10','cliner9','stem','cliner7','cliner4',
+    'cline2','cliner3','cliner2','clineh','cline','circ67','circ66','circ65','circ64','quad14',
 'circ59','hex10',
     'scale6','circ57','circ55','circ54','circ53','circ52','circ51','circ50','circ48','circ47','hex7',
     'circ46','quad12','quad11','circ41','circ40','hex6','tkites8','circ39','rect8','lines3','trav2',
@@ -49,7 +49,6 @@
   addEventListener('message',(evt)=>{
     if (container.childElementCount<s.length) {
       add(s[container.childElementCount-1]);
-//console.log(container.childElementCount);
     }
   });
   for (let i=0; i<6; i++) { add(s[i]); };
