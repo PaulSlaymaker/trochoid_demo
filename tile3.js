@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(TP/6);
 const CSIZE=360;
@@ -227,6 +227,10 @@ var animate=(ts)=>{
       KM=ksetm[0]; DUR=120;	//180
     }
     ctx.setLineDash([KM.R,1.3*KM.R]);
+    if (EM && t%100==0) {
+      stopped=true
+      parent.postMessage("lf");
+    }
   }
   f=t/DUR;
   draw();

@@ -1,7 +1,7 @@
 "use strict"; // Paul Slaymaker, paul25882@gmail.com
 const body=document.getElementsByTagName("body").item(0);
 body.style.background="#000";
-//const EM=location.href.endsWith("em");
+const EM=location.href.endsWith("em");
 const TP=2*Math.PI;
 const S6=Math.sin(TP/6);
 const S8=Math.sin(TP/8);
@@ -67,21 +67,17 @@ this.time=getRandomInt(0,120,true);
 //this.x=CSIZE*Math.pow((2*Math.random()-1),3);
 //this.y=CSIZE*Math.pow((2*Math.random()-1),3);
 
-  //this.r1=40+CSIZE/2*Math.random();
-  //this.r2=40+CSIZE/2*Math.random();
-
-// move to varying radius ratio and maxr
     this.r1=40+CSIZE/3*Math.random();
     this.r2=40+CSIZE/3*Math.random();
-this.rdiff=this.r2-this.r1;
+    this.rdiff=this.r2-this.r1;
     this.a=TP*Math.random();
     //this.KA=TP/4-TP/2*Math.random();
-this.KA=TP/2-TP*Math.random();
+    this.KA=TP/2-TP*Math.random();
   }
   this.randomize();
   this.getPath=()=>{
     let p=new Path2D();
-if (t-this.time<0) return p;
+    if (t-this.time<0) return p;
     let x=this.x+40*Math.sin(t/this.KX);
     let y=this.y+40*Math.sin(t/this.KY);
     let r1= Math.pow(Math.sin(t/this.KR1),2)*this.rdiff+this.r1;
@@ -113,7 +109,7 @@ body.addEventListener("click", start, false);
 
 var pauseTS=1000;
 var pause=(ts)=>{
-//  if (EM) { parent.postMessage("lf"); return; }
+  if (EM) { parent.postMessage("lf"); return; }
   if (stopped) return;
   if (ts<pauseTS) requestAnimationFrame(pause);
   else requestAnimationFrame(animate);
@@ -237,4 +233,3 @@ start();
 // non-random x/y
 // cl code
 // variable r1,r2
-// extreme tests
